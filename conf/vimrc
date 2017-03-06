@@ -1,0 +1,81 @@
+" Use ":source %" (:so %) to reload this configuration
+" See also ~/.gvimrc for configuration specific to the GUI
+
+"=== Display ==============
+
+" I prefer dark background for a text terminal
+set bg=dark
+
+" Enable colors
+syntax on
+
+" Highlight search results
+set hlsearch
+
+" No automatic line return
+set nowrap
+" Marker for wrapped lines
+set showbreak=+
+
+" Configure the status line:
+" relative/path/filename[flags] (buffer number) column,row [file type/end of line/encoding]
+" flags: [+] (modified), [RO] (read only), [Preview]
+set laststatus=2
+set statusline=%f%m%r%w\ (b%n)\ %l,%v\ [%Y/%{&ff}/%{&fileencoding}]
+
+" Minimal number of screen lines to keep above and below the cursor: 5 lines
+"set scrolloff=5
+
+"=== Edition ============
+
+"set showmatch   " Display corresponding parenthesis
+set incsearch   " Incremental search (while typing)
+
+" Delete trailing spaces before saving.
+" Use ":autocmd!" to disable this temporary
+autocmd BufWrite * silent! %s/[ \t\r]\+$//
+
+"=== Indentation =================
+
+" Default
+set autoindent
+set softtabstop=4
+set shiftwidth=4
+set expandtab     " Spaces instead of tabs
+autocmd BufLeave * set expandtab
+autocmd BufLeave * set textwidth=0
+
+" Depending on the filename or path
+autocmd BufEnter *Makefile* set noexpandtab
+" Gerrit on openstack.org rejects lines longer than 70 characters
+autocmd BufEnter *COMMIT_EDITMSG* set textwidth=69
+
+
+"=== .swp files to ~/.vim/swap ===
+
+if filewritable(expand("~/.vim/swap")) == 2
+    " existing writable directory: use it
+    set dir=$HOME/.vim/swap
+else
+    " is mkdir command available?
+    if has("unix") || has("win32unix")
+        " Create the directory and use it
+        call system("mkdir -p $HOME/.vim/swap")
+        set dir=$HOME/.vim/swap
+    endif
+endif
+
+"=== backup files (name~) to ~/.vim/backup ===
+
+if filewritable(expand("~/.vim/backup")) == 2
+    " existing writable directory: use it
+    set backupdir=$HOME/.vim/backup
+else
+    " is mkdir command available?
+    if has("unix") || has("win32unix")
+        " Create the directory and use it
+        call system("mkdir -p $HOME/.vim/backup")
+        set backupdir=$HOME/.vim/backup
+    endif
+endif
+

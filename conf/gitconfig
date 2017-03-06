@@ -1,0 +1,31 @@
+[color]
+diff = auto
+ui = auto
+
+[user]
+name = Victor Stinner
+#email = victor.stinner@gmail.com
+#email = victor.stinner@enovance.com
+email = vstinner@redhat.com
+
+[alias]
+glog = log --graph
+out = log '@{upstream}..' --pretty='format:%Cred%h%Creset %s' --color --reverse
+amend = commit -v --untracked-files=no --amend --all
+ci = commit -v --untracked-files=no
+co = checkout
+st = status
+rebasei = rebase -i remotes/origin/master
+pr = !sh -c \"git fetch origin pull/${1}/head:pr/${1} && git checkout pr/${1} && git branch --set-upstream-to=master\" -
+
+[push]
+# Push all matching branches (default) [git 1.6.3+]
+default = matching
+
+[diff]
+# Disable the limit of rename, because my computers have a lot of memory!
+# The default limit is 1000 files. It's not enough for complex cherry-pick on
+# openstack-nova for example.
+renamelimit=0
+[merge]
+renameLimit = 0

@@ -1,0 +1,2 @@
+# 95.81.147.3: mp3lg-out-b.tdf-cdn.com
+mplayer -quiet -cache 1024 http://95.81.147.3/lemouv/all/lemouvhautdebit.mp3

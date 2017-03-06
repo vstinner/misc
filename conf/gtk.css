@@ -1,0 +1,37 @@
+/* Customize the Gtk 3 theme for the Gnome desktop:
+ * use different colors for active and backgroudn windows
+ *
+ * Reload gnome-shell: ALT+F2 and type "r".
+ *
+ * Config written for Gnome 3.20 (Fedora 24).
+ */
+
+/* Active window (have the focus): white color, green background */
+decoration {
+    border: 4px solid #00b030;
+    background-color: black;
+}
+decoration headerbar.titlebar {
+    background-color: #00b030;
+    background-image: none;
+    padding: 1px;
+    /* No line below the title bar */
+    border: 0;
+}
+headerbar .title {
+    color: #ffffff;
+}
+
+/* Background window (inactive, don't have the focus): grey */
+decoration:backdrop {
+    border: 4px solid #808080;
+    background-color: black;
+}
+decoration headerbar.titlebar:backdrop {
+    background-color: #808080;
+    background-image: none;
+    padding: 1px;
+}
+headerbar .title:backdrop {
+    color: #d0d0d0;
+}

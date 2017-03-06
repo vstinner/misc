@@ -1,0 +1,32 @@
+" Use ":source %" (:so %) to reload this configuration
+
+" Light background (white)
+set bg=light
+
+" Name of the font for gvim
+set guifont=Monospace\ Regular\ 8
+
+"=== Highlight tabs, trailing spaces and non breaking spaces ============
+" Type ":2match" to disable highlighting spaces
+
+" /pattern uses match and showmatch uses 3match, so only 2match is available
+highlight def Spaces ctermbg=lightgreen guibg=#eaf0ea
+" general match:
+" - characters outside ISO-8859-1 (U+0020-U+00FF) charset,
+"   example: tabs (U+0009)
+" - no-break spaces (U+00A0)
+" - trailing spaces and tabs (U+0009, U+0020)
+2match Spaces "[^\x20-\xff]\| \|[ \t]\+$"
+autocmd BufEnter * 2match Spaces "[^\x20-\xff]\| \|[ \t]\+$"
+autocmd WinEnter * 2match Spaces "[^\x20-\xff]\| \|[ \t]\+$"
+" C and Python match:
+" - characters outside U+0020-U+007E range, for example: tabs (U+0009) and no-break spaces (U+00A0)
+" - trailing spaces and tabs (U+0009, U+0020)
+autocmd BufEnter *.py 2match Spaces "[^\x20-\x7e]\|[ \t]\+$"
+autocmd BufEnter *.c 2match Spaces "[^\x20-\x7e]\|[ \t]\+$"
+
+" Require vim 7.3+, otherwise, use a match using "\%80v.\+" pattern
+if version >= 703
+    set colorcolumn=80
+endif
+

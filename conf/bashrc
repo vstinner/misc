@@ -1,0 +1,110 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+
+# If not running interactively, don't do anything
+[ -z "$PS1" ] && return
+
+# don't put duplicate lines in the history. See bash(1) for more options
+export HISTCONTROL=ignoredups
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "$debian_chroot" -a -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}: ${PWD/$HOME/~}\007"'
+    ;;
+*)
+    ;;
+esac
+
+if [ "$TERM" != "dumb" ]; then
+    eval "`dircolors -b`"
+    alias ls='ls --color=auto'
+    #alias dir='ls --color=auto --format=vertical'
+    #alias vdir='ls --color=auto --format=long'
+fi
+
+# This line was appended by KDE
+# Make sure our customised gtkrc file is loaded.
+export GTK2_RC_FILES=$HOME/.gtkrc-2.0
+
+### HAYPO ###
+source /etc/profile
+export EDITOR=vim
+export PS1='\u@\h$ '
+if [ -e /etc/bash_completion ]; then
+    # bash_completion doesn't support noclobber
+    set +C
+    source /etc/bash_completion
+fi
+
+alias ls='ls --color=auto'
+#alias ll='ls -lh --color=auto'
+#alias lla='ls -lha --color=auto'
+alias ln="ln -i -v"
+alias cp='cp -i -v'
+alias mv='mv -i -v'
+alias rm='rm -i --one-file-system'
+alias tar='tar -k'
+alias du='du -h'
+alias df='df -h'
+alias grep='grep --color'
+#alias egrep='egrep --color'
+alias nssh='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+alias nscp='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+
+# Protect myself against stupid commands like "echo user:password: >/etc/passwd"
+set -C
+
+# Ignore:
+#  any command starting with a space (eg. " sudo touch /tmp/x")
+#  >bg<
+#  >fg<
+#  >exit<
+export HISTIGNORE=' *:[bf]g:exit:*>|*:history*'
+
+# _SC_NPROCESSORS_ONLN = 84
+HOSTNAME=$(hostname)
+export MAKEFLAGS=$(python -c "import os; print('-j%s' % (os.sysconf('SC_NPROCESSORS_ONLN') + 1))")
+
+export PATH=~/bin:$PATH
+
+# My own Python binaries in /opt
+export PATH=$PATH:/opt/py26/bin:/opt/py32/bin:/opt/py33/bin:/opt/py34/bin
+
+
+# Disable CTRL+s shortcut (freeze the terminal, use CTRL+q to unfreeze)
+# to get readline CTRL+s shortcut (search forward in the history)
+stty -ixon
+
+# specific to DevStack:
+# source ~/devstack/openrc admin demo password
+
+# if [ "$TERM" == "xterm-256color" ]; then
+#     # Python issue #19884 is very annoying
+#     # http://bugs.python.org/issue19884
+#     export TERM="vt100"
+# fi
+
+# use -C to use a config.cache in the current directory
+alias configure="./configure -C"
+
+# configure to compile Python in debug mode.
+# - use -C to use a config.cache in the current directory
+# - force -O0 (instead of -Og) for best debug experience (in gdb)
+# - use --with-pydebug to compile python in debug mode.
+alias pyconfigure_debug="./configure -C --with-pydebug CFLAGS=-O0"
+
+export PATH=$PATH:~/prog/GIT/hachoir3

@@ -1,0 +1,16 @@
+# don't display copyright page at startup
+startup_message off
+
+# status bar: "current_window | window1 window2 ..."
+hardstatus alwayslastline "%{= dd}%H>  %{+u}%n:%t%{-}  | %w %="
+
+# number of lines of the historic
+defscrollback 2000
+
+# visual bip
+vbell on
+
+# deatch screen on hangup
+autodetach on
+
+

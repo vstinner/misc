@@ -1,0 +1,35 @@
+# Format: "directory: scm=url"
+GIT/asyncio: git=git@github.com:python/asyncio.git
+GIT/conf: git=git@github.com:haypo/conf.git
+GIT/faster_cpython: git=git@github.com:haypo/faster_cpython.git
+GIT/fat: git=git@github.com:haypo/fat.git
+GIT/fatoptimizer: git=git@github.com:haypo/fatoptimizer.git
+GIT/faulthandler: git=git@github.com:haypo/faulthandler.git
+GIT/haypo.github.io: git=git@github.com:haypo/haypo.github.io.git
+GIT/python-ptrace: git=git@github.com:haypo/python-ptrace.git
+GIT/pytracemalloc: git=git@github.com:haypo/pytracemalloc.git
+GIT/sixer: git=git@github.com:haypo/sixer.git
+GIT/unicode_book: git=git@github.com:haypo/unicode_book.git
+GIT/bytecode: git=git@github.com:haypo/bytecode.git
+GIT/perf: git=git@github.com:haypo/perf.git
+GIT/hachoir3: git=git@github.com:haypo/hachoir3.git
+
+HG/astoptimizer: hg=ssh://hg@bitbucket.org/haypo/astoptimizer
+HG/asyncio_staging: hg=ssh://hg@bitbucket.org/haypo/asyncio_staging
+HG/cpython_internals: hg=ssh://hg@bitbucket.org/haypo/cpython_internals
+HG/fusil: hg=ssh://hg@bitbucket.org/haypo/fusil
+HG/hasard: hg=ssh://hg@bitbucket.org/haypo/hasard
+HG/haypo_notes: hg=ssh://hg@bitbucket.org/haypo/haypo_notes
+HG/misc: hg=ssh://hg@bitbucket.org/haypo/misc
+HG/private: hg=ssh://hg@bitbucket.org/haypo/private
+HG/pyfailmalloc: hg=ssh://hg@bitbucket.org/haypo/pyfailmalloc
+HG/tracemallocqt: hg=ssh://hg@bitbucket.org/haypo/tracemallocqt
+
+# python/benchmarks: hg=ssh://hg@hg.python.org/benchmarks
+python/default: hg=ssh://hg@hg.python.org/cpython
+# python/2.6: hg=../2.7/
+# python/2.7: hg=ssh://hg@hg.python.org/cpython
+# python/3.1: hg=../default
+# python/3.2: hg=../default
+# python/peps: hg=ssh://hg@hg.python.org/peps
+python/performance: git=git@github.com:python/benchmarks.git

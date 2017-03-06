@@ -1,0 +1,8 @@
+unicode_book/build/
+unicode_book/surrogate_pair
+unicode_book/guess_encoding
+misc/locale
+antispam/private
+misc/libnobuffer.so
+*.py[cod]
+*.swp

@@ -1,0 +1,51 @@
+[ui]
+username = Victor Stinner <victor.stinner@gmail.com>
+verbose = True
+
+# on commit, hgeditor opens an editor with the diff for the changelog
+# http://selenic.com/hg/raw-file/tip/hgeditor
+editor = ~/bin/hgeditor
+
+[diff]
+# The "review" feature of the Python bug tracker doesn't support git patches
+# because such patch doesn't contain the revision
+# git = on
+showfunc = on
+
+[extensions]
+color=
+# enable hg glog
+graphlog=
+pager=
+progress=
+rebase=
+record=
+share=
+# enable hg strip
+mq=
+histedit=
+fetch=
+transplant=
+
+[color]
+# vim colors (bg=dark theme)
+diff.diffline = green bold
+diff.file_a = green bold
+diff.file_b = green bold
+diff.hunk = yellow bold
+diff.deleted = red bold
+diff.inserted = cyan bold
+
+[pager]
+# less -F: quit if one screen
+# less -S: chop long lines
+# less -R: raw (keep colors)
+# less -X: no init (don't see termcap init sequences)
+pager = LESS='FSRX' less
+
+[merge-patterns]
+** = internal:merge
+
+[hostfingerprints]
+# https://blog.bitbucket.org/2016/05/04/2847/
+bitbucket.org = 3f:d3:c5:17:23:3c:cd:f5:2d:17:76:06:93:7e:ee:97:42:21:14:aa
