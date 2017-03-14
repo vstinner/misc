@@ -1,0 +1,27 @@
+diff -r 135e1a8144ec Modules/_testcapimodule.c
+--- a/Modules/_testcapimodule.c	Mon Jan 09 11:21:37 2017 +0100
++++ b/Modules/_testcapimodule.c	Tue Jan 10 12:39:29 2017 +0100
+@@ -4039,6 +4039,15 @@ dict_get_version(PyObject *self, PyObjec
+     return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG)version);
+ }
+ 
++static PyObject*
++stack_pointer(PyObject *self, PyObject *args)
++{
++    int v = 5;
++    Py_uintptr_t sp = (Py_uintptr_t)&v;
++
++    return PyLong_FromUnsignedLongLong(sp);
++}
++
+ 
+ static PyMethodDef TestMethods[] = {
+     {"raise_exception",         raise_exception,                 METH_VARARGS},
+@@ -4244,6 +4253,7 @@ static PyMethodDef TestMethods[] = {
+     {"tracemalloc_untrack", tracemalloc_untrack, METH_VARARGS},
+     {"tracemalloc_get_traceback", tracemalloc_get_traceback, METH_VARARGS},
+     {"dict_get_version", dict_get_version, METH_VARARGS},
++    {"stack_pointer", stack_pointer, METH_NOARGS},
+     {NULL, NULL} /* sentinel */
+ };
+ 
