@@ -7,8 +7,11 @@ from shutil import copyfile
 from sys import exit, stdout
 from difflib import unified_diff
 from errno import EEXIST
+import subprocess
 
-FILES = (
+
+SYSTEMD = True
+FILES = [
     'bashrc',
     'gdbinit',
     'gitconfig',
@@ -16,18 +19,24 @@ FILES = (
     'hgrc',
     'screenrc',
     'vimrc',
-    ('gtk.css', '.config/gtk-3.0'),
-)
+    ('gtk.css', '.config/gtk-3.0/gtk.css'),
+]
+if SYSTEMD:
+    FILES.append(('systemd_user/ssh-agent.service',
+                  '.config/systemd/user/ssh-agent.service'))
+    SYSTEMD_SERVICES = ['ssh-agent.service']
 
-def main():
+
+def create_symlinks():
     srcdir = realpath(dirname(__file__))
     home = expanduser('~')
 
     files = []
     for name in FILES:
         if isinstance(name, tuple):
-            name, dstdir = name
-            dstdir = path_join(home, dstdir)
+            name, dstname = name
+            dstname = path_join(home, dstname)
+            dstdir = dirname(dstname)
             try:
                 makedirs(dstdir, 0o700)
             except OSError as exc:
@@ -36,8 +45,7 @@ def main():
                 else:
                     raise
             else:
-                print("Create directory: %s" % dstdir)
-            dstname = name
+                print("Create directories %s" % dstdir)
         else:
             dstdir = home
             dstname = '.' + name
@@ -68,10 +76,6 @@ def main():
     if err:
         exit(1)
 
-    if not files:
-        print("Nothing to do (symlinks already created).")
-        exit(0)
-
     for name, src, dst in files:
         try:
             lstat(dst)
@@ -80,9 +84,25 @@ def main():
         else:
             # remove broken link
             unlink(dst)
-        print("Create %s" % dst)
+        print("Link %s to %s" % (src, dst))
         symlink(src, dst)
+
+
+def enable_systemd_services():
+    for service in SYSTEMD_SERVICES:
+        cmd = ['systemctl', '--user', 'enable', service]
+        print("Run %s" % ' '.join(cmd))
+        proc = subprocess.Popen(cmd)
+        exitcode = proc.wait()
+        if exitcode:
+            sys.exit(exitcode)
+
+
+def main():
+    create_symlinks()
+    if SYSTEMD:
+        enable_systemd_services()
+
 
 if __name__ == "__main__":
     main()
-

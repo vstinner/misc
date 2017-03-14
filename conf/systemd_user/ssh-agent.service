@@ -1,0 +1,15 @@
+# Copied from https://wiki.archlinux.org/index.php/SSH_keys#Start_ssh-agent_with_systemd_user
+#
+# Add this line to your ~/.bashrc:
+# export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+
+[Unit]
+Description=SSH key agent
+
+[Service]
+Type=forking
+Environment=SSH_AUTH_SOCK=%t/ssh-agent.socket
+ExecStart=/usr/bin/ssh-agent -a $SSH_AUTH_SOCK
+
+[Install]
+WantedBy=default.target
