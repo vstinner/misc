@@ -1,3 +1,6 @@
+"""
+http://bugs.python.org/issue28870
+"""
 from __future__ import print_function
 import sys
 import _testcapi
