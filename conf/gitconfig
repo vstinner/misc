@@ -4,9 +4,7 @@ ui = auto
 
 [user]
 name = Victor Stinner
-#email = victor.stinner@gmail.com
-#email = victor.stinner@enovance.com
-email = vstinner@redhat.com
+email = victor.stinner@gmail.com
 
 [alias]
 glog = log --graph
