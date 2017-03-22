@@ -1,5 +1,4 @@
 # Format: "directory: scm=url"
-GIT/asyncio: git=git@github.com:python/asyncio.git
 GIT/conf: git=git@github.com:haypo/conf.git
 GIT/faster_cpython: git=git@github.com:haypo/faster_cpython.git
 GIT/fat: git=git@github.com:haypo/fat.git
