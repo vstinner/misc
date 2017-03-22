@@ -1,6 +1,0 @@
-Secrets of the Ftrace function tracer
-http://lwn.net/Articles/370423/
-
-ftrace - Function Tracer
-https://www.kernel.org/doc/Documentation/trace/ftrace.txt
-
