@@ -23,7 +23,6 @@ FILES = (
     'taskset_isolated.py',
     'upload_private.sh',
     'upload_tmp.sh',
-    'isolcpus.py',
 )
 
 def main():
