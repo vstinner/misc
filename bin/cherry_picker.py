@@ -23,38 +23,38 @@ def cherry_pick(dry_run, pr_remote, commit_sha1, branches):
 
 
     click.echo("fetching upstream ...")
-    run_cmd(f"git fetch {upstream}", dry_run=dry_run)
+    run_cmd("git fetch {upstream}".format_map(locals()), dry_run=dry_run)
 
     if not branches:
         raise ValueError("at least one branch is required")
 
     for branch in branches:
-        click.echo(f"Now backporting '{commit_sha1}' into '{branch}'")
+        click.echo("Now backporting '{commit_sha1}' into '{branch}'".format_map(locals()))
 
         # git checkout -b 61e2bc7-3.5 upstream/3.5
-        cherry_pick_branch = f"backport-{commit_sha1[:7]}-{branch}"
-        cmd = f"git checkout -b {cherry_pick_branch} {upstream}/{branch}"
+        cherry_pick_branch = "backport-{commit_sha1[:7]}-{branch}".format_map(locals())
+        cmd = "git checkout -b {cherry_pick_branch} {upstream}/{branch}".format_map(locals())
         run_cmd(cmd, dry_run=dry_run)
 
-        cmd = f"git cherry-pick -x {commit_sha1}"
+        cmd = "git cherry-pick -x {commit_sha1}".format_map(locals())
         if run_cmd(cmd, dry_run=dry_run):
-            cmd = f"git push {pr_remote} {cherry_pick_branch}"
+            cmd = "git push {pr_remote} {cherry_pick_branch}".format_map(locals())
             if not run_cmd(cmd, dry_run=dry_run):
-                click.echo(f"Failed to push to {pr_remote} :(")
+                click.echo("Failed to push to {pr_remote} :(".format_map(locals()))
             else:
                 open_pr(username, branch, cherry_pick_branch, dry_run=dry_run)
         else:
-            click.echo(f"Failed to cherry-pick {commit_sha1} into {branch} :(")
+            click.echo("Failed to cherry-pick {commit_sha1} into {branch} :(".format_map(locals()))
 
         cmd = "git checkout master"
         run_cmd(cmd, dry_run=dry_run)
 
-        cmd = f"git branch -D {cherry_pick_branch}"
+        cmd = "git branch -D {cherry_pick_branch}".format_map(locals())
         if run_cmd(cmd, dry_run=dry_run):
             if not dry_run:
-                click.echo(f"branch {cherry_pick_branch} has been deleted.")
+                click.echo("branch {cherry_pick_branch} has been deleted.".format_map(locals()))
         else:
-            click.echo(f"branch {cherry_pick_branch} NOT deleted.")
+            click.echo("branch {cherry_pick_branch} NOT deleted.".format_map(locals()))
 
 
 def get_git_fetch_remote():
@@ -74,7 +74,7 @@ def get_forked_repo_name(pr_remote):
     Return 'myusername' out of https://github.com/myusername/cpython
     :return:
     """
-    cmd = f"git config --get remote.{pr_remote}.url"
+    cmd = "git config --get remote.{pr_remote}.url".format_map(locals())
     raw_result = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
     result = raw_result.decode('utf-8')
     username_end = result.index('/cpython.git')
@@ -87,7 +87,7 @@ def get_forked_repo_name(pr_remote):
 
 def run_cmd(cmd, *, dry_run=False):
     if dry_run:
-        click.echo(f"  dry-run: {cmd}")
+        click.echo("  dry-run: {cmd}".format_map(locals()))
         return True
     try:
         subprocess.check_output(cmd.split())
@@ -100,9 +100,9 @@ def open_pr(forked_repo, base_branch, cherry_pick_branch, *, dry_run=False):
     """
     construct the url for pull request and open it in the web browser
     """
-    url = f"https://github.com/python/cpython/compare/{base_branch}...{forked_repo}:{cherry_pick_branch}?expand=1"
+    url = "https://github.com/python/cpython/compare/{base_branch}...{forked_repo}:{cherry_pick_branch}?expand=1".format_map(locals())
     if dry_run:
-        click.echo(f"  dry-run: Create new PR: {url}")
+        click.echo("  dry-run: Create new PR: {url}".format_map(locals()))
         return
     webbrowser.open_new_tab(url)
 
