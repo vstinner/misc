@@ -23,6 +23,7 @@ FILES = (
     'taskset_isolated.py',
     'upload_private.sh',
     'upload_tmp.sh',
+    'cherry_picker.py',
 )
 
 def main():
