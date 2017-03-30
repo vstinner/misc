@@ -32,7 +32,7 @@ def cherry_pick(dry_run, pr_remote, commit_sha1, branches):
         click.echo("Now backporting '{commit_sha1}' into '{branch}'".format_map(locals()))
 
         # git checkout -b 61e2bc7-3.5 upstream/3.5
-        cherry_pick_branch = "backport-{commit_sha1[:7]}-{branch}".format_map(locals())
+        cherry_pick_branch = "backport-{}-{}".format(commit_sha1[:7], branch)
         cmd = "git checkout -b {cherry_pick_branch} {upstream}/{branch}".format_map(locals())
         run_cmd(cmd, dry_run=dry_run)
 
