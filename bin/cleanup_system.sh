@@ -7,7 +7,7 @@ echo
 # Remove files built by development tools
 find /home -name .tox -print0|xargs -0 rm -rf
 find /home -name __pycache__ -print0|xargs -0 rm -rf
-find /home \( -name .pyc -o -name .pyo \) -0|xargs -0 rm -rf
+find /home \( -name .pyc -o -name .pyo \) -print0|xargs -0 rm -rf
 
 #rm -rf /var/cache/yum
 #rm -rf /var/cache/PackageKit
