@@ -6,10 +6,14 @@ import subprocess
 import webbrowser
 
 
+DEFAULT_REMOTE = 'haypo'
+
+
 @click.command()
 @click.option('--dry-run', is_flag=True)
 @click.option('--push', 'pr_remote', metavar='REMOTE',
-              help='git remote to use for PR branches', default='origin')
+              help='git remote to use for PR branches (default: %s)' % DEFAULT_REMOTE,
+              default=DEFAULT_REMOTE)
 @click.argument('commit_sha1', 'The commit sha1 to be cherry-picked')
 @click.argument('branches', 'The branches to backport to', nargs=-1)
 def cherry_pick(dry_run, pr_remote, commit_sha1, branches):
