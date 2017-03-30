@@ -95,7 +95,7 @@ def enable_systemd_services():
         proc = subprocess.Popen(cmd)
         exitcode = proc.wait()
         if exitcode:
-            sys.exit(exitcode)
+            exit(exitcode)
 
 
 def main():
