@@ -33,44 +33,24 @@ class Application:
             sys.exit(proc.returncode)
         return proc.stdout.rstrip()
 
-    def get_version_branches(self, commit):
-        stdout = self.get_output('git', '--git-dir', self.git_dir,
-                            'branch', '--list', '--remotes',
-                            '--contains', commit)
-        prefix = self.remote + "/"
-        branches = []
-        for line in stdout.splitlines():
-            line = line[2:]
-            if not line.startswith(prefix):
-                continue
-            branch = line[len(prefix):]
-            if not VERSION_REGEX.match(branch):
-                continue
-            branches.append(branch)
-        return branches
-
-    def _find_revision(self, date, delta):
+    def _find_revision(self, start_date, end_date):
         branch = 'remotes/%s/master' % self.remote
-        start_date = date.strftime('%Y-%m-%d %H:%M:%SZ')
-        end_date = (date + delta).strftime('%Y-%m-%d %H:%M:%SZ')
+        start_date = start_date.strftime('%Y-%m-%d %H:%M:%SZ')
+        end_date = end_date.strftime('%Y-%m-%d %H:%M:%SZ')
 
         stdout = self.get_output('git', '--git-dir', self.git_dir,
                                  'log',
                                  '--after=%s' % start_date,
-                                 '--before=%s' % end_date, '--reverse',
+                                 '--before=%s' % end_date,
+                                 '--first-parent',
+                                 '--reverse',
                                  '--pretty=format:%H|%ci',
                                  branch)
         if not stdout:
             return None
 
-        for line in stdout.splitlines():
-            revision, date = line.split('|')
-            branches = self.get_version_branches(revision)
-            if branches:
-                if self.debug:
-                    print("Skip commit %s, branches %s, %s" % (revision, branches, date))
-                continue
-            break
+        line = stdout.splitlines()[0]
+        revision, date = line.split('|')
 
         # drop second and timezone
         date = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S %z')
@@ -78,16 +58,17 @@ class Application:
         return (revision, date)
 
     def find_revision(self, date):
-        days = 1
+        start_date = date
+        one_day = datetime.timedelta(days=1)
         while True:
-            delta = datetime.timedelta(days=days)
-            res = self._find_revision(date, delta)
+            res = self._find_revision(date, date + one_day)
             if res is not None:
                 break
 
-            days += 1
-            if days > 7:
-                print("Unable to the find the first commit of %s" % date)
+            date += one_day
+            if (date - start_date).days > 15:
+                print("Unable to find the first commit on %s..%s"
+                      % (start_date, date))
                 sys.exit(1)
         return res
 
