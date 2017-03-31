@@ -67,7 +67,7 @@ class Application:
             revision, date = line.split('|')
             branches = self.get_version_branches(revision)
             if branches:
-                self.debug:
+                if self.debug:
                     print("Skip commit %s, branches %s, %s" % (revision, branches, date))
                 continue
             break
