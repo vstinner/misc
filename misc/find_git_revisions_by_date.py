@@ -73,8 +73,8 @@ class Application:
         return res
 
     def main(self):
-        # quarters: 4 points per year
-        points = 4
+        # every month: 12 points per year
+        points = 12
         # start date
         start = datetime.datetime(2014, 1, 1)
         year = 12
