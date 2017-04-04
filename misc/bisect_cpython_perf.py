@@ -113,20 +113,20 @@ class Bisect:
         left = left.mean()
         right = right.mean()
 
-        limit = (left + right) / 2.0
-
         fmt = bench.format_value
         if left <= right:
-            # slowdown: find the first commit which made Python slower
-            # bad=slower
+            # slowdown: find the first commit which made Python slower.
+            # BAD means slower.
+            limit = left + (right - left) * 0.75
             bad = (mean >= limit)
             if bad:
                 msg = 'BAD (slower)! %s >= %s'
             else:
                 msg = 'good (fast): %s < %s'
         else:
-            # speed up: find the first commit which made Python faster
-            # bad=faster
+            # left > right, speed up: find the first commit which made Python
+            # faster. BAD means faster.
+            limit = right + (left - right) * 0.25
             bad = (mean <= limit)
             if bad:
                 msg = 'BAD (faster)! %s <= %s'
