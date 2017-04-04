@@ -10,7 +10,7 @@ from errno import EEXIST
 import subprocess
 
 
-SYSTEMD = True
+SYSTEMD = False
 FILES = [
     'bashrc',
     'gdbinit',
