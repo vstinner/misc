@@ -241,7 +241,7 @@ class Bisect:
                 result = 'bad' if bad else 'good'
             except BisectSkip as exc:
                 print("ERROR: %s. Skip commit" % exc.msg)
-                exitcode = self.run_nocheck('git', 'bisect', 'skip', new_commit, cwd=self.src_dir)
+                exitcode = self.run_nocheck('git', 'bisect', 'skip', cwd=self.src_dir)
             except BisectError as exc:
                 print("FATAL ERROR: %s. stop bisect!" % exc.msg)
                 break
