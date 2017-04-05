@@ -189,6 +189,11 @@ class Bisect:
 
         if new_bench is not None:
             value = new_bench.format_value(new_bench.mean())
+            if old_bench is not None:
+                before = old_bench.mean()
+                after = new_bench.mean()
+                percent = ((after - before) * 100 / before)
+                value += " (%+.0f%%)" % percent
             print("New: mean=%s, commit=%s" % (value, self.conf.new_commit))
         else:
             new_bench = None
@@ -371,14 +376,22 @@ class Bisect:
             filename = os.path.join(self.json_dir, 'bench-%s.json' % commit)
 
         if not os.path.exists(filename):
-            return self._compile_bench(filename, commit=commit)
+            bench = self._compile_bench(filename, commit=commit)
         else:
-            return perf.Benchmark.load(filename)
+            bench = perf.Benchmark.load(filename)
+        print("Commit %s result: mean=%s, filename=%s"
+              % (commit, bench.format_value(bench.mean()), filename))
+        return bench
 
     def cmd_bench(self):
+        revision = self.args.revision
+        if revision:
+            self.run('git', 'checkout', revision, cwd=self.src_dir)
+
         filename = self.args.output
         if filename:
             filename = os.path.abspath(filename)
+
         self.compile_bench(filename)
 
     def bench_compare(self, commit=None):
@@ -411,9 +424,10 @@ class Bisect:
         cmd = subparsers.add_parser('status')
         cmd = subparsers.add_parser('bench_compare')
         cmd = subparsers.add_parser('bench')
+        cmd.add_argument('-o', '--output')
+        cmd.add_argument('-r', '--revision')
         cmd = subparsers.add_parser('run')
         cmd = subparsers.add_parser('reset')
-        cmd.add_argument('-o', '--output')
 
         return parser
 
