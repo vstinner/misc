@@ -27,7 +27,9 @@ def normpath(path):
 def parse_config(filename):
     conf = types.SimpleNamespace()
     cfgobj = configparser.ConfigParser()
-    cfgobj.read(filename)
+    if not cfgobj.read(filename):
+        print("ERROR: failed to read configuration file %s" % filename)
+        sys.exit(1)
 
     def getstr(section, key, default=None):
         try:
@@ -230,7 +232,11 @@ class Bisect:
         self.cmd_status()
 
     def cmd_run(self):
-        self.cmd_start()
+        if self.get_old_bench() is None or self.get_new_bench() is None:
+            print("ERROR: First run the start command")
+            sys.exit(1)
+
+        self.git_reset()
 
         while True:
             commit = self.get_git_commit()
@@ -344,6 +350,9 @@ class Bisect:
         cmd += self.conf.benchmark_opts
         if self.run_nocheck(*cmd, cwd=build_dir):
             raise BisectError("benchmark failed")
+
+        # revert local changes: sometimes, make modifies some files
+        self.git_reset()
 
         # Update metadata
         metadata = {'commit_id': commit}
