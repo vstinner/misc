@@ -423,11 +423,11 @@ class Bisect:
         return parser
 
     def cmd_reset(self):
-        shutil.rmtree(self.conf.json_dir)
-        shutil.rmtree(self.conf.build_dir)
-        shutil.rmtree(self.conf.config_cache)
+        self.rmtree(self.json_dir)
+        self.rmtree(self.build_dir)
+        self.unlink(self.config_cache)
 
-        # FIXME: remove self.conf.work_dir if it's empty and not the current directory
+        # FIXME: remove self.work_dir if it's empty and not the current directory
 
         self.run('git', 'bisect', 'reset', cwd=self.src_dir)
         self.git_reset()
