@@ -62,7 +62,8 @@ def parse_config(filename):
     conf.make_command = getargs('config', 'make_command', 'make')
     conf.benchmark_opts = getargs('config', 'benchmark_opts',
                                   '--inherit-environ=PYTHONPATH -p5 -v')
-    conf.configure_args = getargs('config', 'configure_args', '')
+    conf.configure_args = getargs('config', 'configure_args',
+                                  '--with-lto')
     return conf
 
 
@@ -80,6 +81,8 @@ class Bisect:
     def __init__(self):
         self.args = None
         self.conf = None
+        self._old_bench = None
+        self._new_bench = None
 
     def _subprocess(self, cmd, kwargs):
         if 'cwd' not in kwargs:
@@ -157,6 +160,16 @@ class Bisect:
         print("%s: mean=%s, filename=%s"
               % (what, bench.format_value(mean), filename))
 
+    def get_old_bench(self):
+        if self._old_bench is None and os.path.exists(self.old_filename):
+            self._old_bench = perf.Benchmark.load(self.old_filename)
+        return self._old_bench
+
+    def get_new_bench(self):
+        if self._new_bench is None and os.path.exists(self.new_filename):
+            self._new_bench = perf.Benchmark.load(self.new_filename)
+        return self._new_bench
+
     def cmd_status(self):
         print("Bisect status")
         print("=============")
@@ -164,41 +177,32 @@ class Bisect:
         print("Source directory: %s" % self.src_dir)
         print("Work directory: %s" % self.work_dir)
 
-        if os.path.exists(self.old_filename):
-            old_bench = perf.Benchmark.load(self.old_filename)
+        old_bench = self.get_old_bench()
+        new_bench = self.get_new_bench()
+        if old_bench is not None:
             value = old_bench.format_value(old_bench.mean())
             print("Old: mean=%s, commit=%s" % (value, self.conf.old_commit))
         else:
-            old_bench = None
             print("Old: <not computed yet>, commit=%s" % self.conf.old_commit)
 
-        if os.path.exists(self.new_filename):
-            new_bench = perf.Benchmark.load(self.new_filename)
+        if new_bench is not None:
             value = new_bench.format_value(new_bench.mean())
             print("New: mean=%s, commit=%s" % (value, self.conf.new_commit))
         else:
             new_bench = None
             print("New: <not computed yet>, commit=%s" % self.conf.new_commit)
 
-        if old_bench.mean() > new_bench.mean():
-            print("Old > New: speed up, find the first commit "
-                  "which introduced the optimization")
-        else:
-            print("Old < New: slowdown, find the first commit "
-                  "which introduced the performance regression")
+        if old_bench is not None and new_bench is not None:
+            if old_bench.mean() > new_bench.mean():
+                print("Old > New: speed up, find the first commit "
+                      "which introduced the optimization")
+            else:
+                print("Old < New: slowdown, find the first commit "
+                      "which introduced the performance regression")
 
         path = os.path.join(self.json_dir, '*.json')
         files = glob.glob(path)
         print("JSON files: %s" % len(files))
-
-        cmd = ('git', 'bisect', 'visualize')
-        output = self.get_output(*cmd, cwd=self.src_dir)
-
-        commits = 0
-        for line in output.splitlines():
-            if line.startswith('commit '):
-                commits += 1
-        print("Bisect commits: %s" % commits)
 
     def cmd_start(self):
         old_commit = self.conf.old_commit
@@ -369,8 +373,15 @@ class Bisect:
         self.compile_bench(filename)
 
     def bench_compare(self, commit=None):
-        old_bench = perf.Benchmark.load(self.old_filename)
-        new_bench = perf.Benchmark.load(self.new_filename)
+        old_bench = self.get_old_bench()
+        if old_bench is None:
+            print("ERROR: missing old bench: run start command")
+            sys.exit(1)
+
+        new_bench = self.get_new_bench()
+        if new_bench is None:
+            print("ERROR: missing new bench: run start command")
+            sys.exit(1)
 
         bench = self.compile_bench(commit=commit)
 
