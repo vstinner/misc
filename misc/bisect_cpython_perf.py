@@ -239,6 +239,9 @@ class Bisect:
         print()
         self.cmd_status()
 
+        print()
+        print("Now use the 'run' command to run the bisection")
+
     def cmd_run(self):
         if self.get_old_bench() is None or self.get_new_bench() is None:
             print("ERROR: First run the start command")
