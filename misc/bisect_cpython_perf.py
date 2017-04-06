@@ -66,6 +66,9 @@ def parse_config(filename):
                                   '--inherit-environ=PYTHONPATH -p5 -v')
     conf.configure_args = getargs('config', 'configure_args',
                                   '--with-lto')
+    conf.python_path = getstr('config', 'PYTHONPATH', '')
+    if conf.python_path:
+        conf.python_path = normpath(conf.python_path)
     return conf
 
 
@@ -353,7 +356,11 @@ class Bisect:
         cmd += self.conf.benchmark
         cmd += ('-o', filename)
         cmd += self.conf.benchmark_opts
-        if self.run_nocheck(*cmd, cwd=build_dir):
+        if self.conf.python_path is not None:
+            env = dict(os.environ, PYTHONPATH=self.conf.python_path)
+        else:
+            env = None
+        if self.run_nocheck(*cmd, cwd=build_dir, env=env):
             raise BisectError("benchmark failed")
 
         # revert local changes: sometimes, make modifies some files
