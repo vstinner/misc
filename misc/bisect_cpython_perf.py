@@ -68,7 +68,7 @@ def parse_config(filename):
                                   '--with-lto')
     conf.python_path = getstr('config', 'PYTHONPATH', '')
     if conf.python_path:
-        conf.python_path = normpath(conf.python_path)
+        conf.python_path = ':'.join(normpath(path) for path in conf.python_path.split(':'))
     return conf
 
 
@@ -356,7 +356,7 @@ class Bisect:
         cmd += self.conf.benchmark
         cmd += ('-o', filename)
         cmd += self.conf.benchmark_opts
-        if self.conf.python_path is not None:
+        if self.conf.python_path:
             env = dict(os.environ, PYTHONPATH=self.conf.python_path)
         else:
             env = None
