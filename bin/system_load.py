@@ -11,10 +11,7 @@ NEXT_STOP = 5.0
 
 
 def get_system_load():
-    with open('/proc/loadavg', encoding='ascii') as stat_file:
-        line = stat_file.readline()
-    fields = line.split(maxsplit=1)
-    return float(fields[0])
+    return os.getloadavg()[0]
 
 
 def burn_cpu():
