@@ -44,7 +44,9 @@ from __future__ import print_function
 import argparse
 import collections
 import datetime
+import errno
 import functools
+import io
 import ipaddress
 import logging
 import os.path
@@ -256,7 +258,7 @@ class Log(object):
 class TimelineLog(Log):
     def __init__(self, date, msg, filename=None, lineno=None, host=None,
                  level=None):
-        super().__init__(msg, filename, lineno, host, level)
+        super(TimelineLog, self).__init__(msg, filename, lineno, host, level)
         self.date = date
 
     @staticmethod
@@ -273,7 +275,7 @@ class FileParser(object):
 
     def open(self, filename):
         self.filename = filename
-        return open(filename, encoding="utf-8")
+        return io.open(filename, encoding="utf-8")
 
     def iter_lines(self, fp):
         for lineno, line in enumerate(fp, 1):
@@ -357,7 +359,7 @@ class YumLogParser(FileParser):
 
 class MySQLLogParser(FileParser):
     def __init__(self, app):
-        super().__init__(app)
+        super(MySQLLogParser, self).__init__(app)
         self.regex_all, self.regexes = build_regexes(MYSQL_REGEX)
         self.date_regex = re.compile('^[0-9]+ ([0-9]+):([0-9]+):([0-9]+) ')
 
@@ -386,7 +388,7 @@ class MySQLLogParser(FileParser):
 
 class OpenStackLogParser(FileParser):
     def __init__(self, app):
-        super().__init__(app)
+        super(OpenStackLogParser, self).__init__(app)
         regex = r'(20[0-9]{2}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})\.[0-9]{3}'
         self.cleanup_ts_us= re.compile(regex)
         regex = (r'[0-9]+ ERROR ([a-z0-9_]+(?:\.[a-z0-9_]+)* )'
@@ -442,7 +444,7 @@ class OpenStackLogParser(FileParser):
 
 class RabbitMQParser(FileParser):
     def __init__(self, app):
-        super().__init__(app)
+        super(RabbitMQParser, self).__init__(app)
         self.header_regex = re.compile(r'=(?:INFO|WARNING|ERROR) REPORT==== (.*) ===')
         self.regex_all, self.regexes = build_regexes(RABBITMQ_PATTERNS)
         self.raw = app.args.raw
@@ -485,7 +487,7 @@ class RabbitMQParser(FileParser):
                     yield ''.join(lines)
 
                 self.header = line
-                lines.clear()
+                del lines[:]
             else:
                 if not lines:
                     first_line = lineno
@@ -579,7 +581,8 @@ class SOSReportParser(object):
 
     def set_context(self, filename):
         if not self.args.quiet:
-            print("Parse file: %s" % filename, file=sys.stderr, flush=True)
+            print("Parse file: %s" % filename, file=sys.stderr)
+            sys.stderr.flush()
         self.filename = filename
         self.host = self.filename_to_host(filename)
 
@@ -709,7 +712,8 @@ class SOSReportParser(object):
         last = logs[-1].date
         dt = last - first
         if not self.args.quiet:
-            print(file=sys.stderr, flush=True)
+            print(file=sys.stderr)
+            sys.stderr.flush()
 
         print("Timeline: %s - %s (%s)" % (first, last, dt))
         print()
@@ -781,7 +785,7 @@ class SOSReportParser(object):
 
     def get_processes(self, filename):
         processes = []
-        with open(filename, encoding="utf-8") as fp:
+        with io.open(filename, encoding="utf-8") as fp:
             # ignore header line
             fp.readline()
             for line in fp:
@@ -855,7 +859,7 @@ class SOSReportParser(object):
         for filename in self.find_file(self.directory, 'date', max_depth=1):
             self.set_context(filename)
 
-            with open(filename, encoding="utf-8") as fp:
+            with io.open(filename, encoding="utf-8") as fp:
                 line = fp.readline().rstrip()
 
             # Sun Apr 23 15:26:02 UTC 2017
@@ -885,7 +889,11 @@ class SOSReportParser(object):
     def main(self):
         try:
             self._main()
-        except BrokenPipeError:
+        except OSError as exc:
+            # catch BrokenPipeError
+            if exc.errno != erro.EPIPE:
+                raise
+
             # Close stdout and stderr to prevent Python warning at exit
             try:
                 sys.stdout.close()
