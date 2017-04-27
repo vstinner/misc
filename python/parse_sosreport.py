@@ -200,23 +200,33 @@ def join_path(path, name):
         return name
 
 
-def _find_file(path, filename, result, max_depth, depth=0):
-    for entry_name in os.listdir(path):
-        fullname = join_path(path, entry_name)
-        if os.path.isdir(fullname):
-            if max_depth is None or depth < max_depth:
-                _find_file(fullname, filename, result, max_depth, depth + 1)
-        elif entry_name == filename:
-            result.append(fullname)
+def _find_file(path, filename, result, max_depth):
+    if max_depth is not None and max_depth != 1:
+        raise ValueError("only max_depth=None or max_depth=1 are supported")
 
+    for rootdir, dirnames, filenames in os.walk(path):
+        for name in filenames:
+            if name == filename:
+                fullname = join_path(rootdir, name)
+                result.append(fullname)
+
+        if max_depth is not None:
+            depth = max_depth
+            testdir = rootdir
+            while testdir != path:
+                depth -= 1
+                if depth < 0:
+                    # don't go deeper
+                    del dirnames[:]
+                    break
+                testdir = os.path.dirname(testdir)
 
 def _find_directory(path, directory, result):
-    for entry_name in os.listdir(path):
-        fullname = join_path(path, entry_name)
-        if fullname.endswith(directory):
-            result.append(fullname)
-        elif os.path.isdir(fullname):
-            _find_directory(fullname, directory, result)
+    for rootdir, dirnames, filenames in os.walk(path):
+        for dirname in dirnames:
+            fullname = join_path(rootdir, dirname)
+            if fullname.endswith(directory):
+                result.append(fullname)
 
 
 class Log(object):
