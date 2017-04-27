@@ -867,6 +867,9 @@ class SOSReportParser(object):
 
     def get_date(self):
         for filename in self.find_file(self.directory, 'date', max_depth=1):
+            if os.path.basename(os.path.dirname(filename)) == 'bin':
+                # skip bin/date
+                continue
             self.set_context(filename)
 
             with io.open(filename, encoding="utf-8") as fp:
