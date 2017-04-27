@@ -865,7 +865,7 @@ class SOSReportParser(object):
             break
 
         if not self.args.quiet:
-            print("Set fixup date to %s" % date, file=sys.stderr)
+            print("Set fixup date to %s" % self.fixup_date, file=sys.stderr)
 
     def _main(self):
         self.parse_args()
