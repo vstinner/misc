@@ -1497,7 +1497,8 @@ class RepositoryGIT(Repository):
         pull = self._gitcmd(GIT_PULL)
         if self.application.verbose:
             pull += ('--verbose',)
-        self.run(pull, suffix=" # %s" % self.url, verbose=False)
+        url = self.get_url()
+        self.run(pull, suffix=" # %s" % url, verbose=False)
 
     def pull(self):
         self.print_text('Pull')
