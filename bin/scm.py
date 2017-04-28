@@ -112,25 +112,23 @@ HG_BRANCH = (HG_PROGRAM, 'branch')
 HG_LIST_BRANCHES = (HG_PROGRAM, 'branches')
 HG_LIST_TAGS = (HG_PROGRAM, 'tags')
 
-GIT_PULL = (GIT_PROGRAM, 'pull', '--rebase')
-GIT_ADD = (GIT_PROGRAM, 'add')
-GIT_COMMIT = (GIT_PROGRAM, 'commit', '-v', '--untracked-files=no')
-GIT_STATUS = (GIT_PROGRAM, 'status')
-GIT_STATUS_PORCELAIN = (GIT_PROGRAM, 'status', '--porcelain')
+GIT_PULL = ('pull', '--rebase')
+GIT_ADD = ('add',)
+GIT_COMMIT = ('commit', '-v', '--untracked-files=no')
+GIT_STATUS_PORCELAIN = ('status', '--porcelain')
 GIT_CLONE = (GIT_PROGRAM, 'clone')
-GIT_LIST_BRANCHES = (GIT_PROGRAM, 'branch', '-l')
-GIT_LIST_TAGS = (GIT_PROGRAM, 'tag', '-l')
-GIT_GREP = (GIT_PROGRAM, 'grep', '-n')
-GIT_GET_BRANCH = (GIT_PROGRAM, 'branch')
-GIT_STASH = (GIT_PROGRAM, 'stash')
-GIT_UNSTASH = (GIT_PROGRAM, 'stash', 'pop')
-GIT_REBASE_I = (GIT_PROGRAM, 'rebase', '-i')
-GIT_PUSH = (GIT_PROGRAM, 'push')
-GIT_REVERT_ALL = (GIT_PROGRAM, 'reset', '--hard')
-GIT_REVERT_1 = (GIT_PROGRAM, 'reset', 'HEAD')
-GIT_REVERT_2 = (GIT_PROGRAM, 'checkout', '--')
-GIT_DIFF = (GIT_PROGRAM, 'diff')
-GIT_LIST_FILES = (GIT_PROGRAM, 'ls-files')
+GIT_LIST_BRANCHES = ('branch', '-l')
+GIT_LIST_TAGS = ('tag', '-l')
+GIT_GET_BRANCH = ('branch',)
+GIT_STASH = ('stash',)
+GIT_UNSTASH = ('stash', 'pop')
+GIT_REBASE_I = ('rebase', '-i')
+GIT_PUSH = ('push',)
+GIT_REVERT_ALL = ('reset', '--hard')
+GIT_REVERT_1 = ('reset', 'HEAD')
+GIT_REVERT_2 = ('checkout', '--')
+GIT_DIFF = ('diff',)
+GIT_LIST_FILES = ('ls-files',)
 
 SHELL_REGEX = re.compile("^[a-zA-Z0-9_-]*$")
 
@@ -444,7 +442,7 @@ class Application:
             if not destdir.startswith(filter_path):
                 return
         klass = SCM_CLASSES[scm]
-        repository = klass(self, destdir, url)
+        repository = klass(self, destdir, url=url)
         self.repositories.append(repository)
 
     def read_config(self, filename, filter_path=None):
@@ -669,9 +667,9 @@ class Application:
 class Repository:
     SCM = None
 
-    def __init__(self, application, directory, url):
+    def __init__(self, application, directory, url=None):
         self.application = application
-        self.url = url
+        self._url = url
         # directory is relative to application.root
         self.root = os.path.realpath(os.path.join(self.application.root, directory))
         if self.root != self.application.start_directory:
@@ -685,6 +683,14 @@ class Repository:
         else:
             name = self.relpath
         self.name = name
+
+    def get_url(self):
+        if self._url is None:
+            url = self._get_url()
+            if url is None:
+                url = ''
+            self._url = url
+        return self._url
 
     def relative_filenames(self, filenames):
         return tuple(os.path.relpath(filename, self.root) for filename in filenames)
@@ -833,8 +839,9 @@ class Repository:
         print("scm = %s" % self.SCM)
         print("has local changes? %s" % self.has_local_changes())
         print("root = %s" % self.root)
-        if self.url is not None:
-            print("url = %s" % self.url)
+        url = self.get_url()
+        if url is not None:
+            print("url = %s" % url)
         print("")
 
     def exists(self):
@@ -1118,7 +1125,7 @@ class Repository:
 class RepositoryHG(Repository):
     SCM = 'hg'
 
-    def __init__(self, application, directory, url):
+    def __init__(self, application, directory, url=None):
         Repository.__init__(self, application, directory, url)
         self.stash_file = os.path.join(self.root, '.hg', STASH_FILENAME)
 
@@ -1127,20 +1134,20 @@ class RepositoryHG(Repository):
         hgdir = os.path.join(directory, '.hg')
         if not os.path.isdir(hgdir):
             return None
-        url = None
-        if os.path.exists(hgdir):
-            hgrc = os.path.join(hgdir, 'hgrc')
-            try:
-                parser = RawConfigParser()
-                parser.read(hgrc)
-                url = parser.get('paths', 'default')
-            except NoSectionError:
-                pass
-            except Exception as err:
-                print("WARNING: Fail to parse %s: %s" % (hgrc, err),
-                      file=sys.stderr)
-        return RepositoryHG(application, directory, url)
+        return RepositoryHG(application, directory)
 
+    def _get_url(self):
+        hgrc = os.path.join(hgdir, 'hgrc')
+        parser = RawConfigParser()
+        try:
+            parser.read(hgrc)
+            return parser.get('paths', 'default')
+        except NoSectionError:
+            return None
+        except Exception as err:
+            print("WARNING: Fail to parse %s: %s" % (hgrc, err),
+                  file=sys.stderr)
+            return None
 
     def process_status(self, output):
         lines = output.splitlines()
@@ -1350,32 +1357,54 @@ class RepositoryHG(Repository):
 class RepositoryGIT(Repository):
     SCM = 'git'
 
-    @classmethod
-    def parse(cls, application, directory):
-        gitconfig = os.path.join(directory, '.git', 'config')
+    def __init__(self, application, directory, url=None, gitdir=None):
+        Repository.__init__(self, application, directory, url)
+        if gitdir is None:
+            gitdir = os.path.join(directory, '.git')
+        self.gitdir = gitdir
+
+    def _get_url(self):
+        gitconfig = os.path.join(self.gitdir, 'config')
         if not os.path.exists(gitconfig):
             return None
+
         with open(gitconfig) as fp:
             lines = [line.strip() for line in fp]
+
         try:
             content = StringIO('\n'.join(lines))
             parser = RawConfigParser()
             parser.readfp(content)
-            url = parser.get('remote "origin"', 'url')
+            return parser.get('remote "origin"', 'url')
         except Exception as err:
             print("WARNING: Fail to parse %s: %s" % (gitconfig, err),
                   file=sys.stderr)
-            url = None
-        return RepositoryGIT(application, directory, url)
+            return None
+
+    @classmethod
+    def parse(cls, application, directory):
+        gitdir = os.path.join(directory, '.git')
+        if os.path.exists(gitdir) and not os.path.isdir(gitdir):
+            with open(gitdir) as fp:
+                line = fp.readline().rstrip()
+
+            if line.startswith('gitdir: '):
+                gitdir = line[8:]
+
+        filename = os.path.join(gitdir, 'index')
+        if not os.path.exists(filename):
+            return None
+
+        return RepositoryGIT(application, directory, gitdir=gitdir)
 
     def list_branches(self):
-        self.run(GIT_LIST_BRANCHES)
+        self.run(self._gitcmd(GIT_LIST_BRANCHES))
 
     def list_tags(self):
-        self.run(GIT_LIST_TAGS)
+        self.run(self._gitcmd(GIT_LIST_TAGS))
 
     def has_local_changes(self):
-        exitcode, stdout = self.get_status_output(GIT_STATUS_PORCELAIN)
+        exitcode, stdout = self.get_status_output(self._gitcmd(GIT_STATUS_PORCELAIN))
         for line in stdout.splitlines():
             if line.startswith("?"):
                 continue
@@ -1383,7 +1412,7 @@ class RepositoryGIT(Repository):
         return False
 
     def get_branch(self):
-        stdout = self.get_output(GIT_GET_BRANCH)
+        stdout = self.get_output(self._gitcmd(GIT_GET_BRANCH))
         branch = None
         for line in stdout.splitlines():
             if line.startswith('* '):
@@ -1398,13 +1427,13 @@ class RepositoryGIT(Repository):
         print("branch = %s" % branch)
 
     def add(self, args):
-        self.run(GIT_ADD + args, verbose=False)
+        self.run(self._gitcmd(GIT_ADD + args), verbose=False)
 
     def out(self, display_if_empty=True):
-        git_out = (GIT_PROGRAM, 'log',
-                   '@{upstream}..',
-                   "--pretty=format:%Cred%h%Creset %s",
-                   "--color=%s" % COLORS)
+        git_out = self._gitcmd(('log',
+                                '@{upstream}..',
+                                "--pretty=format:%Cred%h%Creset %s",
+                                "--color=%s" % COLORS))
 
         if display_if_empty:
             self.print_text("Output commits")
@@ -1418,15 +1447,15 @@ class RepositoryGIT(Repository):
             self.write_output(git_out, stdout)
 
     def commit(self, args):
-        self.run(GIT_COMMIT + args, quiet=True, set_exitcode=True)
+        self.run(self._gitcmd(GIT_COMMIT + args), quiet=True, set_exitcode=True)
 
     def status(self, args):
         if args:
             args = self.relative_filenames(args)
-            args = GIT_STATUS_PORCELAIN + args
+            args = self._gitcmd(GIT_STATUS_PORCELAIN + args)
             exitcode, stdout = self.get_status_output(args)
         else:
-            args = GIT_STATUS_PORCELAIN
+            args = self._gitcmd(GIT_STATUS_PORCELAIN)
             exitcode, stdout = self.get_status_output(args)
         if not self.application.verbose:
             # filter files
@@ -1455,7 +1484,7 @@ class RepositoryGIT(Repository):
         self.run(GIT_CLONE + (self.url, self.root), cwd=None)
 
     def _pull(self):
-        pull = GIT_PULL
+        pull = self._gitcmd(GIT_PULL)
         if self.application.verbose:
             pull += ('--verbose',)
         self.run(pull, suffix=" # %s" % self.url, verbose=False)
@@ -1471,14 +1500,14 @@ class RepositoryGIT(Repository):
         Return True if there was local changes and a stash file has been
         created.
         """
-        text = format_shell_args(GIT_STASH)
+        text = format_shell_args(self._gitcmd(GIT_STASH))
         if verbose:
             self.print_text(text)
         else:
             self.info_text(text)
-        stdout = self.get_output(GIT_STASH)
+        stdout = self.get_output(self._gitcmd(GIT_STASH))
         if verbose:
-            self.write_output(GIT_STASH, stdout)
+            self.write_output(self._gitcmd(GIT_STASH), stdout)
         return ("No local changes to save" not in stdout)
 
     def unstash(self, verbose=True):
@@ -1486,7 +1515,7 @@ class RepositoryGIT(Repository):
         Return True if there was local changes and a stash file has been
         created.
         """
-        exitcode = self.run(GIT_UNSTASH, ignore_exitcode=True)
+        exitcode = self.run(self._gitcmd(GIT_UNSTASH), ignore_exitcode=True)
         if exitcode:
             return False
         else:
@@ -1494,29 +1523,29 @@ class RepositoryGIT(Repository):
 
     def diff(self, args):
         args = self.relative_filenames(args)
-        cmd = GIT_DIFF + args
+        cmd = self._gitcmd(GIT_DIFF) + args
         self.run(cmd, quiet=not self.application.verbose)
 
     def histedit(self, revision):
         self.print_text("Histedit %s" % revision)
         with self.revert_local_changes():
-            self.run(GIT_REBASE_I + (revision,),
+            self.run(self._gitcmd(GIT_REBASE_I + (revision,)),
                      verbose=False, set_exitcode=True)
 
     def tag_contains(self, revision):
-        args = (GIT_PROGRAM, 'tag', '--contains', revision)
+        args = self._gitcmd(('tag', '--contains', revision))
         self.run(args)
 
     def push(self):
         self.print_text("Push")
         with self.revert_local_changes():
             self._pull()
-        self.run(GIT_PUSH, verbose=False)
+        self.run(self._gitcmd(GIT_PUSH), verbose=False)
         print("")
 
     def get_modified_files(self):
         filenames = []
-        exitcode, stdout = self.get_status_output(GIT_STATUS_PORCELAIN)
+        exitcode, stdout = self.get_status_output(self._gitcmd(GIT_STATUS_PORCELAIN))
         if 'working directory clean' in stdout:
             return filenames
         for line in stdout.splitlines():
@@ -1528,7 +1557,7 @@ class RepositoryGIT(Repository):
 
     def get_untracked_files(self):
         filenames = []
-        exitcode, stdout = self.get_status_output(GIT_STATUS_PORCELAIN)
+        exitcode, stdout = self.get_status_output(self._gitcmd(GIT_STATUS_PORCELAIN))
         if 'working directory clean' in stdout:
             return filenames
         for line in stdout.splitlines():
@@ -1540,15 +1569,18 @@ class RepositoryGIT(Repository):
 
     def revert(self, args):
         if not args:
-            self.run(GIT_REVERT_ALL)
+            self.run(self._gitcmd(GIT_REVERT_ALL))
         else:
             self.print_text("Revert %s" % format_shell_args(args))
             args = self.relative_filenames(args)
-            self.run(GIT_REVERT_1 + args, ignore_exitcode=True, verbose=False)
-            self.run(GIT_REVERT_2 + args, verbose=False)
+            self.run(self._gitcmd(GIT_REVERT_1 + args), ignore_exitcode=True, verbose=False)
+            self.run(self._gitcmd(GIT_REVERT_2 + args), verbose=False)
+
+    def _gitcmd(self, cmd):
+        return (GIT_PROGRAM,) + ('--git-dir', self.gitdir) + cmd
 
     def _get_existing_files(self):
-        output = self.get_output(GIT_LIST_FILES)
+        output = self.get_output(self._gitcmd(GIT_LIST_FILES))
         output = output.strip()
         return output.splitlines()
 
