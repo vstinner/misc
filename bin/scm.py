@@ -54,6 +54,8 @@ import re
 import shutil
 import subprocess
 import sys
+from shutil import rmtree
+
 try:
     # Python 3
     from configparser import RawConfigParser, NoSectionError
@@ -66,14 +68,12 @@ except ImportError:
         from cStringIO import StringIO
     except ImportError:
         from StringIO import StringIO
-if sys.hexversion >= 0x03030000: # Python 3.3 or later
+if sys.hexversion >= 0x03030000:  # Python 3.3 or later
     import shlex
-from shutil import rmtree
 
 CLEAN_SUFFIXES = ('.orig', '.rej', '.bak', '.pyc', '.pyo')
 
 COLORS = "always" if sys.stdout.isatty() else 'never'
-#COLORS = "always"
 assert COLORS in ("always", "never")
 STATUS_IGNORE_EXT = ".swp"
 STATUS_IGNORE_FILES = set(("tags",))
@@ -132,16 +132,19 @@ GIT_LIST_FILES = ('ls-files',)
 
 SHELL_REGEX = re.compile("^[a-zA-Z0-9_-]*$")
 
+
 def format_shell_arg(arg):
     if sys.hexversion >= 0x03030000:
         return shlex.quote(arg)
-    elif SHELL_REGEX.match(arg): # No quoting necessary
+    elif SHELL_REGEX.match(arg):  # No quoting necessary
         return arg
-    else:                        # Safe quoting
+    else:                         # Safe quoting
         return "'%s'" % arg.replace("'", "'\"'\"'")
+
 
 def format_shell_args(args):
     return ' '.join(format_shell_arg(arg) for arg in args)
+
 
 def filesystem_sync():
     exitcode = subprocess.call('sync')
@@ -149,9 +152,11 @@ def filesystem_sync():
         print("sync failed: exit code %s" % exitcode)
         sys.exit(exitcode)
 
+
 ANSI_COLORS = re.escape("\x1B[") + "[0-9;]*[a-zA-Z]"
 ANSI_COLORS = "(?:%s)*" % ANSI_COLORS
 ANSI_COLORS = re.compile("^(%s)(.*?)(%s)$" % (ANSI_COLORS, ANSI_COLORS))
+
 
 if not hasattr(os.path, 'relpath'):
     # Backport from Python 2.7 for Python < 2.6
@@ -173,6 +178,7 @@ if not hasattr(os.path, 'relpath'):
         return os.path.join(*rel_list)
     os.path.relpath = relpath
 
+
 def split_ansi_colors(text):
     r"""
     >>> split_ansi_colors('\x1b[35m\x1b[Kprofile/packages\x1b[m\x1b[K\x1b[36m\x1b[K')
@@ -183,6 +189,7 @@ def split_ansi_colors(text):
         raise ValueError("Failed to find colors in %r" % text)
     return m.groups()
 
+
 def ask_confirmation(prompt):
     try:
         answer = raw_input(prompt)
@@ -192,6 +199,7 @@ def ask_confirmation(prompt):
     else:
         answer = answer.strip().lower()
     return answer
+
 
 class Application:
     def __init__(self):
@@ -523,7 +531,7 @@ class Application:
                 print("Unable to find %s" % CONFIG_FILENAME)
                 sys.exit(1)
             print("Unable to find %s or to locate a SCM in %s"
-                   % (CONFIG_FILENAME, self.start_directory))
+                  % (CONFIG_FILENAME, self.start_directory))
             sys.exit(1)
 
     def stash(self):
@@ -656,7 +664,7 @@ class Application:
         self.repositories.sort(key=lambda repository: repository.name)
         for repository in self.repositories:
             print("%s: %s=%s"
-                   % (repository.name, repository.SCM, repository.url))
+                  % (repository.name, repository.SCM, repository.url))
         print(file=sys.stderr)
         print("Found %s repositories" % len(self.repositories), file=sys.stderr)
         if ignored:
@@ -1043,7 +1051,7 @@ class Repository:
             print(file)
         return True
 
-    #--- abstract methods ---
+    # --- abstract methods ---
 
     def revert(self, args):
         raise NotImplementedError()
@@ -1105,8 +1113,8 @@ class Repository:
         on disk (e.g. ignore removed files).
         """
         files = self._get_existing_files()
-        if self.application.start_directory != self.root \
-        and not self.root.startswith(self.application.start_directory):
+        if (self.application.start_directory != self.root
+           and not self.root.startswith(self.application.start_directory)):
             prefix = os.path.relpath(self.application.start_directory, self.root)
             if not prefix.endswith(os.sep):
                 prefix += os.sep
@@ -1121,6 +1129,7 @@ class Repository:
 
     def _get_existing_files(self):
         raise NotImplementedError()
+
 
 class RepositoryHG(Repository):
     SCM = 'hg'
@@ -1137,7 +1146,7 @@ class RepositoryHG(Repository):
         return RepositoryHG(application, directory)
 
     def _get_url(self):
-        hgrc = os.path.join(hgdir, 'hgrc')
+        hgrc = os.path.join(self.root, '.hg', 'hgrc')
         parser = RawConfigParser()
         try:
             parser.read(hgrc)
@@ -1160,8 +1169,8 @@ class RepositoryHG(Repository):
                     continue
                 if filename in STATUS_IGNORE_FILES:
                     continue
-            if 3 <= len(line) \
-            and line.startswith((b"? ", b"M ", b"A ")):
+            if (3 <= len(line)
+               and line.startswith((b"? ", b"M ", b"A "))):
                 filename = os.path.join(self.root, line[2:])
                 filename = os.path.relpath(filename, self.application.start_directory)
                 line = line[:2] + filename
@@ -1330,8 +1339,8 @@ class RepositoryHG(Repository):
     def tag_contains(self, revision):
         revset = "reverse(descendants(%s)) and tag()" % revision
         args = (HG_PROGRAM, 'log',
-                    '-r', revset,
-                    '--template', r'{tags}\t{rev}:{node|short}\n')
+                '-r', revset,
+                '--template', r'{tags}\t{rev}:{node|short}\n')
         self.run(args)
 
     def revert(self, args):
@@ -1353,6 +1362,7 @@ class RepositoryHG(Repository):
         output = self.get_output(cmd)
         output = output.strip()
         return output.splitlines()
+
 
 class RepositoryGIT(Repository):
     SCM = 'git'
@@ -1584,7 +1594,9 @@ class RepositoryGIT(Repository):
         output = output.strip()
         return output.splitlines()
 
+
 SCM_CLASSES = dict((klass.SCM, klass) for klass in (RepositoryHG, RepositoryGIT))
+
 
 def usage():
     print("usage: %s command" % sys.argv[0])
@@ -1594,6 +1606,6 @@ def usage():
         print(' - ' + commands)
     sys.exit(1)
 
+
 if __name__ == "__main__":
     Application().main()
-
