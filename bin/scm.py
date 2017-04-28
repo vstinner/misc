@@ -1370,7 +1370,7 @@ class RepositoryGIT(Repository):
     def __init__(self, application, directory, url=None, gitdir=None):
         Repository.__init__(self, application, directory, url)
         if gitdir is None:
-            gitdir = os.path.join(directory, '.git')
+            gitdir = os.path.join(self.root, '.git')
         self.gitdir = gitdir
 
     def _get_url(self):
@@ -1588,7 +1588,10 @@ class RepositoryGIT(Repository):
             self.run(self._gitcmd(GIT_REVERT_2 + args), verbose=False)
 
     def _gitcmd(self, cmd):
-        return (GIT_PROGRAM,) + ('--git-dir', self.gitdir) + cmd
+        if self.gitdir:
+            return (GIT_PROGRAM, '--git-dir', self.gitdir) + cmd
+        else:
+            return (GIT_PROGRAM,) + cmd
 
     def _get_existing_files(self):
         output = self.get_output(self._gitcmd(GIT_LIST_FILES))
