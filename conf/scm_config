@@ -1,5 +1,5 @@
 # Format: "directory: scm=url"
-GIT/asyncio-doc: git=git@github.com:haypo/asyncio-doc.git
+GIT/asyncio-doc: git=git@github.com:asyncio-doc/asyncio-doc.git
 GIT/bytecode: git=git@github.com:haypo/bytecode.git
 GIT/conf: git=git@github.com:haypo/conf.git
 GIT/faster_cpython: git=git@github.com:haypo/faster_cpython.git
@@ -24,7 +24,9 @@ old_python/git_cpython: git=git@github.com:python/cpython.git
 old_python/git_cpython.copy: git=git@github.com:python/cpython.git
 
 python/codespeed: git=https://github.com/tobami/codespeed/
-python/for_bench: git=git@github.com:python/cpython.git
+python/2.7: git=git@github.com:python/cpython.git
+python/3.5: git=git@github.com:python/cpython.git
+python/3.6: git=git@github.com:python/cpython.git
 python/master: git=git@github.com:python/cpython.git
 python/mercurial: hg=ssh://hg@hg.python.org/cpython
 python/peps: git=git@github.com:python/peps.git
