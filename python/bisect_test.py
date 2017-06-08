@@ -30,12 +30,12 @@ def run_tests(test_name, tests):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('test_name', metavar='FILENAME',
+    parser.add_argument('test_name',
                         help='Test name like test_threading')
-    parser.add_argument('input', metavar='FILENAME',
+    parser.add_argument('input',
                         help='Test names produced by --list-tests written '
                              'into a file')
-    parser.add_argument('output', metavar='FILENAME',
+    parser.add_argument('output',
                         help='Result of the bisection')
     parser.add_argument('-n', '--max-tests', type=int, default=1,
                         help='Maximum number of tests to stop the bisection '
