@@ -16,16 +16,19 @@ def write_tests(filename, tests):
 
 
 def run_tests(test_name, tests):
-    # FIXME: use try/finally unlink using tempfile.mktemp() for Windows
-    with tempfile.NamedTemporaryFile() as tmp:
-        write_tests(tmp.name, tests)
+    tmp = tempfile.mktemp()
+    try:
+        write_tests(tmp, tests)
 
         cmd = [sys.executable, '-m', 'test',
-               '--matchfile', tmp.name,
+               '--matchfile', tmp,
                '-R', '3:3',
                test_name]
         proc = subprocess.run(cmd)
         return proc.returncode
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
 
 
 def parse_args():
@@ -53,7 +56,13 @@ def main():
         ntest = len(tests)
         ntest = max(ntest // 2, 1)
         subtests = random.sample(tests, ntest)
-        exitcode = run_tests(args.test_name, subtests)
+        try:
+            exitcode = run_tests(args.test_name, subtests)
+        except KeyboardInterrupt:
+            print()
+            print("Interrupted, exit")
+            return
+
         print("ran %s tests/%s" % (ntest, len(tests)))
         print("exit", exitcode)
         if exitcode:
