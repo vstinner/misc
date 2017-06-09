@@ -24,6 +24,7 @@ FILES = (
     'upload_private.sh',
     'upload_tmp.sh',
     'cherry_picker.py',
+    'gh_pr.sh',
 )
 
 def main():
