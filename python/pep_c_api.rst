@@ -12,10 +12,15 @@ Created: 31-May-2017
 Abstract
 ========
 
-Write a new A CPI with no implementation detail and use make C extensions use
+Write a new A C API with no implementation detail and use make C extensions use
 this API by default. Add an opt-in option to compile C extensions with the full
 API.
 
+The new C API allows to more easily experiment new optimizations:
+
+* Indirect Reference Counting
+* Remove Reference Counting, New Garbage Collector
+* Remove the GIL
 
 Rationale
 =========
@@ -54,6 +59,47 @@ PyPy
 PyPy uses more efficient structures and use a more efficient garbage collector
 without reference counting. Thanks to that, PyPy succeeded to run Python code
 up to 5x faster than CPython.
+
+
+Indirect Reference Counting
+===========================
+
+* Replace ``Py_ssize_t ob_refcnt;`` (integer) with ``Py_ssize_t *ob_refcnt;``
+  (pointer).
+* Store all reference counters in a separated memory block
+* Smaller memory footprint when using fork() on UNIX which is implemented with
+  Copy-On-Write and physical memory pages.
+
+
+Remove Reference Counting, New Garbage Collector
+================================================
+
+If the new C API hides well all implementation details, it becomes possible to
+change fundamental features like how CPython tracks the lifetime of an object.
+
+* Remove ``Py_ssize_t ob_refcnt;`` from the PyObject structure
+* Replace the current XXX garbage collector with a new tracing garbage
+  collector
+* Use new macros to define a variable storing an objeet and to set the value of
+  an object
+* Reimplement Py_INCREF() and Py_DECREF() on top of that using a hash table:
+  object => reference counter.
+
+XXX PyPy is only partially successful on that project.
+
+
+Remove the GIL
+==============
+
+* Don't remove the GIL, but replace the GIL with smaller locks
+* Builtin mutable types: list, set, dict
+* Modules
+* Classes
+* etc.
+
+Backward compatibility:
+
+* Keep the GIL
 
 
 Copyright
