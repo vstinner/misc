@@ -102,6 +102,20 @@ Backward compatibility:
 * Keep the GIL
 
 
+Tagged pointers
+===============
+
+https://en.wikipedia.org/wiki/Tagged_pointer
+
+Common optimization, especially used for "small integers".
+
+Current C API doesn't allow to implement tagged pointers.
+
+Note: ARM64 was recently extended its address space to 48 bits, causing issue
+in LuaJIT: `47 bit address space restriction on ARM64
+<https://github.com/LuaJIT/LuaJIT/issues/49>`_.
+
+
 Copyright
 =========
 
