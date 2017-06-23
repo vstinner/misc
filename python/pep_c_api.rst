@@ -21,6 +21,7 @@ The new C API allows to more easily experiment new optimizations:
 * Indirect Reference Counting
 * Remove Reference Counting, New Garbage Collector
 * Remove the GIL
+* Tagged pointers
 
 Rationale
 =========
@@ -110,6 +111,8 @@ https://en.wikipedia.org/wiki/Tagged_pointer
 Common optimization, especially used for "small integers".
 
 Current C API doesn't allow to implement tagged pointers.
+
+Tagged pointers are used in MicroPython to reduce the memory footprint.
 
 Note: ARM64 was recently extended its address space to 48 bits, causing issue
 in LuaJIT: `47 bit address space restriction on ARM64
