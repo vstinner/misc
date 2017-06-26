@@ -123,12 +123,14 @@ def main():
     iteration = 1
     try:
         while len(tests) > args.max_tests and iteration <= args.max_iter:
-            print("[+] Iteration %s: %s tests" % (iteration, len(tests)))
-            print()
-
             ntest = len(tests)
             ntest = max(ntest // 2, 1)
             subtests = random.sample(tests, ntest)
+
+            print("[+] Iteration %s: run %s tests/%s"
+                  % (iteration, len(subtests), len(tests)))
+            print()
+
             exitcode = run_tests(args, subtests)
 
             print("ran %s tests/%s" % (ntest, len(tests)))
