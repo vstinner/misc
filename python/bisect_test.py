@@ -88,6 +88,9 @@ def parse_args():
     parser.add_argument('-n', '--max-tests', type=int, default=1,
                         help='Maximum number of tests to stop the bisection '
                              '(default: 1)')
+    parser.add_argument('-N', '--max-iter', type=int, default=100,
+                        help='Maximum number of bisection iterations '
+                             '(default: 100)')
     #parser.add_argument('test_args', action='append',
     #                    help='Parameters of python -m test, ex: -R 3:3 test_os')
 
@@ -109,13 +112,23 @@ def main():
 
     print("Start bisecting with %s tests" % len(tests))
     print("Test arguments: %s" % format_shell_args(args.test_args))
-    print("Bisection will stop when getting %s or less tests (-n option)"
-          % args.max_tests)
+    print("Bisection will stop when getting %s or less tests "
+          "(-n/--max-tests option), or after %s iterations "
+          "(-N/--max-iter option)"
+          % (args.max_tests, args.max_iter))
     print()
 
     start_time = time.monotonic()
     iteration = 1
-    while len(tests) > args.max_tests:
+    while True:
+        if len(tests) <= args.max_tests:
+            break
+
+        if iteration > args.max_iter:
+            print("Bisection failed to complete after %s iterations"
+                  % iteration)
+            sys.exit(1)
+
         print("[+] Iteration %s: %s tests" % (iteration, len(tests)))
         print()
 
