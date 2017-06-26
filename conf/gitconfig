@@ -10,6 +10,7 @@ email = victor.stinner@gmail.com
 glog = log --graph
 out = log '@{upstream}..' --pretty='format:%Cred%h%Creset %s' --color --reverse
 amend = commit -v --untracked-files=no --amend --all
+b = branch
 ci = commit -v --untracked-files=no
 co = checkout
 st = status
