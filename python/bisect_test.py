@@ -90,9 +90,9 @@ def parse_args():
     parser.add_argument('-n', '--max-tests', type=int, default=1,
                         help='Maximum number of tests to stop the bisection '
                              '(default: 1)')
-    parser.add_argument('-N', '--max-iter', type=int, default=25,
+    parser.add_argument('-N', '--max-iter', type=int, default=100,
                         help='Maximum number of bisection iterations '
-                             '(default: 25)')
+                             '(default: 100)')
     #parser.add_argument('test_args', action='append',
     #                    help='Parameters of python -m test, ex: -R 3:3 test_os')
 
