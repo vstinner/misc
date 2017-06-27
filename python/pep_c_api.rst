@@ -174,9 +174,12 @@ Indirect Reference Counting
 
 * Replace ``Py_ssize_t ob_refcnt;`` (integer) with ``Py_ssize_t *ob_refcnt;``
   (pointer).
+* Same change for GC headers?
 * Store all reference counters in a separated memory block
 * Smaller memory footprint when using fork() on UNIX which is implemented with
   Copy-On-Write and physical memory pages.
+
+See https://engineering.instagram.com/dismissing-python-garbage-collection-at-instagram-4dca40b29172
 
 
 Remove Reference Counting, New Garbage Collector
@@ -188,7 +191,7 @@ change fundamental features like how CPython tracks the lifetime of an object.
 * Remove ``Py_ssize_t ob_refcnt;`` from the PyObject structure
 * Replace the current XXX garbage collector with a new tracing garbage
   collector
-* Use new macros to define a variable storing an objeet and to set the value of
+* Use new macros to define a variable storing an object and to set the value of
   an object
 * Reimplement Py_INCREF() and Py_DECREF() on top of that using a hash table:
   object => reference counter.
