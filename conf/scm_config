@@ -23,12 +23,10 @@ GIT/unicode_book: git=git@github.com:haypo/unicode_book.git
 old_python/git_cpython: git=git@github.com:python/cpython.git
 old_python/git_cpython.copy: git=git@github.com:python/cpython.git
 
-python/codespeed: git=https://github.com/tobami/codespeed/
 python/2.7: git=git@github.com:python/cpython.git
 python/3.5: git=git@github.com:python/cpython.git
 python/3.6: git=git@github.com:python/cpython.git
 python/master: git=git@github.com:python/cpython.git
-python/mercurial: hg=ssh://hg@hg.python.org/cpython
 python/peps: git=git@github.com:python/peps.git
 python/performance: git=git@github.com:python/performance.git
 
