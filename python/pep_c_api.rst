@@ -62,8 +62,115 @@ without reference counting. Thanks to that, PyPy succeeded to run Python code
 up to 5x faster than CPython.
 
 
+Plan made in multiple small steps
+=================================
+
+Step 1: split Include/ into subdirectories
+------------------------------------------
+
+Split the ``Include/`` directory of CPython:
+
+* ``python`` API: Include/Python.h remains the default C API
+* ``core`` API: Include/core/Python.h is a new C API designed for building Python
+* ``stable`` API: Include/stable/Python.h is the stable ABI
+
+Expect declarations to be duplicated on purpose: ``#include`` should be not
+used to include files from a different API to prevent mistakes. In the past,
+too many functions were exposed *by mistake*, especially symbols exported to
+the stable ABI by mistake.
+
+At this point, ``Include/Python.h`` is not changed at all: zero risk of
+backward incompatibility.
+
+The ``core`` API is the most complete API exposing *all* implemenation details
+and use macros for best performances.
+
+
+Step 2: Add an opt-in API option to tools building packages
+-----------------------------------------------------------
+
+Modify Python packaging tools (distutils, setuptools, flit, pip, etc.) to add
+an opt-in option to choose the API: ``python``, ``core`` or ``stable``.
+
+Debuggers may already want to use the ``core`` API to get a full access to
+implementation details.
+
+XXX handle backward compatibility for packaging tools.
+
+Step 3: first pass of implementation detail removal
+---------------------------------------------------
+
+Modify the ``python`` API:
+
+* Add a new ``API`` subdirectory in the Python source code which will
+  "implement" the Python C API
+* Replace macros with functions. The implementation of new functions will be
+  written in the ``API/`` directory.
+* Slowly remove more and more implementation details from this API.
+
+Modifications of these API should be driven by tests with third party code like:
+
+* Django with database drivers
+* numpy
+* scipy
+* Pillow
+* lxml
+* etc.
+
+Compilation errors on these extensions are expected. This step should help to
+draw a line for the backward incompatible change.
+
+Goal: remove a few implementation details but don't break numpy and lxml.
+
+Step 4
+------
+
+Switch the default API to the new restricted ``python`` API.
+
+Help third party projects to patch their code.
+
+Step 5
+------
+
+Continue Step 3: remove even more implementation details.
+
+Goal: Remove *all* structures and macros.
+
+
+Alternative: keep core as the default API
+=========================================
+
+A smoother transition would be to not touch the existing API but work on a new
+API which would only be used as an opt-in option.
+
+Similar plan used by Gilectomy: opt-in option to get best performances.
+
+It would be at least two Python binaries per Python version: default compatible
+version, and a new faster but incompatible version.
+
+
+Idea: External C API supporting older Python versions?
+======================================================
+
+Q: Would it be possible to design an external API which would work on Python
+2.7, Python 3.4-3.6, and the future Python 3.7?
+
+Q: Would it be easy to use it? How would it be downloaded and installed to
+build extensions?
+
+
+Collaboration with PyPy, IronPython, Jython and MicroPython
+===========================================================
+
+XXX to be done
+
+
+Enhancements becoming possible thanks to a new C API
+====================================================
+
+
 Indirect Reference Counting
-===========================
+---------------------------
 
 * Replace ``Py_ssize_t ob_refcnt;`` (integer) with ``Py_ssize_t *ob_refcnt;``
   (pointer).
@@ -73,7 +180,7 @@ Indirect Reference Counting
 
 
 Remove Reference Counting, New Garbage Collector
-================================================
+------------------------------------------------
 
 If the new C API hides well all implementation details, it becomes possible to
 change fundamental features like how CPython tracks the lifetime of an object.
@@ -90,7 +197,7 @@ XXX PyPy is only partially successful on that project.
 
 
 Remove the GIL
-==============
+--------------
 
 * Don't remove the GIL, but replace the GIL with smaller locks
 * Builtin mutable types: list, set, dict
@@ -104,7 +211,7 @@ Backward compatibility:
 
 
 Tagged pointers
-===============
+---------------
 
 https://en.wikipedia.org/wiki/Tagged_pointer
 
@@ -117,6 +224,12 @@ Tagged pointers are used in MicroPython to reduce the memory footprint.
 Note: ARM64 was recently extended its address space to 48 bits, causing issue
 in LuaJIT: `47 bit address space restriction on ARM64
 <https://github.com/LuaJIT/LuaJIT/issues/49>`_.
+
+Misc ideas
+----------
+
+* Software Transactional Memory?
+  See `PyPy STM <http://doc.pypy.org/en/latest/stm.html>`_
 
 
 Copyright
