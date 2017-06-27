@@ -6,13 +6,20 @@ else
 fi
 local_branch=$(git name-rev --name-only HEAD)
 
-if [ "$(basename $PWD)" = "buildmaster-config" ]; then
-    project=buildmaster-config
-    ref_branch=master
-else
-    project=cpython
-    ref_branch=$(basename $(pwd))
-fi
+project="$(basename $PWD)"
+ref_branch=master
+
+case "$project" in
+    [23].[0-9])
+        ref_branch=$project
+        project=cpython
+        ;;
+    master)
+        ref_branch=$project
+        project=cpython
+        ;;
+esac
+
 echo "branches: $local_branch -> $ref_branch"
 
 git push haypo HEAD $force
