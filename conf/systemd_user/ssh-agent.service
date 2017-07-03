@@ -11,5 +11,15 @@ Type=forking
 Environment=SSH_AUTH_SOCK=%t/ssh-agent.socket
 ExecStart=/usr/bin/ssh-agent -a $SSH_AUTH_SOCK
 
+# Security
+# https://lwn.net/Articles/709755/
+PrivateTmp=yes
+ProtectSystem=yes
+ProtectHome=yes
+ProtectKernelModules=yes
+MemoryDenyWriteExecute=yes
+RestrictRealtime=yes
+#PrivateNetwork=yes
+
 [Install]
 WantedBy=default.target
