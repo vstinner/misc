@@ -1,5 +1,5 @@
 PEP: xxx
-Title: Unchain my heart
+Title: Hide implementation details in the C API
 Version: $Revision$
 Last-Modified: $Date$
 Author: Victor Stinner <victor.stinner@gmail.com>,
@@ -12,9 +12,8 @@ Created: 31-May-2017
 Abstract
 ========
 
-Write a new A C API with no implementation detail and use make C extensions use
-this API by default. Add an opt-in option to compile C extensions with the full
-API.
+Modify the C API to remove implementation details. Add an opt-in option to
+compile C extensions to get the old full API with implementation details.
 
 The new C API allows to more easily experiment new optimizations:
 
@@ -22,6 +21,10 @@ The new C API allows to more easily experiment new optimizations:
 * Remove Reference Counting, New Garbage Collector
 * Remove the GIL
 * Tagged pointers
+
+It would become possible to emulate reference counting for backward
+compatibility.
+
 
 Rationale
 =========
@@ -235,11 +238,18 @@ Misc ideas
   See `PyPy STM <http://doc.pypy.org/en/latest/stm.html>`_
 
 
+cffi
+====
+
+XXX
+
+Long term goal: "more cffi, less libpython".
+
+
 Copyright
 =========
 
 This document has been placed in the public domain.
-
 
 
 
@@ -251,4 +261,3 @@ This document has been placed in the public domain.
    fill-column: 70
    coding: utf-8
    End:
-
