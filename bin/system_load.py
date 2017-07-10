@@ -3,6 +3,11 @@ import os
 import subprocess
 import sys
 import time
+try:
+    from time import monotonic as monotonic_clock
+except ImportError:
+    # Python 3.2 and older
+    from time import time as monotonic_clock
 
 
 # Wait N seconds before stoping a process if the load is higher
@@ -42,7 +47,7 @@ def load_controller(min_load, max_load):
         print("Adjust max load: %.2f" % max_load)
 
     processes = []
-    next_stop = time.monotonic() + NEXT_STOP
+    next_stop = monotonic_clock() + NEXT_STOP
     try:
         while True:
             load = get_system_load()
@@ -55,9 +60,9 @@ def load_controller(min_load, max_load):
                 processes.append(proc)
                 print("Spawn a new child: %s" % proc.pid)
 
-                next_stop = time.monotonic() + NEXT_STOP
+                next_stop = monotonic_clock() + NEXT_STOP
             else:
-                now = time.monotonic()
+                now = monotonic_clock()
                 if now >= next_stop and processes and load > max_load:
                     next_stop = now + NEXT_STOP
                     proc = processes.pop()
