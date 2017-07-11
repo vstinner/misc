@@ -16,15 +16,15 @@ Modify the C API to remove implementation details. Add an opt-in option
 to compile C extensions to get the old full API with implementation
 details.
 
-The new C API allows to more easily experiment new optimizations:
+The modified C API allows to more easily experiment new optimizations:
 
 * Indirect Reference Counting
 * Remove Reference Counting, New Garbage Collector
 * Remove the GIL
 * Tagged pointers
 
-It would become possible to emulate reference counting for backward
-compatibility.
+Reference counting may be emulated in a future implementation for
+backward compatibility.
 
 
 Rationale
@@ -33,19 +33,19 @@ Rationale
 History of CPython forks
 ------------------------
 
-Last 10 years, CPython was forked multiple times to try various attempts
-to enhance CPython:
+Last 10 years, CPython was forked multiple times to attempt
+different CPython enhancements:
 
 * Unladen Swallow: add a JIT compiler based on LLVM
-* Pyston: add a JIT compiler based on LLVM (fork on CPython 2.7)
+* Pyston: add a JIT compiler based on LLVM (CPython 2.7 fork)
 * Pyjion: add a JIT compiler based on Microsoft CLR
 * Gilectomy: remove the Global Interpreter Lock nicknamed "GIL"
-  (or Gilles in french :-))
 * etc.
 
 Sadly, none is this project has been merged back into CPython. Unladen
 Swallow looses its funding from Google, Pyston looses its funding from
-Dropbox, Pyjion is developed in spare time of two Microsoft employees.
+Dropbox, Pyjion is developed in the limited spare time of two Microsoft
+employees.
 
 One hard technically issue which blocked these projects to really
 unleash their power is the C API of CPython. Many old technical choices
@@ -62,11 +62,12 @@ PyPy
 ----
 
 PyPy uses more efficient structures and use a more efficient garbage
-collector without reference counting. Thanks to that, PyPy succeeded to
-run Python code up to 5x faster than CPython.
+collector without reference counting. Thanks to that (but also many
+other optimizations), PyPy succeeded to run Python code up to 5x faster
+than CPython.
 
 
-Plan made in multiple small steps
+Plan made of multiple small steps
 =================================
 
 Step 1: split Include/ into subdirectories
@@ -74,10 +75,10 @@ Step 1: split Include/ into subdirectories
 
 Split the ``Include/`` directory of CPython:
 
-* ``python`` API: Include/Python.h remains the default C API
-* ``core`` API: Include/core/Python.h is a new C API designed for
+* ``python`` API: ``Include/Python.h`` remains the default C API
+* ``core`` API: ``Include/core/Python.h`` is a new C API designed for
   building Python
-* ``stable`` API: Include/stable/Python.h is the stable ABI
+* ``stable`` API: ``Include/stable/Python.h`` is the stable ABI
 
 Expect declarations to be duplicated on purpose: ``#include`` should be
 not used to include files from a different API to prevent mistakes. In
@@ -87,8 +88,10 @@ symbols exported to the stable ABI by mistake.
 At this point, ``Include/Python.h`` is not changed at all: zero risk of
 backward incompatibility.
 
-The ``core`` API is the most complete API exposing *all* implemenation
+The ``core`` API is the most complete API exposing *all* implementation
 details and use macros for best performances.
+
+XXX should we abandon the stable ABI? Never really used by anyone.
 
 
 Step 2: Add an opt-in API option to tools building packages
@@ -98,8 +101,8 @@ Modify Python packaging tools (distutils, setuptools, flit, pip, etc.)
 to add an opt-in option to choose the API: ``python``, ``core`` or
 ``stable``.
 
-Debuggers may already want to use the ``core`` API to get a full access
-to implementation details.
+For example, debuggers like ``vmprof`` need need the ``core`` API to get
+a full access to implementation details.
 
 XXX handle backward compatibility for packaging tools.
 
@@ -111,11 +114,13 @@ Modify the ``python`` API:
 * Add a new ``API`` subdirectory in the Python source code which will
   "implement" the Python C API
 * Replace macros with functions. The implementation of new functions
-  will be written in the ``API/`` directory.
+  will be written in the ``API/`` directory. For example, Py_INCREF()
+  becomes the function ``void Py_INCREF(PyObject *op)`` and its
+  implementation will be written in the ``API`` directory.
 * Slowly remove more and more implementation details from this API.
 
-Modifications of these API should be driven by tests with third party
-code like:
+Modifications of these API should be driven by tests of popular third
+party packages like:
 
 * Django with database drivers
 * numpy
@@ -135,14 +140,16 @@ Step 4
 
 Switch the default API to the new restricted ``python`` API.
 
-Help third party projects to patch their code.
+Help third party projects to patch their code: don't break the "Python
+world".
 
 Step 5
 ------
 
 Continue Step 3: remove even more implementation details.
 
-Goal: Remove *all* structures and macros.
+Long-term goal to complete this PEP: Remove *all* implementation
+details, remove all structures and macros.
 
 
 Alternative: keep core as the default API
@@ -157,11 +164,16 @@ It would be at least two Python binaries per Python version: default
 compatible version, and a new faster but incompatible version.
 
 
-Idea: External C API supporting older Python versions?
-======================================================
+Idea: implementation of the C API supporting old Python versions?
+=================================================================
 
-Q: Would it be possible to design an external API which would work on
-Python 2.7, Python 3.4-3.6, and the future Python 3.7?
+Open questions.
+
+Q: Would it be possible to design an external library which would work
+on Python 2.7, Python 3.4-3.6, and the future Python 3.7?
+
+Q: Should such library be linked to libpythonX.Y? Or even to a pythonX.Y
+binary which wasn't built with shared library?
 
 Q: Would it be easy to use it? How would it be downloaded and installed
 to build extensions?
@@ -176,16 +188,17 @@ XXX to be done
 Enhancements becoming possible thanks to a new C API
 ====================================================
 
-
 Indirect Reference Counting
 ---------------------------
 
 * Replace ``Py_ssize_t ob_refcnt;`` (integer)
-  with ``Py_ssize_t *ob_refcnt;`` (pointer).
+  with ``Py_ssize_t *ob_refcnt;`` (pointer to an integer).
 * Same change for GC headers?
 * Store all reference counters in a separated memory block
-* Smaller memory footprint when using fork() on UNIX which is
-  implemented with Copy-On-Write and physical memory pages.
+  (or maybe multiple memory blocks)
+
+Expected advantage: smaller memory footprint when using fork() on UNIX
+which is implemented with Copy-On-Write on physical memory pages.
 
 See also `Dismissing Python Garbage Collection at Instagram
 <https://engineering.instagram.com/dismissing-python-garbage-collection-at-instagram-4dca40b29172>`_.
@@ -206,7 +219,11 @@ lifetime of an object.
 * Reimplement Py_INCREF() and Py_DECREF() on top of that using a hash
   table: object => reference counter.
 
-XXX PyPy is only partially successful on that project.
+XXX PyPy is only partially successful on that project, cpyext remains
+very slow.
+
+XXX Would it require an opt-in option to really limit backward
+compatibility?
 
 
 Remove the GIL
@@ -243,6 +260,23 @@ Misc ideas
 
 * Software Transactional Memory?
   See `PyPy STM <http://doc.pypy.org/en/latest/stm.html>`_
+
+
+Idea: Multiple Python binaries
+==============================
+
+Instead of a single ``python3.7``, providing two or more binaries, as
+PyPy does, would allow to experiment more easily changes without
+breaking the backward compatibility.
+
+For example, ``python3.7`` would remain the default binary with
+reference counting and the current garbage collector, whereas
+``fastpython3.7`` would not use reference counting and a new garbage
+collector.
+
+It would allow to more quickly "break the backward compatibility" and
+make it even more explicit than only prepared C extensions will be
+compatible with the new ``fastpython3.7``.
 
 
 cffi
