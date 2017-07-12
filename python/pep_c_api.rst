@@ -43,7 +43,7 @@ different CPython enhancements:
 * etc.
 
 Sadly, none is this project has been merged back into CPython. Unladen
-Swallow lose its funding from Google, Pyston lose its funding from
+Swallow lost its funding from Google, Pyston lost its funding from
 Dropbox, Pyjion is developed in the limited spare time of two Microsoft
 employees.
 
