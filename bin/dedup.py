@@ -2,6 +2,7 @@
 import argparse
 import binascii
 import hashlib
+import math
 import os.path
 import queue
 import sys
@@ -43,7 +44,7 @@ HEADER = "dedup.py 0.0 md5"
 
 class App:
     def __init__(self):
-        self.cache_filename = '~/.cache/dedup_cache.txt'
+        self.cache_filename = '~/.cache/deduppy_cache.txt'
         self.cache = {}
         self.queue = None
         self.threads = []
@@ -81,8 +82,9 @@ class App:
             for filename, entry in self.cache.items():
                 mtime, checksum = entry
                 checksum = binascii.hexlify(checksum)
-                mtime = str(mtime).encode()
-                line = b'%s:%s:%s\n' % (mtime, checksum, filename)
+                # Round towards minus infinity, unit of one second
+                mtime = math.floor(mtime)
+                line = b'%i:%s:%s\n' % (mtime, checksum, filename)
                 fp.write(line)
             fp.flush()
 
@@ -116,7 +118,8 @@ class App:
         if not os.path.isfile(path):
             self.warn("Skip non-regular file: %s" % os.fsdecode(path))
 
-        mtime = os.stat(path).st_mtime
+        filestat = os.stat(path)
+        mtime = filestat.st_mtime
 
         if path in self.cache:
             cache_mtime, checksum = self.cache[path]
@@ -127,6 +130,12 @@ class App:
             self.cache[path] = (mtime, checksum)
 
         job = (path, write_cache)
+        size = filestat.st_size / (1024.0 ** 2)
+        if size >= 1024:
+            size = "%.1f GB" % (size / 1024.0)
+        else:
+            size = "%.1f MB" % size
+        print("Hash %s (%s)" % (os.fsdecode(path), size))
         self.queue.put(job)
 
     def scan_directory(self, directory):
