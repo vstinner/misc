@@ -25,6 +25,7 @@ FILES = (
     'upload_tmp.sh',
     'cherry_picker.py',
     'gh_pr.sh',
+    'dedup.py',
 )
 
 def main():
