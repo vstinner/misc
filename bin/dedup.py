@@ -12,9 +12,15 @@ import time
 import threading
 
 
+# Cache header line
+HEADER = "dedup.py 0.0 md5"
 CHUNK_SIZE = 256 * 1024
 # Maximum cache age before asking if the cache should be used
-MAX_CACHE_AGE = datetime.timedelta(seconds=0)
+MAX_CACHE_AGE = datetime.timedelta(hours=1)
+
+
+def cache_now():
+    return math.floor(time.time())
 
 
 def hash_file(filename):
@@ -26,7 +32,6 @@ def hash_file(filename):
                 break
             filehash.update(chunk)
     return filehash.digest()
-
 
 
 class HashThread(threading.Thread):
@@ -44,9 +49,6 @@ class HashThread(threading.Thread):
             callback(checksum)
 
 
-HEADER = "dedup.py 0.0 md5"
-
-
 class App:
     def __init__(self):
         self.cache_filename = '~/.cache/deduppy_cache.txt'
@@ -56,8 +58,9 @@ class App:
         self.max_threads = os.cpu_count() or 1
 
     def check_cache_age(self, ts):
-        now = datetime.datetime.now()
+        now = cache_now()
         dt = now - ts
+        dt = datetime.timedelta(seconds=dt)
         if dt < MAX_CACHE_AGE:
             return
 
@@ -93,9 +96,9 @@ class App:
                       % (self.cache_filename, header))
                 sys.exit(1)
 
-            ts = fp.readline().rstrip(b'\n')
-            ts = int(ts)
-            ts = datetime.datetime.fromtimestamp(ts)
+            line = fp.readline()
+            line= line.rstrip(b'\n')
+            ts = int(line)
             exit = self.check_cache_age(ts)
             if exit:
                 return
@@ -104,7 +107,7 @@ class App:
                 line = line.rstrip(b'\n')
                 mtime, checksum, filename = line.split(b':', 2)
                 checksum = binascii.unhexlify(checksum)
-                mtime = float(mtime)
+                mtime = int(mtime)
                 self.cache[filename] = (mtime, checksum)
 
         print("Read cache file from %s (%s files)"
@@ -114,21 +117,16 @@ class App:
         if not self.cache:
             return
 
-        # Round towards minus infinity, unit of one second
-        round_ts = math.floor
-
         # FIXME: add cache timestamp too: remove/ignore cache if older than XX days?
         with open(self.cache_filename, 'wb') as fp:
             fp.write(HEADER.encode() + b'\n')
 
-            ts = time.time()
-            ts = round_ts(ts)
+            ts = cache_now()
             fp.write(b'%i\n' % ts)
 
             for filename, entry in self.cache.items():
                 mtime, checksum = entry
                 checksum = binascii.hexlify(checksum)
-                mtime = round_ts(mtime)
                 line = b'%i:%s:%s\n' % (mtime, checksum, filename)
                 fp.write(line)
             fp.flush()
@@ -170,17 +168,18 @@ class App:
             self.warn("Skip non-regular file: %s" % os.fsdecode(path))
 
         filestat = os.stat(path)
-        mtime = filestat.st_mtime
+        mtime = filestat.st_mtime_ns
 
         if path in self.cache:
             cache_mtime, checksum = self.cache[path]
             if cache_mtime >= mtime:
+                # Use cached checksum, file was not modified
                 return
 
-        def write_cache(checksum):
+        def write_checksum(checksum):
             self.cache[path] = (mtime, checksum)
 
-        job = (path, write_cache)
+        job = (path, write_checksum)
         size = filestat.st_size / (1024.0 ** 2)
         if size >= 1024:
             size = "%.1f GB" % (size / 1024.0)
