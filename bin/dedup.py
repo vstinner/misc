@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import binascii
+import collections
 import hashlib
 import math
 import os.path
@@ -12,7 +13,7 @@ import threading
 CHUNK_SIZE = 128 * 1024
 
 
-def hash_file(filename, callback):
+def hash_file(filename):
     filehash = hashlib.md5()
     with open(filename, "rb") as fp:
         while True:
@@ -35,7 +36,7 @@ class HashThread(threading.Thread):
             if job is None:
                 break
             filename, callback = job
-            checksum = hash_file(filename, callback)
+            checksum = hash_file(filename)
             callback(checksum)
 
 
@@ -97,6 +98,10 @@ class App:
 
         scan = subparsers.add_parser('scan')
         scan.add_argument('directory', nargs='+')
+
+        remove = subparsers.add_parser('remove_dir')
+        remove.add_argument('--remove', action='store_true')
+        remove.add_argument('directory')
 
         self.args = parser.parse_args()
 
@@ -163,6 +168,53 @@ class App:
         for thread in self.threads:
             thread.join()
 
+    def remove_dir(self):
+        directory = self.args.directory
+        remove = self.args.remove
+        directory = self.real_path(directory)
+        directory = os.fsencode(directory)
+
+        byhash = collections.defaultdict(list)
+        content = []
+        for filename, entry in self.cache.items():
+            mtime, checksum = entry
+            if os.path.dirname(filename) == directory:
+                content.append((filename, checksum))
+            else:
+                byhash[checksum].append(filename)
+
+        for filename, checksum in content:
+            files = byhash[checksum]
+            if not files:
+                continue
+            copy = files[0]
+            copy_checksum = hash_file(copy)
+            if copy_checksum != checksum:
+                print("ERROR: outdated cache, checksum mismatch")
+                print("%s: %s"
+                      % (os.fsdecode(filename), binascii.hexlify(checksum)))
+                print("%s: %s"
+                      % (os.fsdecode(copy), binascii.hexlify(copy_checksum)))
+                sys.exit(1)
+
+            copies = [os.fsdecode(copy) for copy in files]
+            copies = ', '.join(copies)
+            print("Remove duplicate %s: keep %s" % (os.fsdecode(filename), copies))
+            if remove:
+                del self.cache[filename]
+                os.unlink(filename)
+
+        if remove:
+            try:
+                os.rmdir(directory)
+            except OSError:
+                raise
+            else:
+                print("Remove empty directory %s" % os.fsdecode(directory))
+        else:
+            print()
+            print("Now add --remove option to really remove files")
+
     def main(self):
         self.cache_filename = os.path.expanduser(self.cache_filename)
         self.cache_filename = self.real_path(self.cache_filename)
@@ -171,9 +223,13 @@ class App:
         self.parse_args()
         self.read_cache()
         self.start_threads()
-        if self.args.action == 'scan':
-            self.scan()
-        self.stop_threads()
+        try:
+            if self.args.action == 'scan':
+                self.scan()
+            elif self.args.action == 'remove_dir':
+                self.remove_dir()
+        finally:
+            self.stop_threads()
         self.write_cache()
 
 
