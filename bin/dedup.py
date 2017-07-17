@@ -2,15 +2,19 @@
 import argparse
 import binascii
 import collections
+import datetime
 import hashlib
 import math
 import os.path
 import queue
 import sys
+import time
 import threading
 
 
-CHUNK_SIZE = 128 * 1024
+CHUNK_SIZE = 256 * 1024
+# Maximum cache age before asking if the cache should be used
+MAX_CACHE_AGE = datetime.timedelta(seconds=0)
 
 
 def hash_file(filename):
@@ -51,6 +55,31 @@ class App:
         self.threads = []
         self.max_threads = os.cpu_count() or 1
 
+    def check_cache_age(self, ts):
+        now = datetime.datetime.now()
+        dt = now - ts
+        if dt < MAX_CACHE_AGE:
+            return
+
+        print("Cache is %s old" % dt)
+        try:
+            while True:
+                answer = input("Use old cache yes/[no]? ")
+                answer = answer.lower().strip()
+                if answer in ('no', 'n', ''):
+                    self.remove_cache()
+                    print()
+                    return True
+                if answer in ('yes', 'y'):
+                    # use the old cache
+                    return False
+
+                print("Unknown answer %r" % answer)
+        except KeyboardInterrupt:
+            print()
+            print("CTRL+c: exit")
+            sys.exit(0)
+
     def read_cache(self):
         try:
             fp = open(self.cache_filename, 'rb')
@@ -63,6 +92,13 @@ class App:
                 print("ERROR: invalid header in cache file: %s: %a"
                       % (self.cache_filename, header))
                 sys.exit(1)
+
+            ts = fp.readline().rstrip(b'\n')
+            ts = int(ts)
+            ts = datetime.datetime.fromtimestamp(ts)
+            exit = self.check_cache_age(ts)
+            if exit:
+                return
 
             for line in fp:
                 line = line.rstrip(b'\n')
@@ -78,13 +114,21 @@ class App:
         if not self.cache:
             return
 
+        # Round towards minus infinity, unit of one second
+        round_ts = math.floor
+
+        # FIXME: add cache timestamp too: remove/ignore cache if older than XX days?
         with open(self.cache_filename, 'wb') as fp:
             fp.write(HEADER.encode() + b'\n')
+
+            ts = time.time()
+            ts = round_ts(ts)
+            fp.write(b'%i\n' % ts)
+
             for filename, entry in self.cache.items():
                 mtime, checksum = entry
                 checksum = binascii.hexlify(checksum)
-                # Round towards minus infinity, unit of one second
-                mtime = math.floor(mtime)
+                mtime = round_ts(mtime)
                 line = b'%i:%s:%s\n' % (mtime, checksum, filename)
                 fp.write(line)
             fp.flush()
@@ -102,6 +146,8 @@ class App:
         remove = subparsers.add_parser('remove_dir')
         remove.add_argument('--remove', action='store_true')
         remove.add_argument('directory')
+
+        remove_cache = subparsers.add_parser('remove_cache')
 
         self.args = parser.parse_args()
 
@@ -151,11 +197,17 @@ class App:
                 self.scan_file(path)
 
     def scan(self):
+        start_time = time.monotonic()
         for directory in self.args.directory:
             self.scan_directory(directory)
+        dt = time.monotonic() - start_time
+        dt = datetime.timedelta(seconds=dt)
+        print("Scan completed in %s" % dt)
 
     def start_threads(self):
-        nthread = os.cpu_count() or 1
+        nthread = (os.cpu_count() or 1)
+        print("Spawn %s threads" % nthread)
+
         self.queue = queue.Queue(nthread)
         while len(self.threads) < nthread:
             thread = HashThread(self.queue)
@@ -188,6 +240,7 @@ class App:
             if not files:
                 continue
             copy = files[0]
+            print("Check copy %s checksum" % os.fsdecode(copy))
             copy_checksum = hash_file(copy)
             if copy_checksum != checksum:
                 print("ERROR: outdated cache, checksum mismatch")
@@ -215,21 +268,39 @@ class App:
             print()
             print("Now add --remove option to really remove files")
 
+    def remove_cache(self):
+        filename = self.cache_filename
+        try:
+            os.unlink(filename)
+        except FileNotFoundError:
+            print("Cache file doesn't exist: %s" % os.fsdecode(filename))
+        else:
+            print("Remove cache file %s" % os.fsdecode(filename))
+
     def main(self):
         self.cache_filename = os.path.expanduser(self.cache_filename)
         self.cache_filename = self.real_path(self.cache_filename)
         self.cache_filename = os.fsencode(self.cache_filename)
 
         self.parse_args()
+        if self.args.action == 'remove_cache':
+            self.remove_cache()
+            sys.exit(0)
+
         self.read_cache()
+
         self.start_threads()
         try:
             if self.args.action == 'scan':
                 self.scan()
             elif self.args.action == 'remove_dir':
                 self.remove_dir()
+        except KeyboardInterrupt:
+            print()
+            print("Interrupted!")
         finally:
             self.stop_threads()
+
         self.write_cache()
 
 
