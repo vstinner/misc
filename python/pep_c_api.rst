@@ -1,5 +1,5 @@
 PEP: xxx
-Title: Hide implementation details in the C API
+Title: Hide implementation details of the C API
 Version: $Revision$
 Last-Modified: $Date$
 Author: Victor Stinner <victor.stinner@gmail.com>,
