@@ -20,9 +20,6 @@ GIT/pytracemalloc: git=git@github.com:haypo/pytracemalloc.git
 GIT/sixer: git=git@github.com:haypo/sixer.git
 GIT/unicode_book: git=git@github.com:haypo/unicode_book.git
 
-old_python/git_cpython: git=git@github.com:python/cpython.git
-old_python/git_cpython.copy: git=git@github.com:python/cpython.git
-
 python/2.7: git=git@github.com:python/cpython.git
 python/3.5: git=git@github.com:python/cpython.git
 python/3.6: git=git@github.com:python/cpython.git
