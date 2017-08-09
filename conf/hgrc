@@ -2,10 +2,6 @@
 username = Victor Stinner <victor.stinner@gmail.com>
 verbose = True
 
-# on commit, hgeditor opens an editor with the diff for the changelog
-# http://selenic.com/hg/raw-file/tip/hgeditor
-editor = ~/bin/hgeditor
-
 [diff]
 # The "review" feature of the Python bug tracker doesn't support git patches
 # because such patch doesn't contain the revision
