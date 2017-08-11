@@ -47,7 +47,7 @@ class PythonInfo:
         return {key: str(value) for key, value in self.info.items()}
 
 
-def collect_sys(info):
+def collect_sys(info_add):
     for attr in (
         'byteorder',
         'executable',
@@ -63,66 +63,66 @@ def collect_sys(info):
             continue
         if attr == 'flags':
             value = str(value)
-        info.add('sys.%s' % attr, value)
+        info_add('sys.%s' % attr, value)
 
     encoding = sys.getfilesystemencoding()
     if hasattr(sys, 'getfilesystemencodeerrors'):
         encoding = '%s/%s' % (encoding, sys.getfilesystemencodeerrors())
-    info.add('filesystem_encoding', encoding)
+    info_add('filesystem_encoding', encoding)
 
     if hasattr(sys, 'hash_info'):
         alg = sys.hash_info.algorithm
         bits = 64 if sys.maxsize > 2**32 else 32
         alg = '%s (%s bits)' % (alg, bits)
-        info.add('hash algorithm', alg)
+        info_add('hash algorithm', alg)
 
 
-def collect_platform(info):
+def collect_platform(info_add):
     import platform
 
-    info.add('python_implementation', platform.python_implementation())
+    info_add('python_implementation', platform.python_implementation())
     arch = platform.architecture()
     arch = '%s %s' % (arch[0], arch[1])
-    info.add('platform_architecture', arch)
-    info.add('platform', platform.platform(aliased=True))
+    info_add('platform_architecture', arch)
+    info_add('platform', platform.platform(aliased=True))
 
 
-def collect_locale(info):
+def collect_locale(info_add):
     import locale
 
-    info.add('locale_encoding', locale.getpreferredencoding(False))
+    info_add('locale_encoding', locale.getpreferredencoding(False))
 
 
-def collect_os(info):
+def collect_os(info_add):
     import os
 
-    info.add("cwd", os.getcwd())
+    info_add("cwd", os.getcwd())
     if hasattr(os, 'cpu_count'):
         cpu_count = os.cpu_count()
         if cpu_count:
-            info.add('os.cpu_count', cpu_count)
+            info_add('os.cpu_count', cpu_count)
 
     if hasattr(os, 'getloadavg'):
         load = os.getloadavg()
-        info.add('os.getloadavg', str(load))
+        info_add('os.getloadavg', str(load))
 
 
-def collect_readline(info):
+def collect_readline(info_add):
     import readline
 
     # Python implementations other than CPython may not have
     # these private attributes
     if hasattr(readline, "_READLINE_VERSION"):
-        info.add("readline_version", "%#x" %
+        info_add("readline_version", "%#x" %
                  readline._READLINE_VERSION)
-        info.add("readline_runtime_version",
+        info_add("readline_runtime_version",
                  "%#x" % readline._READLINE_RUNTIME_VERSION)
     if hasattr(readline, "_READLINE_LIBRARY_VERSION"):
-        info.add("readline_library_version",
+        info_add("readline_library_version",
                  readline._READLINE_LIBRARY_VERSION)
 
 
-def collect_gdb(info):
+def collect_gdb(info_add):
     import subprocess
 
     try:
@@ -140,19 +140,19 @@ def collect_gdb(info):
 
     # Only keep the first line
     version = version.splitlines()[0]
-    info.add('gdb_version', version)
+    info_add('gdb_version', version)
 
 
-def collect_tkinter(info):
+def collect_tkinter(info_add):
     try:
         import _tkinter
     except ImportError:
         return
 
-    info.add('tcl_version', _tkinter.TCL_VERSION)
+    info_add('tcl_version', _tkinter.TCL_VERSION)
 
 
-def collect_time(info):
+def collect_time(info_add):
     import time
 
     if not hasattr(time, 'get_clock_info'):
@@ -160,26 +160,26 @@ def collect_time(info):
 
     for clock in ('time', 'perf_counter'):
         tinfo = time.get_clock_info(clock)
-        info.add('time.%s' % clock, str(tinfo))
+        info_add('time.%s' % clock, str(tinfo))
 
 
-def collect_environ(info):
+def collect_environ(info_add):
     import os
 
     for name, value in os.environ.items():
         if name.startswith("PYTHON"):
-            info.add('env[%s]' % name, value)
+            info_add('env[%s]' % name, value)
 
 
-def collect_sysconfig(info):
+def collect_sysconfig(info_add):
     import sysconfig
 
     cflags = sysconfig.get_config_var('CFLAGS')
     cflags = normalize_text(cflags)
-    info.add('sysconfig.cflags', cflags)
+    info_add('sysconfig.cflags', cflags)
 
 
-def collect_ssl(info):
+def collect_ssl(info_add):
     try:
         import ssl
     except ImportError:
@@ -202,7 +202,7 @@ def collect_ssl(info):
         else:
             # Convert OPENSSL_VERSION_INFO tuple to str
             value = str(value)
-        info.add('ssl.%s' % attr, value)
+        info_add('ssl.%s' % attr, value)
 
 
 def collect_info(info):
@@ -220,8 +220,9 @@ def collect_info(info):
         collect_sysconfig,
         collect_ssl,
     ):
+        info_add = info.add
         try:
-            collect_func(info)
+            collect_func(info_add)
         except Exception as exc:
             print("ERROR: %s() failed: %s" % (collect_func.__name__, exc))
             error = True
