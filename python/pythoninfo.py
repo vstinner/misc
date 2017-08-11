@@ -6,7 +6,7 @@ import re
 import sys
 
 
-# FIXME: Add hostname, boot time, uptime,
+# FIXME: Add boot time, uptime,
 # FIXME: CPU mode/frequency/config/temperature?
 # FIXME: git branch, tag, version
 
@@ -241,6 +241,13 @@ def collect_ssl(info_add):
         info_add('ssl.%s' % attr, value)
 
 
+def collect_socket(info_add):
+    import socket
+
+    hostname = socket.gethostname()
+    info_add('socket.hostname', hostname)
+
+
 def collect_info(info):
     error = False
     for collect_func in (
@@ -255,6 +262,7 @@ def collect_info(info):
         collect_environ,
         collect_sysconfig,
         collect_ssl,
+        collect_socket,
     ):
         info_add = info.add
         try:
