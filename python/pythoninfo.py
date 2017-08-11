@@ -179,6 +179,32 @@ def collect_sysconfig(info):
     info.add('sysconfig.cflags', cflags)
 
 
+def collect_ssl(info):
+    try:
+        import ssl
+    except ImportError:
+        return
+
+    for attr in (
+        'OPENSSL_VERSION',
+        'OPENSSL_VERSION_INFO',
+        'HAS_SNI',
+        'OP_ALL',
+        'OP_NO_TLSv1_1',
+    ):
+        try:
+            value = getattr(ssl, attr)
+        except AttributeError:
+            # ssl.OP_NO_TLSv1_1 is not always available
+            continue
+        if attr.startswith('OP_'):
+            value = '%#8x' % value
+        else:
+            # Convert OPENSSL_VERSION_INFO tuple to str
+            value = str(value)
+        info.add('ssl.%s' % attr, value)
+
+
 def collect_info(info):
     error = False
     for collect_func in (
@@ -192,6 +218,7 @@ def collect_info(info):
         collect_time,
         collect_environ,
         collect_sysconfig,
+        collect_ssl,
     ):
         try:
             collect_func(info)
