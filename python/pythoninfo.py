@@ -8,6 +8,7 @@ import sys
 
 # FIXME: Add hostname, boot time, uptime,
 # FIXME: CPU mode/frequency/config/temperature?
+# FIXME: git branch, tag, version
 
 
 PYTHON3 = (sys.version_info >= (3, 0))
@@ -15,6 +16,8 @@ INT_TYPES = int
 
 
 def normalize_text(text):
+    if text is None:
+        return None
     text = str(text)
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
@@ -74,17 +77,17 @@ def collect_sys(info_add):
         alg = sys.hash_info.algorithm
         bits = 64 if sys.maxsize > 2**32 else 32
         alg = '%s (%s bits)' % (alg, bits)
-        info_add('hash algorithm', alg)
+        info_add('sys.hash_info', alg)
 
 
 def collect_platform(info_add):
     import platform
 
-    info_add('python_implementation', platform.python_implementation())
+    info_add('platform.python_implementation', platform.python_implementation())
     arch = platform.architecture()
     arch = '%s %s' % (arch[0], arch[1])
-    info_add('platform_architecture', arch)
-    info_add('platform', platform.platform(aliased=True))
+    info_add('platform.architecture', arch)
+    info_add('platform.platform', platform.platform(aliased=True))
 
 
 def collect_locale(info_add):
@@ -96,7 +99,8 @@ def collect_locale(info_add):
 def collect_os(info_add):
     import os
 
-    info_add("cwd", os.getcwd())
+    info_add("os.getcwd", os.getcwd())
+
     if hasattr(os, 'cpu_count'):
         cpu_count = os.cpu_count()
         if cpu_count:
@@ -112,14 +116,20 @@ def collect_readline(info_add):
 
     # Python implementations other than CPython may not have
     # these private attributes
-    if hasattr(readline, "_READLINE_VERSION"):
-        info_add("readline_version", "%#x" %
-                 readline._READLINE_VERSION)
-        info_add("readline_runtime_version",
-                 "%#x" % readline._READLINE_RUNTIME_VERSION)
-    if hasattr(readline, "_READLINE_LIBRARY_VERSION"):
-        info_add("readline_library_version",
-                 readline._READLINE_LIBRARY_VERSION)
+    for attr, info_name in (
+        ("_READLINE_VERSION", "readline_version"),
+        ("_READLINE_RUNTIME_VERSION", "readline_runtime_version"),
+        ("_READLINE_LIBRARY_VERSION", "readline_library_version"),
+    ):
+        try:
+            value = getattr(readline, attr)
+        except AttributeError:
+            # readline._READLINE_LIBRARY_VERSION was added to CPython 3.7
+            continue
+
+        if isinstance(value, INT_TYPES):
+            value = "%#x" % value
+        info_add(info_name, value)
 
 
 def collect_gdb(info_add):
@@ -149,7 +159,9 @@ def collect_tkinter(info_add):
     except ImportError:
         return
 
-    info_add('tcl_version', _tkinter.TCL_VERSION)
+    for attr in ('TK_VERSION', 'TCL_VERSION'):
+        value = getattr(_tkinter, attr)
+        info_add('_tkinter.%s' % attr, value)
 
 
 def collect_time(info_add):
@@ -168,15 +180,39 @@ def collect_environ(info_add):
 
     for name, value in os.environ.items():
         if name.startswith("PYTHON"):
-            info_add('env[%s]' % name, value)
+            info_add('os.environ[%s]' % name, value)
 
 
 def collect_sysconfig(info_add):
     import sysconfig
 
-    cflags = sysconfig.get_config_var('CFLAGS')
-    cflags = normalize_text(cflags)
-    info_add('sysconfig.cflags', cflags)
+    for name in (
+        'ABIFLAGS',
+        'ANDROID_API_LEVEL',
+        'CC',
+        'CCSHARED',
+        'CFLAGS',
+        'CFLAGSFORSHARED',
+        'PY_LDFLAGS',
+        'CONFIG_ARGS',
+        'HOST_GNU_TYPE',
+        'MACHDEP',
+        'MULTIARCH',
+        'OPT',
+        'PY_CFLAGS',
+        'PY_CFLAGS_NODIST',
+        'Py_DEBUG',
+        'Py_ENABLE_SHARED',
+        'SHELL',
+        'SOABI',
+        'prefix',
+    ):
+        value = sysconfig.get_config_var(name)
+        if name == 'ANDROID_API_LEVEL' and not value:
+            # skip ANDROID_API_LEVEL=0
+            continue
+        value = normalize_text(value)
+        info_add('sysconfig[%s]' % name, value)
 
 
 def collect_ssl(info_add):
