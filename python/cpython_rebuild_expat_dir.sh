@@ -1,6 +1,7 @@
-VERSION=2.2.1
+TAG=R_2_2_3
 ROOT=$PWD
-TGZ=expat-$VERSION.tar.bz2
+# Checkout of the https://github.com/libexpat/libexpat/ project
+LIBEXPAT=/home/haypo/prog/libexpat/
 DST=$PWD/Modules/expat
 
 set -e -x
@@ -10,8 +11,13 @@ if [ ! -d "$DST" ]; then
     exit 1
 fi
 
-tar -xf $TGZ
-SRC=$PWD/expat-$VERSION/
+cd $LIBEXPAT
+git reset --hard
+git clean -fdx
+git checkout $TAG
+SRC=$PWD/expat/
+
+cd $ROOT
 
 rm -rf $DST
 mkdir $DST
