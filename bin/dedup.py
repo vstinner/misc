@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+"""
+Find duplicated files
+
+See also: https://github.com/adrianlopezroche/fdupes
+"""
 import argparse
 import binascii
 import collections
@@ -67,15 +72,18 @@ class App:
         print("Cache is %s old" % dt)
         try:
             while True:
-                answer = input("Use old cache yes/[no]? ")
+                answer = input("Use old cache yes/no? ")
                 answer = answer.lower().strip()
-                if answer in ('no', 'n', ''):
+                if answer in ('no', 'n'):
                     self.remove_cache()
                     print()
                     return True
                 if answer in ('yes', 'y'):
                     # use the old cache
                     return False
+                if not answer:
+                    print("exit")
+                    sys.exit(0)
 
                 print("Unknown answer %r" % answer)
         except KeyboardInterrupt:
@@ -225,6 +233,7 @@ class App:
         directory = self.real_path(directory)
         directory = os.fsencode(directory)
 
+        nremoved = 0
         byhash = collections.defaultdict(list)
         content = []
         for filename, entry in self.cache.items():
@@ -252,15 +261,25 @@ class App:
             copies = [os.fsdecode(copy) for copy in files]
             copies = ', '.join(copies)
             print("Remove duplicate %s: keep %s" % (os.fsdecode(filename), copies))
+            nremoved += 1
             if remove:
                 del self.cache[filename]
-                os.unlink(filename)
+                try:
+                    os.unlink(filename)
+                except FileNotFoundError:
+                    pass
+
+
+        if nremoved:
+            print("Removed %s files" % nremoved)
+        else:
+            print("No file removed")
 
         if remove:
             try:
                 os.rmdir(directory)
             except OSError:
-                raise
+                pass
             else:
                 print("Remove empty directory %s" % os.fsdecode(directory))
         else:
