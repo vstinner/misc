@@ -21,6 +21,8 @@ GIT/sixer: git=git@github.com:haypo/sixer.git
 GIT/unicode_book: git=git@github.com:haypo/unicode_book.git
 
 python/2.7: git=git@github.com:python/cpython.git
+python/3.3: git=git@github.com:python/cpython.git
+python/3.4: git=git@github.com:python/cpython.git
 python/3.5: git=git@github.com:python/cpython.git
 python/3.6: git=git@github.com:python/cpython.git
 python/master: git=git@github.com:python/cpython.git
