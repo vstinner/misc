@@ -5,6 +5,8 @@
 
 [Unit]
 Description=SSH key agent
+Wants=environment.target
+Before=environment.target
 
 [Service]
 Type=forking
@@ -16,10 +18,11 @@ ExecStart=/usr/bin/ssh-agent -a $SSH_AUTH_SOCK
 PrivateTmp=yes
 ProtectSystem=yes
 ProtectHome=yes
-ProtectKernelModules=yes
-MemoryDenyWriteExecute=yes
-RestrictRealtime=yes
-#PrivateNetwork=yes
+# Disable (don't work for user systemd):
+# ProtectKernelModules=yes
+# MemoryDenyWriteExecute=yes
+# RestrictRealtime=yes
+# PrivateNetwork=yes
 
 [Install]
 WantedBy=default.target
