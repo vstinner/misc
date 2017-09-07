@@ -128,7 +128,7 @@ class Parser:
         if show_filename or self.options.verbose:
             self.display_line("[ %s ]" % filename, buffered=True)
 
-        with open(filename) as fp:
+        with open(filename, errors='replace') as fp:
             for line in fp:
                 line = line.strip(STRIP_CHARS)
                 self.parse_line(line)
