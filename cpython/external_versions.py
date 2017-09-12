@@ -19,7 +19,7 @@ def dump_version(name, filename, pattern):
     print("%s: %s" % (name, version))
 
 def main():
-    dump_version('ctypes',
+    dump_version('libffi',
                  'Modules/_ctypes/libffi/configure.ac',
                  r'AC_INIT\([^,]+, \[([^]]+)\],')
     dump_version('libffi_osx',
