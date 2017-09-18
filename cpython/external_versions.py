@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # https://haypo-notes.readthedocs.io/cpython.html#embedded-libraries
 import re
 
