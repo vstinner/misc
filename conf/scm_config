@@ -22,7 +22,6 @@ GIT/unicode_book: git=git@github.com:haypo/unicode_book.git
 GIT/cpython_core_tutorial: git=git@github.com:haypo/cpython_core_tutorial.git
 
 python/2.7: git=git@github.com:python/cpython.git
-python/3.3: git=git@github.com:python/cpython.git
 python/3.4: git=git@github.com:python/cpython.git
 python/3.5: git=git@github.com:python/cpython.git
 python/3.6: git=git@github.com:python/cpython.git
