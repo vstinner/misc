@@ -40,12 +40,18 @@ def main():
     dump_version('libmpdec',
                  'Modules/_decimal/libmpdec/mpdecimal.h',
                  r'MPD_VERSION "(.*)"')
-    dump_version('[Windows] openssl',
+    dump_version('openssl[Windows]',
                  'PCbuild/get_externals.bat',
                  r'openssl-([0-9].*)')
-    dump_version('[macOS] openssl',
+    dump_version('openssl[macOS]',
                  'Mac/BuildScript/build-installer.py',
                  r'openssl-([0-9][^.]*\.[^.]+\.[^.]+)')
+    dump_version('SQLite[Windows]',
+                 'PCbuild/get_externals.bat',
+                 r'sqlite-([0-9].*)')
+    dump_version('SQLite[macOS]',
+                 'Mac/BuildScript/build-installer.py',
+                 r'SQLite ([0-9][^"]*)')
 
 
 if __name__ == "__main__":
