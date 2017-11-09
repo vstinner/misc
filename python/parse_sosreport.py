@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Parse sosreport reports: 1 or multiple files, try to rebuild a kind of
 "timeline".
