@@ -178,6 +178,18 @@ PROCESS_WHITELIST = (
 )
 
 
+def parse_date_file(text):
+    try:
+        # Sun Apr 23 15:26:02 UTC 2017
+        return datetime.datetime.strptime(text, "%a %b %d %H:%M:%S UTC %Y")
+    except ValueError:
+        # 'Mon Nov  6 04:30:46 EST 2017'
+        # FIXME: Handle other timezones
+        # Remove the timezone
+        text = re.sub('[A-Z]{3} ([0-9]{4})', lambda regs: regs.group(1), text)
+        return datetime.datetime.strptime(text, "%a %b %d %H:%M:%S %Y")
+
+
 def build_regexes(regexes):
     regex_all = '(?:%s)' % '|'.join(regex for regex, level in regexes)
     flags = re.MULTILINE
@@ -875,9 +887,7 @@ class SOSReportParser(object):
             with io.open(filename, encoding="utf-8") as fp:
                 line = fp.readline().rstrip()
 
-            # Sun Apr 23 15:26:02 UTC 2017
-            date = datetime.datetime.strptime(line,
-                                              "%a %b %d %H:%M:%S UTC %Y")
+            date = parse_date_file(line)
             self.fixup_date = date
             break
 
