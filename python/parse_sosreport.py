@@ -819,25 +819,29 @@ class SOSReportParser(object):
     def list_processes(self, processes):
         names = collections.defaultdict(collections.Counter)
         for args in processes:
-            i = 0
-            while True:
-                exe = args[i]
-                if not(exe.startswith('[') and exe.endswith(']')):
-                    exe = os.path.basename(exe)
-                if exe in ('sudo', 'python', 'python2', 'bash', 'sh'):
-                    i += 1
-                    while args[i].startswith('-'):
+            try:
+                i = 0
+                while True:
+                    exe = args[i]
+                    if not(exe.startswith('[') and exe.endswith(']')):
+                        exe = os.path.basename(exe)
+                    if exe in ('sudo', 'python', 'python2', 'bash', 'sh'):
                         i += 1
-                elif exe == 'timeout' and args[i+1].endswith('s'):
-                    i += 2
+                        while i < len(args) and args[i].startswith('-'):
+                            i += 1
+                    elif exe == 'timeout' and args[i+1].endswith('s'):
+                        i += 2
+                    else:
+                        break
+                for name in PROCESS_WHITELIST:
+                    if name in exe:
+                        break
                 else:
-                    break
-            for name in PROCESS_WHITELIST:
-                if name in exe:
-                    break
-            else:
-                continue
-            names[name][exe] += 1
+                    continue
+                names[name][exe] += 1
+            except Exception as exc:
+                raise Exception("failed to parse process arguments %r: %s"
+                                % (args, exc))
 
 
         names = sorted(names.items())
