@@ -783,6 +783,11 @@ class SOSReportParser(object):
                     fullname = join_path(rootdir, filename)
                     self.grep_log_file(fullname, regex, logger)
 
+        # sos_commands/logs/journalctl_--no-pager_--boot
+        for path in self.find_directory('sos_commands'):
+            filename = join_path(path, 'logs/journalctl_--no-pager_--boot')
+            self.grep_log_file(filename, regex, logger)
+
     def action_grep(self):
         regex = re.compile(self.args.pattern)
         self.grep_var_log(regex)
