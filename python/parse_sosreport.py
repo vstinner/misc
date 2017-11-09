@@ -725,7 +725,6 @@ class SOSReportParser(object):
                 # rabbit@overcloud-controller-0.log
                 # rabbit@overcloud-controller-0.log-20171027
                 if not name.endswith(".log") and not re.search(r"\.log-[0-9]{8}$", name):
-                    print("IGNORE", name)
                     continue
                 found = True
                 log_file = join_path(path, name)
