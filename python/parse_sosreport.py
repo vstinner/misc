@@ -820,8 +820,9 @@ class SOSReportParser(object):
         names = collections.defaultdict(collections.Counter)
         for args in processes:
             try:
+                exe = ''
                 i = 0
-                while True:
+                while i < len(args):
                     exe = args[i]
                     if not(exe.startswith('[') and exe.endswith(']')):
                         exe = os.path.basename(exe)
