@@ -68,6 +68,8 @@ DATABASE_REGEXES = (
     # match DBConnectionError, but not 'DBConnectionError
     # nor "DBConnectionError to ignore tracebacks logged on the client side
     (r'''(?<!['"])DBConnectionError''', logging.WARNING),
+    # DBError: (pymysql.err.InternalError) (1205, u'Lock wait timeout exceeded; try restarting transaction')
+    (r'DBError', logging.ERROR),
 )
 
 RABBITMQ_PATTERNS = (
@@ -383,7 +385,7 @@ class MySQLLogParser(FileParser):
     def __init__(self, app):
         super(MySQLLogParser, self).__init__(app)
         self.regex_all, self.regexes = build_regexes(MYSQL_REGEX)
-        self.date_regex = re.compile('^[0-9]+ ([0-9]+):([0-9]+):([0-9]+) ')
+        self.date_regex = re.compile('^[0-9]+ +([0-9]+):([0-9]+):([0-9]+) ')
 
     def parse_date(self, line):
         # 13:24:19
@@ -713,17 +715,25 @@ class SOSReportParser(object):
 
     def action_rabbitmq(self):
         for path in self.find_directory('var/log/rabbitmq/'):
+            found = False
             for name in os.listdir(path):
-                if name.endswith("sasl.log"):
+                if "sasl.log" in name:
                     continue
-                if name.endswith(".log"):
-                    log_file = join_path(path, name)
-                    break
-            else:
-                self.fatal_error("No LOG found in %s" % path)
+                if name.endswith(".gz"):
+                    continue
+                # Search for files:
+                # rabbit@overcloud-controller-0.log
+                # rabbit@overcloud-controller-0.log-20171027
+                if not name.endswith(".log") and not re.search(r"\.log-[0-9]{8}$", name):
+                    print("IGNORE", name)
+                    continue
+                found = True
+                log_file = join_path(path, name)
+                self.set_context(log_file)
+                RabbitMQParser(self).parse(log_file)
 
-            self.set_context(log_file)
-            RabbitMQParser(self).parse(log_file)
+            if not found:
+                self.fatal_error("No LOG found in %s" % path)
 
     def dump_timeline(self):
         logs = sorted(self._timeline, key=TimelineLog.sort_key)
