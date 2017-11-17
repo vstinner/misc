@@ -22,6 +22,6 @@ esac
 
 echo "branches: $local_branch -> $ref_branch"
 
-git push haypo HEAD $force
-URL="https://github.com/python/$project/compare/$ref_branch...haypo:$local_branch?expand=1"
+git push vstinner HEAD $force
+URL="https://github.com/python/$project/compare/$ref_branch...vstinner:$local_branch?expand=1"
 python3 -m webbrowser $URL
