@@ -634,7 +634,8 @@ class Application:
                 continue
             repository = self.parse_local_scm(fullname)
             if repository is not None:
-                if repository.url is not None:
+                url = repository.get_url()
+                if url is not None:
                     self.repositories.append(repository)
                     print("-> %s" % repository, file=sys.stderr)
                 else:
@@ -663,8 +664,9 @@ class Application:
         print('# Format: "directory: scm=url"')
         self.repositories.sort(key=lambda repository: repository.name)
         for repository in self.repositories:
+            url = repository.get_url()
             print("%s: %s=%s"
-                  % (repository.name, repository.SCM, repository.url))
+                  % (repository.name, repository.SCM, url))
         print(file=sys.stderr)
         print("Found %s repositories" % len(self.repositories), file=sys.stderr)
         if ignored:
