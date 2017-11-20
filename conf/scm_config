@@ -9,6 +9,7 @@ GIT/fatpython: git=https://github.com/vstinner/fatpython.git
 GIT/faulthandler: git=git@github.com:vstinner/faulthandler.git
 GIT/hachoir3: git=git@github.com:vstinner/hachoir3.git
 GIT/haypo_notes: git=git@github.com:vstinner/haypo_notes.git
+GIT/notes: git=git@github.com:vstinner/notes.git
 GIT/misc: git=git@github.com:vstinner/misc.git
 GIT/perf: git=git@github.com:vstinner/perf.git
 GIT/performance_results: git=git@github.com:vstinner/performance_results.git

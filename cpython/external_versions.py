@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# https://haypo-notes.readthedocs.io/cpython.html#embedded-libraries
+# https://vstinner.readthedocs.io/cpython.html#embedded-libraries
 import re
 
 def grep(filename, pattern):
