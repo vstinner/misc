@@ -1,7 +1,17 @@
 # Copied from https://wiki.archlinux.org/index.php/SSH_keys#Start_ssh-agent_with_systemd_user
 #
-# Add this line to your ~/.bashrc:
-# export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+# Install:
+#
+# - install and enable the systemctl --user service
+# - add this line to your ~/.bashrc:
+#   export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+# - need "AddKeysToAgent yes" in ~/.ssh/config
+#
+# Check:
+#
+# - Is service running? systemctl --user status ssh-agent
+# - Check SSH_AUTH_SOCK environment variable: should contain ssh-agent.socket
+# - Check if key was added to the agent: ssh-add -l
 
 [Unit]
 Description=SSH key agent

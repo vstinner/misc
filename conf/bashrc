@@ -109,7 +109,7 @@ alias pyconfigure_debug="./configure -C --with-pydebug CFLAGS=-O0"
 
 export PATH=$PATH:~/prog/GIT/hachoir3
 
-if [ "$(hostname)" = "selma" ]; then
+if [ "$(hostname)" = "selma" -o "$(hostname)" = "apu" ]; then
     # Based on ~/.config/systemd/user/ssh-agent.service
     export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 fi
