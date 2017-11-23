@@ -5,7 +5,6 @@ GIT/cpython_core_tutorial: git=git@github.com:vstinner/cpython_core_tutorial.git
 GIT/faster_cpython: git=git@github.com:vstinner/faster_cpython.git
 GIT/fat: git=git@github.com:vstinner/fat.git
 GIT/fatoptimizer: git=git@github.com:vstinner/fatoptimizer.git
-GIT/fatpython: git=https://github.com/vstinner/fatpython.git
 GIT/faulthandler: git=git@github.com:vstinner/faulthandler.git
 GIT/hachoir3: git=git@github.com:vstinner/hachoir3.git
 GIT/haypo_notes: git=git@github.com:vstinner/haypo_notes.git
@@ -33,6 +32,4 @@ python/performance: git=git@github.com:python/performance.git
 
 python/master: git=git@github.com:python/cpython.git
 python/2.7: git=git@github.com:python/cpython.git
-python/3.4: git=git@github.com:python/cpython.git
-python/3.5: git=git@github.com:python/cpython.git
 python/3.6: git=git@github.com:python/cpython.git
