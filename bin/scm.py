@@ -1493,7 +1493,8 @@ class RepositoryGIT(Repository):
         self.write_output(args, stdout)
 
     def clone(self):
-        self.run(GIT_CLONE + (self.url, self.root), cwd=None)
+        url = self.get_url()
+        self.run(GIT_CLONE + (url, self.root), cwd=None)
 
     def _pull(self):
         pull = self._gitcmd(GIT_PULL)
