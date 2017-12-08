@@ -30,3 +30,5 @@ if version >= 703
     set colorcolumn=80
 endif
 
+autocmd BufEnter * set colorcolumn=80
+autocmd BufEnter *pep-* set colorcolumn=73

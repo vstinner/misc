@@ -42,13 +42,14 @@ set autoindent
 set softtabstop=4
 set shiftwidth=4
 set expandtab     " Spaces instead of tabs
-autocmd BufLeave * set expandtab
-autocmd BufLeave * set textwidth=0
+autocmd BufEnter * set expandtab
+autocmd BufEnter * set textwidth=0
 
 " Depending on the filename or path
 autocmd BufEnter *Makefile* set noexpandtab
 " Gerrit on openstack.org rejects lines longer than 70 characters
 autocmd BufEnter *COMMIT_EDITMSG* set textwidth=69
+autocmd BufEnter *pep-* set textwidth=72
 
 
 "=== .swp files to ~/.vim/swap ===
