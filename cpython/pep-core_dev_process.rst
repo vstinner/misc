@@ -219,7 +219,8 @@ Requirements to become a core developer:
 
 * **Long term commitement:**
   When someone lands a big chunk of code, we need someone to maintain
-  it.
+  it. Usually, a contributor must have been active since at least 6
+  months before being able to become a core developer.
 
 * **Reviews**:
   Review patches and pull requests. While we don't require not expect
