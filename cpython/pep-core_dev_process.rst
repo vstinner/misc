@@ -8,7 +8,7 @@ TODO:
 
 I'm working on a process to describe how a contributor becomes a core
 developer. The purpose is to be transparent, list "requirements" and
-responsabilities to the contributor, and have written rules to help to
+responsibilities to the contributor, and have written rules to help to
 take a fair decision.
 
 This document is a draft. I chose to post it on python-committers. I
@@ -32,14 +32,14 @@ IMHO the current blocker issue is that it is too hard to become a core
 developer. While becoming a core developer is not required to
 contribute, in my experience, core developers feel more involved and
 better recognized for their work. Core developer first means becoming
-responsible of a change: maintain the code/documentation and handle any
-potential regression. Long term commitment and good quality reviews are
+responsible for a change: maintain the code/documentation and handle any
+potential regression. Long-term commitment and good quality reviews are
 also expected from core developers.
 
 The blocker issue can be explained by the very high step that should be
-climed at once to become a core developer. The contributor
+climbed at once to become a core developer. The contributor
 responsibilities changes at once from "no power" to "can do anything on
-any part of the project". A promotion is decided with a vote. If a voter
+any part of the project". A promotion is decided by a vote. If a voter
 doesn't know the contributor, it can be very stressful to take a
 decision. Building a trust relationship takes time and is not currently
 formalized by a process. This process is trying to address these issues.
@@ -48,7 +48,7 @@ I propose to formalize a process to promote a contributor from the early
 newcomer step to the final core developer step. The process is made of
 multiple steps to help the contributor to estimate their own progress.
 Mentoring becomes required by the process and is a major part of the
-whole process. While the process explains how to "clim" steps, going
+whole process. While the process explains how to "climb" steps, going
 backward now becomes part of the process, it is not seen as a failure
 but as a normal and expected change under certain conditions. The final
 vote to promote a contributor as a core developer is expected to become
@@ -80,9 +80,9 @@ Step 1: Contributor
 
 I consider that newcomers become automatically contributors as soon as
 they post their first comment on the bug tracker, comment on a pull
-request, or a pull request.
+a request, or a pull request.
 
-Their is no manual validation, nor additional privilege. It's just a
+There is no manual validation, nor additional privilege. It's just a
 thin distinction with a newcomer.
 
 At this step, it becomes interesting to start reading the `Python
@@ -94,18 +94,18 @@ Step 2: Bug Triage Permission
 
 Once a contributor becomes active enough, a core developer can propose
 to give the bug triage permission to the contributor. The contributors
-may ask themself to give this permission. The level of activity is not
+may ask themselves to give this permission. The level of activity is not
 strictly defined, since it depends on the kind of contributions and
-their quality. The core developer is responsabile to estimate this.
+their quality. The core developer is responsible to estimate this.
 
 There is no formal vote to give the bug triage permission. The core
-developer becomes responsible of the promotion. In practice, core
+developer becomes responsible for the promotion. In practice, core
 developers are free to discuss together ;-)
 
-Getting the bug triage permission gives more responsabilities to the
+Getting the bug triage permission gives more responsibilities to the
 contributor: the bug tracker should not be misused to not lost useful
 information. Taking a decision on an issue requires a certain level of
-knowledege of the Python development.
+knowledge of the Python development.
 
 I propose that the contributor gets a mentor during one month. The role
 of the mentor is to answer to any question of the mentoree, and help
@@ -113,7 +113,7 @@ them to take decisions if needed. The mentor is not expected to watch
 closely what the contributor does on the bug tracker.
 
 If the contributor misuses the bug tracker, the mentor (or another core
-developer) should help the contributor to adjust their behaviour. If the
+developer) should help the contributor to adjust their behavior. If the
 contributor continue to abuse the bug tracker or misbehaves, the
 permission is removed and the contributor moves back to the previous
 step.
@@ -127,7 +127,7 @@ Required skills for the contributor:
   mailing lists like python-ideas and python-dev. There is no minimum
   number of contributions: it's not a matter of quantity, but more a
   matter of quality and the kind of contributions.
-* Be nice, police and respectful.
+* Be nice, polite and respectful.
 * Know what they are talking about, and explain their reasoning well.
 
 Skills which are nice to have, but not required:
@@ -138,9 +138,9 @@ Skills which are nice to have, but not required:
 
 * Read the Python Developer Guide.
 
-This step is also a first milestone to measure the contrbutor involvment
+This step is also the first milestone to measure the contributor involvement
 in the Python project, to later be able to estimate their "longterm
-commitement".
+commitment".
 
 
 Step 3: Getting a mentor
@@ -163,7 +163,7 @@ Required contributor skills:
 
 * Be active on the Python project: I would like to say "still" be active
   on the Python project, which is another proof of the contributor
-  commitement in the project
+  commitment in the project
 * Sign the CLA: at some point, getting changes merged into Git becomes
   mandatory, and so the CLA must be signed.
 * Find a mentor.
@@ -213,11 +213,11 @@ Requirements to become a core developer:
   Show a bit of humility towards existing work and try to understand the
   decisions behind something before deciding to change it all.  That
   said, given Python's current position on the technical evolution and
-  adoption curve, we get less and less proposals for sweeping changes
+  adoption curve, we get less and fewer proposals for sweeping changes
   (perhaps not enough, actually, since even when rejected, they help
   challenge the status quo).
 
-* **Long term commitement:**
+* **Long-term commitment:**
   When someone lands a big chunk of code, we need someone to maintain
   it. Usually, a contributor must have been active since at least 6
   months before being able to become a core developer.
@@ -236,7 +236,7 @@ Requirements to become a core developer:
   least the experienced ones.
 
 * **CPython lifecycle**:
-  Know the project's lifecycle: Python has multiple maitained branches,
+  Know the project's lifecycle: Python has multiple maintained branches,
   some of them accept bugfixes, others only security fixes. Deciding if
   a fix can or cannot be backported is a complex question.
 
@@ -262,12 +262,12 @@ Requirements to become a core developer:
   example, backward compatibility is taken very seriously. We don't
   remove public functions in a minor release (3.x), but start with a
   deprecation period. It's not only about removing features, but also
-  *changing* the behaviour. Even if Python has a wide test suite with a
+  *changing* the behavior. Even if Python has a wide test suite with a
   good code coverage, some functions are still untested, or not fully
   tested.
 
 
-Becoming a core developer involves getting more responsabilities:
+Becoming a core developer involves getting more responsibilities:
 
 * The core developer becomes the "owner" of a merged change: maintain
   the code and handle any potential regression
@@ -275,11 +275,11 @@ Becoming a core developer involves getting more responsabilities:
 * Triage bugs
 
 The newly promoted core developer will followed by a mentor during one
-month until they become confortable enough. Obviously, the mentoring can
+month until they become comfortable enough. Obviously, the mentoring can
 be extended if needed.
 
 If the result of the promotion vote is negative, it's ok, move back to
-the previous step, and retry later. Usually the vote can be retried 6
+the previous step, and retry later. Usually, the vote can be retried 6
 months later, time spent to address lacking skills (maybe with a
 mentor).
 
