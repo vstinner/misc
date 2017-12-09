@@ -1,3 +1,5 @@
+Subject: I will be your mentor for core dev during one month :-)
+
 Hi,
 
 Congratulations! You reached the last step of the process to become a
