@@ -144,18 +144,21 @@ class Tests(unittest.TestCase):
         self.assertLocaleEqual(time.strftime('%B', FEBRUARY), february)
 
     def test_zh_TW_Big5(self):
-        if BSD:
-            loc = "zh_TW.Big5"
+        loc = "zh_TW.Big5" if BSD else "zh_TW.big5"
+        if FREEBSD:
             currency_symbol = u'\uff2e\uff34\uff04'
             decimal_point = u'\uff0e'
             thousands_sep = u'\uff0c'
             date_str = u'\u661f\u671f\u56db 2\u6708'
         else:
-            loc = "zh_TW.big5"
             currency_symbol = u'NT$'
             decimal_point = u'.'
             thousands_sep = u','
-            date_str = u'\u9031\u56db \u4e8c\u6708'
+            if MACOS:
+                date_str =  u'\u9031\u56db 2\u6708'
+            else:
+                date_str = u'\u9031\u56db \u4e8c\u6708'
+
         self.set_locale(loc, "Big5")
 
         lc = locale.localeconv()
