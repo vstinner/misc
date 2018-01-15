@@ -1,2 +1,4 @@
 add-auto-load-safe-path ~/prog/
 set print pretty on
+# for macOS
+set startup-with-shell off
