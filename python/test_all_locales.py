@@ -45,12 +45,14 @@ class Tests(unittest.TestCase):
 
     def assertLocaleEqual(self, value, expected):
         if isinstance(value, bytes):
-            value = value.decode(self.encoding)
-        self.assertEqual(value, expected, (ascii(value), ascii(expected), self.encoding))
+            text = value.decode(self.encoding)
+            self.assertEqual(text, expected, (value, text, expected, self.encoding))
+        else:
+            self.assertEqual(value, expected, (ascii(value), ascii(expected), self.encoding))
 
     def test_fr_FR_iso8859_1(self):
         # Linux, Fedora 27, glibc 2.27
-        loc = "fr_FR.ISO8859-1" if FREEBSD else "fr_FR"
+        loc = "fr_FR.ISO8859-1" if BSD else "fr_FR"
         self.set_locale(loc, "ISO-8859-1")
         lc = locale.localeconv()
         if FREEBSD:
@@ -73,19 +75,17 @@ class Tests(unittest.TestCase):
         self.assertLocaleEqual(time.strftime('%B', AUGUST), u'ao\xfbt')
 
     def test_ru_RU(self):
+        loc = "ru_RU.ISO8859-5" if BSD else "ru_RU"
         if FREEBSD:
             # FreeBSD 11
-            loc = "ru_RU.ISO8859-5"
             currency_symbol = u'\u0440\u0443\u0431.'
             february = u'\u0444\u0435\u0432\u0440\u0430\u043b\u044f'
         elif MACOS:
             # macOS 10.13.2
-            loc = "ru_RU"
             currency_symbol = u'\u0440\u0443\u0431.'
             february = u'\u0444\u0435\u0432\u0440\u0430\u043b\u044f'
         else:
             # Linux, Fedora 27, glibc 2.27
-            loc = "ru_RU"
             currency_symbol = u'\u0440\u0443\u0431'
             february = u'\u0424\u0435\u0432\u0440\u0430\u043b\u044c'
         self.set_locale(loc, "ISO-8859-5")
@@ -98,7 +98,7 @@ class Tests(unittest.TestCase):
 
     def test_ru_RU_koi8r(self):
         loc = "ru_RU.KOI8-R" if BSD else "ru_RU.koi8r"
-        if FREEBSD:
+        if BSD:
             # FreeBSD 11.0
             currency_symbol = u'\u0440\u0443\u0431.'
             february = u'\u0444\u0435\u0432\u0440\u0430\u043b\u044f'
@@ -109,8 +109,9 @@ class Tests(unittest.TestCase):
         self.set_locale(loc, "KOI8-R")
         lc = locale.localeconv()
         self.assertLocaleEqual(lc['currency_symbol'], currency_symbol)
-        self.assertLocaleEqual(lc['mon_thousands_sep'], u'\xa0')
-        self.assertLocaleEqual(lc['thousands_sep'], u'\xa0')
+        if not MACOS:
+            self.assertLocaleEqual(lc['mon_thousands_sep'], u'\xa0')
+            self.assertLocaleEqual(lc['thousands_sep'], u'\xa0')
         self.assertLocaleEqual(time.strftime('%B', FEBRUARY),
                                february)
         if FREEBSD:
@@ -121,7 +122,7 @@ class Tests(unittest.TestCase):
 
     def test_ru_RU_utf8(self):
         loc = "ru_RU.UTF-8" if BSD else "ru_RU.utf8"
-        if FREEBSD:
+        if BSD:
             # FreeBSD 11.0
             currency_symbol = u'\u0440\u0443\u0431.'
             february = u'\u0444\u0435\u0432\u0440\u0430\u043b\u044f'
@@ -133,8 +134,9 @@ class Tests(unittest.TestCase):
         self.set_locale(loc, "UTF-8")
         lc = locale.localeconv()
         self.assertLocaleEqual(lc['currency_symbol'], currency_symbol)
-        self.assertLocaleEqual(lc['mon_thousands_sep'], u'\xa0')
-        self.assertLocaleEqual(lc['thousands_sep'], u'\xa0')
+        if not MACOS:
+            self.assertLocaleEqual(lc['mon_thousands_sep'], u'\xa0')
+            self.assertLocaleEqual(lc['thousands_sep'], u'\xa0')
         self.assertLocaleEqual(time.strftime('%B', FEBRUARY), february)
 
 
