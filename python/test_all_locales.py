@@ -46,9 +46,13 @@ class Tests(unittest.TestCase):
     def assertLocaleEqual(self, value, expected):
         if isinstance(value, bytes):
             text = value.decode(self.encoding)
-            self.assertEqual(text, expected, (value, text, expected, self.encoding))
+            self.assertEqual(text, expected,
+                             '%s (bytes: %s) != %s; encoding=%s'
+                             % (ascii(text), value, ascii(expected), self.encoding))
         else:
-            self.assertEqual(value, expected, (ascii(value), ascii(expected), self.encoding))
+            self.assertEqual(value, expected,
+                             '%s != %s; encoding=%s'
+                             % (ascii(value), ascii(expected), self.encoding))
 
     def test_fr_FR_iso8859_1(self):
         # Linux, Fedora 27, glibc 2.27
@@ -138,6 +142,18 @@ class Tests(unittest.TestCase):
             self.assertLocaleEqual(lc['mon_thousands_sep'], u'\xa0')
             self.assertLocaleEqual(lc['thousands_sep'], u'\xa0')
         self.assertLocaleEqual(time.strftime('%B', FEBRUARY), february)
+
+    def test_zh_TW_Big5(self):
+        loc = "zh_TW.Big5" if BSD else "zh_TW.big5"
+        self.set_locale(loc, "Big5")
+
+        lc = locale.localeconv()
+        self.assertLocaleEqual(lc['currency_symbol'], u'NT$')
+        self.assertLocaleEqual(lc['decimal_point'], u'.')
+        self.assertLocaleEqual(lc['thousands_sep'], u',')
+
+        self.assertLocaleEqual(time.strftime('%A %B', FEBRUARY),
+                               u'\u9031\u56db \u4e8c\u6708')
 
 
 if __name__ == '__main__':
