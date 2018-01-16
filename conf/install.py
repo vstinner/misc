@@ -4,7 +4,7 @@ from os.path import dirname, realpath, join as path_join, expanduser, exists, is
 from os import stat, readlink, symlink, lstat, unlink, makedirs
 from stat import S_ISLNK
 from shutil import copyfile
-from sys import exit, stdout
+from sys import exit, stdout, platform
 from difflib import unified_diff
 from errno import EEXIST
 import subprocess
@@ -12,7 +12,6 @@ import subprocess
 
 SYSTEMD = False
 FILES = [
-    'bash_profile',
     'gdbinit',
     'gitconfig',
     'gvimrc',
@@ -21,6 +20,10 @@ FILES = [
     'vimrc',
     ('gtk.css', '.config/gtk-3.0/gtk.css'),
 ]
+if platform.startswith('freebsd'):
+    FILES.append(('bashrc', '.bash_profile'))
+else:
+    FILES.append(('bashrc', '.bashrc'))
 if SYSTEMD:
     FILES.append(('systemd_user/ssh-agent.service',
                   '.config/systemd/user/ssh-agent.service'))
