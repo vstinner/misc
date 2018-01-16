@@ -44,8 +44,8 @@ if [ -e /etc/bash_completion ]; then
 fi
 
 if [ "$(uname -s)" = "FreeBSD" ]; then
-    alias ls='ls -F'
-    alias rm='rm -i'
+    alias ls='ls -F -G'
+    alias rm='rm -i -x'
 else
     alias ls='ls -F --color=auto'
     alias rm='rm -i --one-file-system'
