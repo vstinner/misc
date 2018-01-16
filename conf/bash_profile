@@ -29,13 +29,6 @@ xterm*|rxvt*)
     ;;
 esac
 
-if [ "$TERM" != "dumb" ]; then
-    eval "`dircolors -b`"
-    alias ls='ls --color=auto'
-    #alias dir='ls --color=auto --format=vertical'
-    #alias vdir='ls --color=auto --format=long'
-fi
-
 # This line was appended by KDE
 # Make sure our customised gtkrc file is loaded.
 export GTK2_RC_FILES=$HOME/.gtkrc-2.0
@@ -50,18 +43,21 @@ if [ -e /etc/bash_completion ]; then
     source /etc/bash_completion
 fi
 
-alias ls='ls --color=auto'
-#alias ll='ls -lh --color=auto'
-#alias lla='ls -lha --color=auto'
+if [ "$(uname -s)" = "FreeBSD" ]; then
+    alias ls='ls -F'
+    alias rm='rm -i'
+else
+    alias ls='ls -F --color=auto'
+    alias rm='rm -i --one-file-system'
+fi
+
 alias ln="ln -i -v"
 alias cp='cp -i -v'
 alias mv='mv -i -v'
-alias rm='rm -i --one-file-system'
 alias tar='tar -k'
 alias du='du -h'
 alias df='df -h'
 alias grep='grep --color'
-#alias egrep='egrep --color'
 alias nssh='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 alias nscp='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
@@ -73,7 +69,7 @@ set -C
 #  >bg<
 #  >fg<
 #  >exit<
-export HISTIGNORE=' *:[bf]g:exit:*>|*:history*'
+# export HISTIGNORE=' *:[bf]g:exit:*>|*:history*'
 
 # _SC_NPROCESSORS_ONLN = 84
 HOSTNAME=$(hostname)
@@ -82,23 +78,14 @@ export MAKEFLAGS=$(python -c "import os; print('-j%s' % (os.sysconf('SC_NPROCESS
 export PATH=~/bin:$PATH
 
 # My own Python binaries in /opt
-export PATH=$PATH:/opt/py26/bin:/opt/py32/bin:/opt/py33/bin:/opt/py34/bin
+# export PATH=$PATH:/opt/py26/bin:/opt/py32/bin:/opt/py33/bin:/opt/py34/bin
 
 
 # Disable CTRL+s shortcut (freeze the terminal, use CTRL+q to unfreeze)
 # to get readline CTRL+s shortcut (search forward in the history)
 stty -ixon
 
-# specific to DevStack:
-# source ~/devstack/openrc admin demo password
-
-# if [ "$TERM" == "xterm-256color" ]; then
-#     # Python issue #19884 is very annoying
-#     # http://bugs.python.org/issue19884
-#     export TERM="vt100"
-# fi
-
-# use -C to use a config.cache in the current directory
+## use -C to use a config.cache in the current directory
 alias configure="./configure -C"
 
 # configure to compile Python in debug mode.
@@ -109,9 +96,20 @@ alias pyconfigure_debug="./configure -C --with-pydebug CFLAGS=-O0"
 
 export PATH=$PATH:~/prog/GIT/hachoir3
 
-if [ "$(hostname)" = "selma" -o "$(hostname)" = "apu" ]; then
+if [ "$HOSTNAME" = "selma" -o "$HOSTNAME" = "apu" ]; then
     # Based on ~/.config/systemd/user/ssh-agent.service
     export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 fi
 
 export PYTHONPATH=~/prog/GIT/perf
+
+# specific to DevStack:
+if [ "$HOSTNAME" = "devstack" ]; then
+    source ~/devstack/openrc admin demo password
+fi
+
+if [ "$(uname -s)" = "FreeBSD" ]; then
+    # On FreeBSD, define CFLAGS variable as an empty string to prevent make
+    # to add -O2 flag when building Python in debug mode (-O0)
+    export CFLAGS=
+fi
