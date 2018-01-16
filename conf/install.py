@@ -12,7 +12,7 @@ import subprocess
 
 SYSTEMD = False
 FILES = [
-    'bashrc',
+    'bash_profile',
     'gdbinit',
     'gitconfig',
     'gvimrc',
