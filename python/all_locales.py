@@ -24,12 +24,13 @@ else:
 def test_locale(loc):
     global nonascii
 
-    codeset = _locale.nl_langinfo(_locale.CODESET)
     if loc:
         prefix = loc
     else:
         prefix = _locale.setlocale(locale.LC_CTYPE, None)
-    prefix = '%s/%s' % (prefix, codeset)
+    if hasattr(locale, 'nl_langinfo'):
+        codeset = locale.nl_langinfo(locale.CODESET)
+        prefix = '%s/%s' % (prefix, codeset)
 
     lc = locale.localeconv()
     for field, value in sorted(lc.items()):

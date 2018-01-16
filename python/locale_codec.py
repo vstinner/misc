@@ -22,11 +22,15 @@ def encode_locale(s, errors=None):
     return _encode_locale(s, errors)
 
 for loc in ("C", "POSIX", "fr_FR.ISO8859-1", "fr_FR.UTF-8", "zh_TW.Big5"):
-    locale.setlocale(locale.LC_ALL, loc)
+    try:
+        locale.setlocale(locale.LC_ALL, loc)
+    except locale.Error:
+        continue
     for errors in ("strict", "surrogateescape"):
         print("=== %s/%s ===" % (loc, errors))
         print(f"LC_CTYPE locale: {locale.setlocale(locale.LC_CTYPE, None)}")
-        print(f"nl_langinfo(CODESET): {locale.nl_langinfo(locale.CODESET)}")
+        if hasattr(locale, "nl_langinfo"):
+            print(f"nl_langinfo(CODESET): {locale.nl_langinfo(locale.CODESET)}")
         print()
 
         for text in (b"\xe9", b"\xff", "\xe9".encode("utf8"), b'\xa2\xdc'):
