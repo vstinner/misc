@@ -1,11 +1,5 @@
 [RFC: Process to become a core developer]
 
-TODO:
-
-* Clarify that some contributors are fine to contribute without being
-  core developers.
-
-
 I'm working on a process to describe how a contributor becomes a core
 developer. The purpose is to be transparent, list "requirements" and
 responsibilities to the contributor, and have written rules to help to
@@ -56,27 +50,51 @@ more natural and simpler. The voters are expected to know better the
 future candidate.
 
 
+Becoming A Core Developer Is Not a Goal
+=======================================
+
+CPython isn't the easiest place to start. The development process is
+rather enterprisy with long release cycles (release every 18 months) and
+rigid backwards compatibility policy. CPython also support many
+different platforms and CPU architectures.
+
+Are you sure that CPython itself is the best project for you? Depending
+on your interests and skills, you may enjoy better to contribute to
+another Python project with lower backward compatibility constraints and
+a faster release cycle.
+
+Being a CPython core developer involves responsabilities and usually
+requires a lot of time. Long-term commitment is also a major expection,
+even if it's not a strict requirement. Becoming a core developer should
+not be seen as a recognition of a contributor work, but more as a
+constraint :-) Merging a change implies becoming responsible
+regressions, backward compatibility, security, etc. of this code.
+
+It is perfectly fine to contribute to CPython without being a core
+developer. In most cases, not being able to merge your own work is not a
+blocker issue.
+
 Process Steps
 =============
 
 I propose the following steps to become a core developer:
 
-* Step 0: Newcomer
-* Step 1: Contributor
-* Step 2: Bug triage permission
-* Step 3: Mentoree.
-* Step 4: Core developer
+* CPython User
+* Contributor
+* Issue Triager
+* Trainee
+* Core Developer
 
 
-Step 0: Newcomer
-================
+CPython User
+============
 
 The first step is to start as a newcomer. Usually, newcomers are
 following the Python development without actively contributing.
 
 
-Step 1: Contributor
-===================
+Contributor
+===========
 
 I consider that newcomers become automatically contributors as soon as
 they post their first comment on the bug tracker, comment on a pull
@@ -89,8 +107,8 @@ At this step, it becomes interesting to start reading the `Python
 Developer Guide <http://devguide.python.org/>`_.
 
 
-Step 2: Bug Triage Permission
-=============================
+Issue Triager
+=============
 
 Once a contributor becomes active enough, a core developer can propose
 to give the bug triage permission to the contributor. The contributors
@@ -143,8 +161,8 @@ in the Python project, to later be able to estimate their "longterm
 commitment".
 
 
-Step 3: Getting a mentor
-========================
+Trainee
+=======
 
 Python project is big and has a long history. Contributors need a
 referrer to guide them in this wild and dangerous (!) project, and in
@@ -161,6 +179,7 @@ already started at the previous step with the same mentor.
 
 Required contributor skills:
 
+* To gain triage permission.
 * Be active on the Python project: I would like to say "still" be active
   on the Python project, which is another proof of the contributor
   commitment in the project
@@ -181,6 +200,14 @@ mentor interest areas ;-)
 (... Maybe later we may change the process to allow non-core developers
 to become mentors, but I'm not sure about of this yet ...)
 
+The main goal is to learn how to produce "commit-ready" changes. A
+perfect pull request is a change that can be merged without any addition
+modification.
+
+The duration of one month is not strict. Obviously, if the mentor and
+trainee are both available, it can be as long as the trainee know how to
+produce "commit-ready" changes.
+
 If the contributor becomes unavailable, it's fine, it's just a small
 step backward, until they become available again.
 
@@ -188,8 +215,8 @@ If the mentor becomes unavailable, maybe a different mentor can continue
 the process, otherwise the contributor goes back to the previous step.
 
 
-Step 4: Core Developer
-======================
+Core Developer
+==============
 
 Once the mentor or another core developer consider that the contributor
 is mature enough to be promoted, a vote is organized on the
@@ -254,7 +281,7 @@ Requirements to become a core developer:
   preferrable.
 
 * **Maintain pushed code**:
-  Pushing core means becoming responsible for this code. For
+  Pushing code means becoming responsible for this code. For
   regressions, backward compatibility, security, etc.
 
 * **Backward compatibility**:
@@ -266,13 +293,16 @@ Requirements to become a core developer:
   good code coverage, some functions are still untested, or not fully
   tested.
 
-
 Becoming a core developer involves getting more responsibilities:
 
 * The core developer becomes the "owner" of a merged change: maintain
   the code and handle any potential regression
 * Review pull requests
 * Triage bugs
+
+A core developer has to know how to handle tracker issues, but does not
+have to make a career of it. Triage is database management, which is a
+different skill from programming.
 
 The newly promoted core developer will followed by a mentor during one
 month until they become comfortable enough. Obviously, the mentoring can
