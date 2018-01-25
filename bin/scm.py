@@ -399,7 +399,7 @@ class Application:
         self.setup()
         display_if_empty = self.verbose or self.only_one_local_scm()
         for repository in self.iter_existing_repositories():
-            print("Check repository %s" % repository)
+            print("Check repository %s" % repository, file=sys.stderr)
             repository.out(display_if_empty)
 
     def processing(self):
