@@ -63,8 +63,8 @@ on your interests and skills, you may enjoy better to contribute to
 another Python project with lower backward compatibility constraints and
 a faster release cycle.
 
-Being a CPython core developer involves responsabilities and usually
-requires a lot of time. Long-term commitment is also a major expection,
+Being a CPython core developer involves responsibilities and usually
+requires a lot of time. Long-term commitment is also a major expectation,
 even if it's not a strict requirement. Becoming a core developer should
 not be seen as a recognition of a contributor work, but more as a
 constraint :-) Merging a change implies becoming responsible
