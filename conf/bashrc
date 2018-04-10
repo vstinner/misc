@@ -101,13 +101,12 @@ if [ "$HOSTNAME" = "selma" -o "$HOSTNAME" = "apu" ]; then
     export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 fi
 
-export PYTHONPATH=~/prog/GIT/perf
-
-# specific to DevStack:
+# specific to DevStack
 if [ "$HOSTNAME" = "devstack" ]; then
     source ~/devstack/openrc admin demo password
 fi
 
+# specific to FreeBSD
 if [ "$(uname -s)" = "FreeBSD" ]; then
     # On FreeBSD, define CFLAGS variable as an empty string to prevent make
     # to add -O2 flag when building Python in debug mode (-O0)
