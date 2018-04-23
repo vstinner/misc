@@ -23,13 +23,14 @@ GIT/tracemallocqt: git=git@github.com:vstinner/tracemallocqt.git
 GIT/unicode_book: git=git@github.com:vstinner/unicode_book.git
 GIT/vstinner.github.io: git=git@github.com:vstinner/vstinner.github.io.git
 
-python/buildmaster-config: git=git@github.com:python/buildmaster-config.git
-python/core-workflow: git=https://github.com/python/core-workflow/
-python/devguide: git=git@github.com:python/devguide.git
-python/docsbuild-scripts: git=https://github.com/python/docsbuild-scripts/
-python/peps: git=git@github.com:python/peps.git
-python/performance: git=git@github.com:python/performance.git
+# python/buildmaster-config: git=git@github.com:python/buildmaster-config.git
+# python/core-workflow: git=https://github.com/python/core-workflow/
+# python/devguide: git=git@github.com:python/devguide.git
+# python/docsbuild-scripts: git=https://github.com/python/docsbuild-scripts/
+# python/peps: git=git@github.com:python/peps.git
+# python/performance: git=git@github.com:python/performance.git
 
 python/master: git=git@github.com:python/cpython.git
 python/2.7: git=git@github.com:python/cpython.git
 python/3.6: git=git@github.com:python/cpython.git
+python/3.7: git=git@github.com:python/cpython.git
