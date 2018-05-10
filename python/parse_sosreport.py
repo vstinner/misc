@@ -645,7 +645,7 @@ class SOSReportParser(object):
         return result
 
     @staticmethod
-    def cat(filename):
+    def cat(self, filename):
         self.get_hosts()
 
         with open(filename) as fp:
@@ -933,7 +933,7 @@ class SOSReportParser(object):
             self._main()
         except OSError as exc:
             # catch BrokenPipeError
-            if exc.errno != erro.EPIPE:
+            if exc.errno != errno.EPIPE:
                 raise
 
             # Close stdout and stderr to prevent Python warning at exit
