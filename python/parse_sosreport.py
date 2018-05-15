@@ -644,15 +644,6 @@ class SOSReportParser(object):
         _find_directory(self.directory, directory, result)
         return result
 
-    @staticmethod
-    def cat(filename):
-        self.get_hosts()
-
-        with open(filename) as fp:
-            for line in fp:
-                line = line.rstrip()
-                print(line)
-
     def filename_to_host(self, filename):
         filename = os.path.abspath(filename)
         parts = filename.split(os.path.sep)
@@ -933,7 +924,7 @@ class SOSReportParser(object):
             self._main()
         except OSError as exc:
             # catch BrokenPipeError
-            if exc.errno != erro.EPIPE:
+            if exc.errno != errno.EPIPE:
                 raise
 
             # Close stdout and stderr to prevent Python warning at exit
