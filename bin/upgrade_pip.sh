@@ -11,3 +11,8 @@ echo "XXX and so venv. Fedora has a downstream ensurepip/rewheel/ which fails"
 echo "XXX if there are multiple"
 echo "XXX /usr/lib/python3.6/site-packages/setuptools-XXX.dist-info/"
 echo "XXX directories."
+echo
+echo "Workaround:"
+echo "sudo python3 -m pip uninstall setuptools"
+echo "sudo dnf reinstall python3-setuptools"
+
