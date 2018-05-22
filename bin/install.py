@@ -33,7 +33,7 @@ def main():
     dstdir = path_join(expanduser('~'), 'bin')
     try:
         mkdir(dstdir)
-    except OSError, err:
+    except OSError as err:
         if err.errno == EEXIST:
             pass
         else:
