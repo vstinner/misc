@@ -1,10 +1,13 @@
 GIT/conf: git=git@github.com:vstinner/conf.git
 GIT/cpython_core_tutorial: git=git@github.com:vstinner/cpython_core_tutorial.git
 GIT/notes: git=git@github.com:vstinner/notes.git
+GIT/pythondev: git=git@github.com:vstinner/pythondev.git
 GIT/misc: git=git@github.com:vstinner/misc.git
 GIT/private: git=ssh://git@bitbucket.org/vstinner/private2.git
 GIT/python-security: git=git@github.com:vstinner/python-security.git
 GIT/vstinner.github.io: git=git@github.com:vstinner/vstinner.github.io.git
+GIT/hachoir: git=git@github.com:vstinner/hachoir.git
+GIT/perf: git=git@github.com:vstinner/perf.git
 
 python/master: git=git@github.com:python/cpython.git
 python/2.7: git=git@github.com:python/cpython.git
@@ -26,8 +29,6 @@ python/3.7: git=git@github.com:python/cpython.git
 # python/performance: git=git@github.com:python/performance.git
 # GIT/faster_cpython: git=git@github.com:vstinner/faster_cpython.git
 # GIT/faulthandler: git=git@github.com:vstinner/faulthandler.git
-# GIT/hachoir3: git=git@github.com:vstinner/hachoir3.git
-# GIT/perf: git=git@github.com:vstinner/perf.git
 # GIT/unicode_book: git=git@github.com:vstinner/unicode_book.git
 # GIT/sixer: git=git@github.com:vstinner/sixer.git
 # GIT/pytracemalloc: git=git@github.com:vstinner/pytracemalloc.git
