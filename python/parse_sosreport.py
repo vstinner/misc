@@ -715,7 +715,7 @@ class SOSReportParser(object):
             self.get_ip_addr(filename)
 
     def action_rabbitmq(self):
-        for path in self.find_directory(os.join.path(VAR_LOG, 'rabbitmq/')):
+        for path in self.find_directory(os.path.join(VAR_LOG, 'rabbitmq/')):
             found = False
             for name in os.listdir(path):
                 #if "sasl.log" in name:
