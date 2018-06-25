@@ -235,8 +235,11 @@ def _find_file(path, filename, result, max_depth):
                     break
                 testdir = os.path.dirname(testdir)
 
-def _find_directory(path, directory, result):
-    for rootdir, dirnames, filenames in os.walk(path):
+def _find_directory(rootpath, directory, result):
+    if rootpath.endswith(directory):
+        result.append(rootpath)
+
+    for rootdir, dirnames, filenames in os.walk(rootpath):
         for dirname in dirnames:
             fullname = join_path(rootdir, dirname)
             if fullname.endswith(directory):
@@ -638,10 +641,13 @@ class SOSReportParser(object):
         return result
 
     def find_directory(self, directory):
+        root = self.directory
+        if root.endswith(os.path.sep):
+            root = root[:-1]
         if directory.endswith(os.path.sep):
             directory = directory[:-1]
         result = []
-        _find_directory(self.directory, directory, result)
+        _find_directory(root, directory, result)
         return result
 
     def filename_to_host(self, filename):
