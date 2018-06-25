@@ -55,6 +55,10 @@ import shlex
 import sys
 import traceback
 
+# OSP 13 uses /var/log/containers/
+# OSP 12 uses /var/log/
+VAR_LOG = 'var/log/containers/'
+
 OSLO_MESSAGING_REGEXES = (
     (r'Failed to consume message from queue: ', logging.ERROR),
     (r'MessagingTimeout: Timed out waiting for a reply to message ID ', logging.WARNING),
@@ -590,7 +594,7 @@ class SOSReportParser(object):
             cmd = subparsers.add_parser(action)
 
         cmd = subparsers.add_parser('grep',
-                                    help="Search PATTERN in var/log/**.log")
+                                    help="Search PATTERN in %s/**.log" % VAR_LOG)
         cmd.add_argument('pattern')
 
         self.args = parser.parse_args()
@@ -711,17 +715,19 @@ class SOSReportParser(object):
             self.get_ip_addr(filename)
 
     def action_rabbitmq(self):
-        for path in self.find_directory('var/log/rabbitmq/'):
+        for path in self.find_directory(os.join.path(VAR_LOG, 'rabbitmq/')):
             found = False
             for name in os.listdir(path):
-                if "sasl.log" in name:
-                    continue
+                #if "sasl.log" in name:
+                #    continue
                 if name.endswith(".gz"):
                     continue
                 # Search for files:
                 # rabbit@overcloud-controller-0.log
                 # rabbit@overcloud-controller-0.log-20171027
-                if not name.endswith(".log") and not re.search(r"\.log-[0-9]{8}$", name):
+                #if not name.endswith(".log") and not re.search(r"\.log-[0-9]{8}$", name):
+                #    continue
+                if ".log" not in name:
                     continue
                 found = True
                 log_file = join_path(path, name)
@@ -771,7 +777,7 @@ class SOSReportParser(object):
         parser.grep(filename, regex)
 
     def grep_var_log(self, regex, logger=None):
-        for path in self.find_directory('var/log/'):
+        for path in self.find_directory(VAR_LOG):
             for rootdir, dirnames, filenames in os.walk(path):
                 for filename in filenames:
                     if not filename.endswith(".log"):
