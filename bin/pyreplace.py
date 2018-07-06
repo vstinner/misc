@@ -158,8 +158,7 @@ class PyReplace:
     @classmethod
     def parse_options(cls, args=None):
         parser = optparse.OptionParser(
-            description=("sixer is a tool adding Python 3 support "
-                         "to a Python 2 project"),
+            description=("pyreplace.py is a tool to replace a Python pattern with another"),
             usage="%prog [options] <operation> <file1> <file2> <...>")
         parser.add_option(
             '-c', '--to-stdout', action="store_true",
