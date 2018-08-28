@@ -26,6 +26,9 @@ set statusline=%f%m%r%w\ (b%n)\ %l,%v\ [%Y/%{&ff}/%{&fileencoding}]
 " Minimal number of screen lines to keep above and below the cursor: 5 lines
 "set scrolloff=5
 
+" Disable folding
+set nofoldenable
+
 "=== Edition ============
 
 "set showmatch   " Display corresponding parenthesis
