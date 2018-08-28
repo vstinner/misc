@@ -1,8 +1,7 @@
 unicode_book/build/
 unicode_book/surrogate_pair
 unicode_book/guess_encoding
-misc/locale
-misc/c_types
+misc/c_locale
 antispam/private
 misc/libnobuffer.so
 *.py[cod]
