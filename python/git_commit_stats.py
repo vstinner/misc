@@ -1,6 +1,14 @@
+#!/usr/bin/env python3
 import collections
+import os
 import subprocess
-proc = subprocess.run(['git', 'log', '--after=2018-05-01', 'master'],
+
+DATE = "2018-01-01"
+BRANCH = 'master'
+
+print("Statistics on the %s branch after %s" % (BRANCH, DATE))
+print("cwd: %s" % os.getcwd())
+proc = subprocess.run(['git', 'log', '--after=%s' % DATE, BRANCH],
                       stdout=subprocess.PIPE,
                       universal_newlines=True)
 authors = collections.Counter()
