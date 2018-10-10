@@ -5,8 +5,11 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
-# don't put duplicate lines in the history. See bash(1) for more options
+# don't put duplicate lines in the history
 export HISTCONTROL=ignoredups
+
+# Add a timestamp prefix to the command history
+export HISTTIMEFORMAT='%F %T '
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -112,3 +115,7 @@ if [ "$(uname -s)" = "FreeBSD" ]; then
     # to add -O2 flag when building Python in debug mode (-O0)
     export CFLAGS=
 fi
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
