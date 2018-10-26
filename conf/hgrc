@@ -42,5 +42,6 @@ pager = LESS='FSRX' less
 [merge-patterns]
 ** = internal:merge
 
-[hostfingerprints]
-bitbucket.org = 70:a7:44:ea:a9:ea:e8:69:16:ea:12:00:35:a9:a6:0e:ae:38:8e:f8
+[hostsecurity]
+bitbucket.org:fingerprints=sha256:32:12:90:9a:70:64:82:1c:5b:52:cc:c3:0a:d0:79:db:e1:a8:62:1b:9a:9a:4c:f4:72:40:1c:a7:3a:d3:0a:8c
+
