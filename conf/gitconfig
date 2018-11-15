@@ -9,7 +9,7 @@ email = vstinner@redhat.com
 [alias]
 glog = log --graph
 out = log '@{upstream}..' --pretty='format:%Cred%h%Creset %s' --color --reverse
-amend = commit -v --untracked-files=no --amend --all
+amend = commit -v --untracked-files=no --amend
 b = branch
 ci = commit -v --untracked-files=no
 co = checkout
