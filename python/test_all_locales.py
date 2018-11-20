@@ -1,9 +1,34 @@
+"""
+Locale tests written for Fedora 29 and Python 3.8:
+
+https://bugs.python.org/issue25812
+https://bugs.python.org/issue28604
+https://bugs.python.org/issue33954
+"""
 import codecs
 import locale
 import os
+import re
 import sys
 import time
 import unittest
+
+
+def get_fedora():
+    try:
+        fp = open("/etc/fedora-release")
+    except OSError:
+        return None
+
+    with fp:
+        line = fp.readline()
+
+    match = re.match(r"Fedora release ([0-9]+)", line)
+    if not match:
+        raise Exception("failed to parse Fedora release: %r" % line)
+
+    return int(match.group(1))
+
 
 
 PY3 = (sys.version_info >= (3,))
@@ -12,6 +37,7 @@ MACOS = sys.platform == 'darwin'
 BSD = FREEBSD or MACOS
 FEBRUARY = time.localtime(time.mktime((2018, 2, 1, 12, 0, 0, 0, 0, 0)))
 AUGUST = time.localtime(time.mktime((2018, 8, 1, 12, 0, 0, 0, 0, 0)))
+FEDORA = get_fedora()
 
 
 if not PY3:
@@ -80,7 +106,11 @@ class Tests(unittest.TestCase):
 
     def test_ru_RU(self):
         loc = "ru_RU.ISO8859-5" if BSD else "ru_RU"
-        if FREEBSD:
+        if FEDORA and FEDORA >= 29:
+            # Fedora 29, glibc 2.28
+            currency_symbol = u'\u0440\u0443\u0431'
+            february = '\u0444\u0435\u0432\u0440\u0430\u043b\u044f'
+        elif FREEBSD:
             # FreeBSD 11
             currency_symbol = u'\u0440\u0443\u0431.'
             february = u'\u0444\u0435\u0432\u0440\u0430\u043b\u044f'
@@ -102,7 +132,11 @@ class Tests(unittest.TestCase):
 
     def test_ru_RU_koi8r(self):
         loc = "ru_RU.KOI8-R" if BSD else "ru_RU.koi8r"
-        if BSD:
+        if FEDORA and FEDORA >= 29:
+            # Fedora 29, glibc 2.28
+            currency_symbol = u'\u0440\u0443\u0431'
+            february = '\u0444\u0435\u0432\u0440\u0430\u043b\u044f'
+        elif BSD:
             # FreeBSD 11.0
             currency_symbol = u'\u0440\u0443\u0431.'
             february = u'\u0444\u0435\u0432\u0440\u0430\u043b\u044f'
@@ -126,21 +160,29 @@ class Tests(unittest.TestCase):
 
     def test_ru_RU_utf8(self):
         loc = "ru_RU.UTF-8" if BSD else "ru_RU.utf8"
-        if BSD:
+        if FEDORA and FEDORA >= 29:
+            # Fedora 29, glibc 2.28
+            currency_symbol = '\u20bd'
+            february = '\u0444\u0435\u0432\u0440\u0430\u043b\u044f'
+            mon_thousands_sep = '\u202f'
+        elif BSD:
             # FreeBSD 11.0
             currency_symbol = u'\u0440\u0443\u0431.'
             february = u'\u0444\u0435\u0432\u0440\u0430\u043b\u044f'
+            mon_thousands_sep = u'\xa0'
         else:
             # Linux, Fedora 27, glibc 2.27
             currency_symbol = u'\u20bd'
             february = u'\u0424\u0435\u0432\u0440\u0430\u043b\u044c'
+            mon_thousands_sep = u'\xa0'
+        thousands_sep = mon_thousands_sep
 
         self.set_locale(loc, "UTF-8")
         lc = locale.localeconv()
         self.assertLocaleEqual(lc['currency_symbol'], currency_symbol)
         if not MACOS:
-            self.assertLocaleEqual(lc['mon_thousands_sep'], u'\xa0')
-            self.assertLocaleEqual(lc['thousands_sep'], u'\xa0')
+            self.assertLocaleEqual(lc['mon_thousands_sep'], mon_thousands_sep)
+            self.assertLocaleEqual(lc['thousands_sep'], thousands_sep)
         self.assertLocaleEqual(time.strftime('%B', FEBRUARY), february)
 
     def test_zh_TW_Big5(self):
@@ -170,5 +212,27 @@ class Tests(unittest.TestCase):
                                date_str)
 
 
-if __name__ == '__main__':
+class MonetaryTests(unittest.TestCase):
+    TESTS = (
+        # LC_CTYPE, LC_MONETARY, currency_symbol
+        ('en_GB', 'ar_SA.UTF-8', '\u0631.\u0633'),
+        ('en_GB', 'fr_FR.UTF-8', '\u20ac'),
+        ('en_GB', 'uk_UA.koi8u', '\u0433\u0440\u043d.'),
+        ('fr_FR.UTF-8', 'uk_UA.koi8u', '\u0433\u0440\u043d.'),
+    )
+
+    def setUp(self):
+        # restore all locales at exit
+        lc_all = locale.setlocale(locale.LC_ALL, None)
+        self.addCleanup(locale.setlocale, locale.LC_ALL, lc_all)
+
+    def test_numeric(self):
+        for lc_ctype, lc_monetary, currency_symbol in self.TESTS:
+            locale.setlocale(locale.LC_ALL, lc_ctype)
+            locale.setlocale(locale.LC_MONETARY, lc_monetary)
+            lc = locale.localeconv()
+            self.assertEqual(lc['currency_symbol'], currency_symbol)
+
+
+if __name__ == "__main__":
     unittest.main()
