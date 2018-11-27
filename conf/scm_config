@@ -5,7 +5,7 @@ GIT/pythondev: git=git@github.com:vstinner/pythondev.git
 GIT/misc: git=git@github.com:vstinner/misc.git
 GIT/private: git=ssh://git@bitbucket.org/vstinner/private2.git
 GIT/python-security: git=git@github.com:vstinner/python-security.git
-GIT/vstinner.github.io: git=git@github.com:vstinner/vstinner.github.io.git
+GIT/github.io: git=git@github.com:vstinner/vstinner.github.io.git
 GIT/hachoir: git=git@github.com:vstinner/hachoir.git
 GIT/perf: git=git@github.com:vstinner/perf.git
 
