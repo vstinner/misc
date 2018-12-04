@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# https://vstinner.readthedocs.io/cpython.html#embedded-libraries
+# https://pythondev.readthedocs.io/files.html#vendored-external-libraries
 import re
+import os.path
+
 
 def grep(filename, pattern):
     regex = re.compile(pattern)
@@ -12,21 +14,42 @@ def grep(filename, pattern):
     raise ValueError("unable to find %r in %s" % (pattern, filename))
 
 
-def dump_version(name, filename, pattern):
+def get_ensurepip_versions():
+    versions = {}
+    try:
+        names = os.listdir("Lib/ensurepip/_bundled/")
+    except OSError:
+        return versions
+
+    for name in names:
+        name = os.path.basename(name)
+        parts = name.split('-')
+        name = parts[0]
+        if name in ('pip','setuptools'):
+            versions[name] = parts[1]
+
+    return versions
+
+
+def write_version(name, version):
+    print("%s: %s" % (name, version))
+
+
+def grep_version(name, filename, pattern):
     try:
         version = grep(filename, pattern)
     except FileNotFoundError:
         return
-    print("%s: %s" % (name, version))
+    write_version(name, version)
 
 def main():
-    dump_version('libffi',
+    grep_version('libffi',
                  'Modules/_ctypes/libffi/configure.ac',
                  r'AC_INIT\([^,]+, \[([^]]+)\],')
-    dump_version('libffi_osx',
+    grep_version('libffi_osx',
                  'Modules/_ctypes/libffi_osx/include/fficonfig.h',
                  r'PACKAGE_VERSION "([^"]+)"')
-    dump_version('libffi_msvc',
+    grep_version('libffi_msvc',
                  'Modules/_ctypes/libffi_msvc/ffi.h',
                  r'libffi (.*) - Copyright \(c\) ')
     filename = 'Modules/expat/expat.h'
@@ -34,24 +57,28 @@ def main():
     minor = grep(filename, r'#define XML_MINOR_VERSION (.*)')
     micro = grep(filename, r'#define XML_MICRO_VERSION (.*)')
     print('expat: %s.%s.%s' % (major, minor, micro))
-    dump_version('zlib',
+    grep_version('zlib',
                  'Modules/zlib/zlib.h',
                  r'#define ZLIB_VERSION "(.*)"')
-    dump_version('libmpdec',
+    grep_version('libmpdec',
                  'Modules/_decimal/libmpdec/mpdecimal.h',
                  r'MPD_VERSION "(.*)"')
-    dump_version('openssl[Windows]',
+    grep_version('openssl[Windows]',
                  'PCbuild/get_externals.bat',
                  r'openssl-([0-9].*)')
-    dump_version('openssl[macOS]',
+    grep_version('openssl[macOS]',
                  'Mac/BuildScript/build-installer.py',
                  r'openssl-([0-9][^.]*\.[^.]+\.[^.]+)')
-    dump_version('SQLite[Windows]',
+    grep_version('SQLite[Windows]',
                  'PCbuild/get_externals.bat',
                  r'sqlite-([0-9].*)')
-    dump_version('SQLite[macOS]',
+    grep_version('SQLite[macOS]',
                  'Mac/BuildScript/build-installer.py',
                  r'SQLite ([0-9][^"]*)')
+    versions = get_ensurepip_versions()
+    for name in ('setuptools', 'pip'):
+        if name in versions:
+            write_version(name, versions[name])
 
 
 if __name__ == "__main__":
