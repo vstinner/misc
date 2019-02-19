@@ -5,7 +5,7 @@ Hi,
 Congratulations! You reached the last step of the process to become a
 core developer, you have been promoted as a core developer!
 
-https://github.com/vstinner/misc/blob/master/cpython/pep-core_dev_process.rst#step-4-core-developer
+https://github.com/vstinner/misc/blob/master/cpython/pep-core_dev_process.rst#core-developer
 
 The first obvious change for you is that you are now allowed to merge a
 pull request on the CPython project. But becoming a core developer first
@@ -19,7 +19,7 @@ Conduct (CoC):
 http://cpython-core-tutorial.readthedocs.io/en/latest/code_of_conduct.html
 
 You are also expected to show the good example of being kind and
-respectul.
+respectful.
 
 Since core developers are all volunteers, we cannot request you to
 triage bug and review pull requests, but it is a good practice.
