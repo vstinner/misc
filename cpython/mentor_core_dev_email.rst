@@ -1,4 +1,4 @@
-Subject: I will be your mentor for core dev during one month :-)
+Subject: I will be your mentor for core dev for one month :-)
 
 Hi,
 
@@ -10,7 +10,7 @@ https://github.com/vstinner/misc/blob/master/cpython/pep-core_dev_process.rst#co
 The first obvious change for you is that you are now allowed to merge a
 pull request on the CPython project. But becoming a core developer first
 means additional responsibilities. Once you merge a pull request, you
-becomes the maintainer of the change, and you are expected to fix any
+become the maintainer of the change, and you are expected to fix any
 potential regression.
 
 As any Python contributor, you have to respect the Python Code of
@@ -18,7 +18,7 @@ Conduct (CoC):
 
 http://cpython-core-tutorial.readthedocs.io/en/latest/code_of_conduct.html
 
-You are also expected to show the good example of being kind and
+You are also expected to show a good example of being kind and
 respectful.
 
 Since core developers are all volunteers, we cannot request you to
@@ -32,7 +32,7 @@ https://devguide.python.org/
 http://cpython-core-tutorial.readthedocs.io/en/latest/
 
 You can ask questions on python-committers, mailing list restricted to
-core developers but public, core-mentorship, the python-dev mailing
+core developers but the public, core-mentorship, the python-dev mailing
 list, the #python-dev IRC channel on Freenode, or you can ask me
 directly (that's part of my mentor role).
 
