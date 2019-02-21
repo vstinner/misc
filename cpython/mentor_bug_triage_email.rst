@@ -1,4 +1,4 @@
-Subject: I will be your mentor for bug triage during one month :-)
+Subject: I will be your mentor for bug triage for one month :-)
 
 Hi,
 
@@ -14,7 +14,7 @@ As any Python contributor, you have to respect the Python Code of Conduct (CoC):
 
 http://cpython-core-tutorial.readthedocs.io/en/latest/code_of_conduct.html
 
-You are also expected to show the good example of being kind and respectul.
+You are also expected to show a good example of being kind and respectful.
 
 
 If you want to learn more about the CPython workflow, you can find
