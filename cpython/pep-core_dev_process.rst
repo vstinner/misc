@@ -54,8 +54,8 @@ Becoming A Core Developer Is Not a Goal
 =======================================
 
 CPython isn't the easiest place to start. The development process is
-rather enterprisy with long release cycles (release every 18 months) and
-rigid backwards compatibility policy. CPython also support many
+rather an enterprise with long release cycles (release every 18 months) and
+rigid backward compatibility policy. CPython also supports many
 different platforms and CPU architectures.
 
 Are you sure that CPython itself is the best project for you? Depending
@@ -101,7 +101,7 @@ they post their first comment on the bug tracker, comment on a pull
 a request, or a pull request.
 
 There is no manual validation, nor additional privilege. It's just a
-thin distinction with a newcomer.
+a thin distinction with a newcomer.
 
 At this step, it becomes interesting to start reading the `Python
 Developer Guide <http://devguide.python.org/>`_.
@@ -113,7 +113,7 @@ Issue Triager
 Once a contributor becomes active enough, a core developer can propose
 to give the bug triage permission to the contributor. The contributors
 may ask themselves to give this permission. The level of activity is not
-strictly defined, since it depends on the kind of contributions and
+strictly defined since it depends on the kind of contributions and
 their quality. The core developer is responsible to estimate this.
 
 There is no formal vote to give the bug triage permission. The core
@@ -123,10 +123,10 @@ developers are free to discuss together ;-)
 Getting the bug triage permission gives more responsibilities to the
 contributor: the bug tracker should not be misused to not lost useful
 information. Taking a decision on an issue requires a certain level of
-knowledge of the Python development.
+knowledge of Python development.
 
-I propose that the contributor gets a mentor during one month. The role
-of the mentor is to answer to any question of the mentoree, and help
+I propose that the contributor gets a mentor for one month. The role
+of the mentor is to answer any question of the mentoree and help
 them to take decisions if needed. The mentor is not expected to watch
 closely what the contributor does on the bug tracker.
 
@@ -142,8 +142,8 @@ relationship.
 Required skills for the contributor:
 
 * Be active on the Python project: bug tracker, pull requests and/or
-  mailing lists like python-ideas and python-dev. There is no minimum
-  number of contributions: it's not a matter of quantity, but more a
+  mailing lists like python-ideas and python-dev. There is no minimum number of
+  contributions: it's not a matter of quantity, but more a
   matter of quality and the kind of contributions.
 * Be nice, polite and respectful.
 * Know what they are talking about, and explain their reasoning well.
@@ -182,7 +182,7 @@ Required contributor skills:
 * To gain triage permission.
 * Be active on the Python project: I would like to say "still" be active
   on the Python project, which is another proof of the contributor
-  commitment in the project
+  commitment to the project
 * Sign the CLA: at some point, getting changes merged into Git becomes
   mandatory, and so the CLA must be signed.
 * Find a mentor.
@@ -198,10 +198,10 @@ Obviously, it's better if the contributor interest areas match with the
 mentor interest areas ;-)
 
 (... Maybe later we may change the process to allow non-core developers
-to become mentors, but I'm not sure about of this yet ...)
+to become mentors, but I'm not sure about this yet ...)
 
-The main goal is to learn how to produce "commit-ready" changes. A
-perfect pull request is a change that can be merged without any addition
+The main goal is to learn how to produce "commit-ready" changes. A perfect pull
+request is a change that can be merged without any addition
 modification.
 
 The duration of one month is not strict. Obviously, if the mentor and
@@ -220,12 +220,12 @@ Core Developer
 
 Once the mentor or another core developer consider that the contributor
 is mature enough to be promoted, a vote is organized on the
-python-committers mailing list. The contributor skills and contributions
+python-committers mailing list. Contributor skills and contributions
 should be listed. Usually, any negative vote becomes a veto which blocks
 the promotion.
 
-While a few votes were negative in the past, I hope that this new
-formalized process would make the vote more natural and limit the "risk"
+While a few votes were negative in the past, I hope that this new formalized
+process would make the vote more natural and limit the "risk"
 of negative votes.
 
 Requirements to become a core developer:
@@ -250,17 +250,17 @@ Requirements to become a core developer:
   months before being able to become a core developer.
 
 * **Reviews**:
-  Review patches and pull requests. While we don't require not expect
+  Review patches and pull requests. While we don't require and do not expect
   newcomers to review, we expect that core developers dedicate a part of
-  their time on reviews. What it means is that core developers care
+  their time on reviews. What it means is that the core developers care
   about the quality of the whole code base (and also the non-code
   parts), not only their own contributions to it.
 
 * **CPython workflow**:
   Know the CPython workflow. Be aware of the pre-commit and post-commits
   CIs. How ideas are discussed. It's not only about writing and pushing
-  patches. This part is also required from regular contributors, at
-  least the experienced ones.
+  patches. This part is also required from regular contributors, at least
+  the experienced ones.
 
 * **CPython lifecycle**:
   Know the project's lifecycle: Python has multiple maintained branches,
@@ -275,8 +275,8 @@ Requirements to become a core developer:
   the first iteration. Or, if the code isn't good at the first
   iteration, the author is able to figure it out by themselves and
   doesn't rush merge it.  Of course, nobody is perfect, which is why
-  non-trivial code written by core developers ideally goes through a
-  review phase anyway. But a general sense of what is "in good state for
+  non-trivial code was written by core developers ideally goes through a
+  review phase anyway. But a general sense of what is "in a good state for
   review/merging" vs. "just a draft I'm working on" is indeed
   preferrable.
 
@@ -289,7 +289,7 @@ Requirements to become a core developer:
   example, backward compatibility is taken very seriously. We don't
   remove public functions in a minor release (3.x), but start with a
   deprecation period. It's not only about removing features, but also
-  *changing* the behavior. Even if Python has a wide test suite with a
+  *changing* the behavior. Even if Python has a wide test suite with
   good code coverage, some functions are still untested, or not fully
   tested.
 
@@ -300,12 +300,12 @@ Becoming a core developer involves getting more responsibilities:
 * Review pull requests
 * Triage bugs
 
-A core developer has to know how to handle tracker issues, but does not
+A core developer has to know how to handle tracker issues but does not
 have to make a career of it. Triage is database management, which is a
 different skill from programming.
 
-The newly promoted core developer will followed by a mentor during one
-month until they become comfortable enough. Obviously, the mentoring can
+The newly promoted core developer will be followed by a mentor for one
+month until they become comfortable enough. Obviously, mentoring can
 be extended if needed.
 
 If the result of the promotion vote is negative, it's ok, move back to
