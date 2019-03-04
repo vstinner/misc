@@ -76,7 +76,7 @@ set -C
 
 # _SC_NPROCESSORS_ONLN = 84
 HOSTNAME=$(hostname)
-export MAKEFLAGS=$(python -c "import os; print('-j%s' % (os.sysconf('SC_NPROCESSORS_ONLN') + 1))")
+export MAKEFLAGS=$(python3 -c "import os; print('-j%s' % (os.sysconf('SC_NPROCESSORS_ONLN') + 1))")
 
 export PATH=~/bin:$PATH
 
@@ -112,6 +112,8 @@ if [ "$(uname -s)" = "FreeBSD" ]; then
     # On FreeBSD, define CFLAGS variable as an empty string to prevent make
     # to add -O2 flag when building Python in debug mode (-O0)
     export CFLAGS=
+
+    export LC_ALL="fr_FR.UTF-8"
 fi
 
 # check the window size after each command and, if necessary,
