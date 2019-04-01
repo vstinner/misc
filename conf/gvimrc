@@ -4,7 +4,13 @@
 set bg=light
 
 " Name of the font for gvim
-set guifont=Monospace\ Regular\ 10
+set guifont=Monospace\ Regular\ 9
+
+" Hide the menubar
+"set guioptions -=m
+
+" Hide the toolbar
+set guioptions -=T
 
 "=== Highlight tabs, trailing spaces and non breaking spaces ============
 " Type ":2match" to disable highlighting spaces
