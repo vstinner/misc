@@ -7,7 +7,7 @@ GIT/private: git=ssh://git@bitbucket.org/vstinner/private2.git
 GIT/python-security: git=git@github.com:vstinner/python-security.git
 GIT/github.io: git=git@github.com:vstinner/vstinner.github.io.git
 GIT/hachoir: git=git@github.com:vstinner/hachoir.git
-GIT/perf: git=git@github.com:vstinner/perf.git
+GIT/pyperf: git=git@github.com:vstinner/pyperf.git
 
 python/master: git=git@github.com:python/cpython.git
 python/2.7: git=git@github.com:python/cpython.git
