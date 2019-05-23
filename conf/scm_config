@@ -11,6 +11,7 @@ GIT/pyperf: git=git@github.com:vstinner/pyperf.git
 
 python/master: git=git@github.com:python/cpython.git
 python/2.7: git=git@github.com:python/cpython.git
+python/3.5: git=git@github.com:python/cpython.git
 python/3.6: git=git@github.com:python/cpython.git
 python/3.7: git=git@github.com:python/cpython.git
 
