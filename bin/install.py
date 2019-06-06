@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Install scripts as symbolic links in ~/.local/bin/
+"""
 from __future__ import with_statement
 from os.path import dirname, realpath, join as path_join, expanduser, exists, islink
 from os import stat, readlink, symlink, lstat, unlink, mkdir
@@ -12,8 +15,9 @@ FILES = (
     'apply_patch.py',
     'btrfs_backup.sh',
     'couleur3.ch',
+    'dedup.py',
     'detect_encoding.py',
-    'hgeditor',
+    'gh_pr.sh',
     'nova.sh',
     'pyreplace.py',
     'releaser.py',
@@ -23,14 +27,12 @@ FILES = (
     'taskset_isolated.py',
     'upload_private.sh',
     'upload_tmp.sh',
-    'cherry_picker.py',
-    'gh_pr.sh',
-    'dedup.py',
 )
 
 def main():
     srcdir = realpath(dirname(__file__))
-    dstdir = path_join(expanduser('~'), 'bin')
+    dstdir_orig = path_join('~', '.local', 'bin')
+    dstdir = expanduser(dstdir_orig)
     try:
         mkdir(dstdir)
     except OSError as err:
@@ -43,6 +45,9 @@ def main():
     files = []
     for name in FILES:
         src = path_join(srcdir, name)
+        if not exists(src):
+            print("Error: %s does not exist" % src)
+            exit(1)
         dst = path_join(dstdir, name)
         try:
             dst_link = readlink(dst)
@@ -81,7 +86,7 @@ def main():
         else:
             # remove broken link
             unlink(dst)
-        print("Create link ~/bin/%s" % name)
+        print("Create link %s" % path_join(dstdir_orig, name))
         symlink(src, dst)
 
 if __name__ == "__main__":
