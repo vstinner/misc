@@ -78,7 +78,7 @@ set -C
 HOSTNAME=$(hostname)
 export MAKEFLAGS=$(python3 -c "import os; print('-j%s' % (os.sysconf('SC_NPROCESSORS_ONLN') + 1))")
 
-export PATH=~/bin:$PATH
+export PATH=~/.local/bin:$PATH
 
 # My own Python binaries in /opt
 # export PATH=$PATH:/opt/py26/bin:/opt/py32/bin:/opt/py33/bin:/opt/py34/bin
