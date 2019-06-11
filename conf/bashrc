@@ -1,45 +1,21 @@
-# ~/.bashrc: executed by bash(1) for non-login shells.
-# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
-# for examples
-
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
+# Inherit system defaults
+source /etc/profile
+
 # don't put duplicate lines in the history
 export HISTCONTROL=ignoredups
-
-# Add a timestamp prefix to the command history
-export HISTTIMEFORMAT='%F %T '
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-# make less more friendly for non-text input files, see lesspipe(1)
-[ -x /usr/bin/lesspipe ] && eval "$(lesspipe)"
-
-# set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "$debian_chroot" -a -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
-
-# If this is an xterm set the title to user@host:dir
-case "$TERM" in
-xterm*|rxvt*)
-    PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}: ${PWD/$HOME/~}\007"'
-    ;;
-*)
-    ;;
-esac
-
-# This line was appended by KDE
-# Make sure our customised gtkrc file is loaded.
-export GTK2_RC_FILES=$HOME/.gtkrc-2.0
-
-### vstinner's configuration ###
-source /etc/profile
 export EDITOR=vim
+
+# Prompt "vstinner@apu$ "
 export PS1='\u@\h$ '
+
 if [ -e /etc/bash_completion ]; then
     # bash_completion doesn't support noclobber
     set +C
@@ -47,6 +23,11 @@ if [ -e /etc/bash_completion ]; then
 fi
 
 if [ "$(uname -s)" = "FreeBSD" ]; then
+    # On FreeBSD, define CFLAGS variable as an empty string to prevent make
+    # to add -O2 flag when building Python in debug mode (-O0)
+    export CFLAGS=
+    export LC_ALL="fr_FR.UTF-8"
+
     alias ls='ls -F -G'
     alias rm='rm -i -x'
 else
@@ -63,32 +44,22 @@ alias df='df -h'
 alias grep='grep --color'
 alias nssh='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 alias nscp='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+alias cat='cat -v'
 
 # Protect myself against stupid commands like "echo user:password: >/etc/passwd"
 set -C
 
-# Ignore:
-#  any command starting with a space (eg. " sudo touch /tmp/x")
-#  >bg<
-#  >fg<
-#  >exit<
-# export HISTIGNORE=' *:[bf]g:exit:*>|*:history*'
+export MAKEFLAGS=$(python3 -c "import os; print('-j%s' % (os.cpu_count() + 2))")
 
-# _SC_NPROCESSORS_ONLN = 84
-HOSTNAME=$(hostname)
-export MAKEFLAGS=$(python3 -c "import os; print('-j%s' % (os.sysconf('SC_NPROCESSORS_ONLN') + 1))")
-
+# ~/.local/bin/ is used by pip, systemd and is an extendsion
+# of XDG user-dirs specs
 export PATH=~/.local/bin:$PATH
-
-# My own Python binaries in /opt
-# export PATH=$PATH:/opt/py26/bin:/opt/py32/bin:/opt/py33/bin:/opt/py34/bin
-
 
 # Disable CTRL+s shortcut (freeze the terminal, use CTRL+q to unfreeze)
 # to get readline CTRL+s shortcut (search forward in the history)
 stty -ixon
 
-## use -C to use a config.cache in the current directory
+# Use -C to use a config.cache in the current directory
 alias configure="./configure -C"
 
 # configure to compile Python in debug mode.
@@ -97,25 +68,8 @@ alias configure="./configure -C"
 # - use --with-pydebug to compile python in debug mode.
 alias pyconfigure_debug="./configure -C --with-pydebug CFLAGS=-O0"
 
+HOSTNAME=$(hostname)
 if [ "$HOSTNAME" = "selma" -o "$HOSTNAME" = "apu" ]; then
     # Based on ~/.config/systemd/user/ssh-agent.service
     export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 fi
-
-# specific to DevStack
-if [ "$HOSTNAME" = "devstack" ]; then
-    source ~/devstack/openrc admin demo password
-fi
-
-# specific to FreeBSD
-if [ "$(uname -s)" = "FreeBSD" ]; then
-    # On FreeBSD, define CFLAGS variable as an empty string to prevent make
-    # to add -O2 flag when building Python in debug mode (-O0)
-    export CFLAGS=
-
-    export LC_ALL="fr_FR.UTF-8"
-fi
-
-# check the window size after each command and, if necessary,
-# update the values of LINES and COLUMNS.
-shopt -s checkwinsize
