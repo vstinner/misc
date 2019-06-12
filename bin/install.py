@@ -24,7 +24,6 @@ FILES = (
     'rename_torrent.py',
     'scm.py',
     'system_load.py',
-    'taskset_isolated.py',
     'upload_private.sh',
     'upload_tmp.sh',
 )
