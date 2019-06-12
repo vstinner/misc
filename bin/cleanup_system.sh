@@ -19,7 +19,7 @@ rm -rf /var/spool/abrt/*
 pkcon refresh force -c -1
 
 # Retain only journald logs of the past 30 days
-journalctl --vacuum-time=30d
+sudo journalctl --vacuum-time=30d
 
 # clear dnf cache
 dnf clean all
