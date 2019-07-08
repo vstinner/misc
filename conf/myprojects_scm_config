@@ -1,0 +1,11 @@
+cpython_core_tutorial: git=git@github.com:vstinner/cpython_core_tutorial.git
+github.io: git=git@github.com:vstinner/vstinner.github.io.git
+hachoir: git=git@github.com:vstinner/hachoir.git
+misc: git=git@github.com:vstinner/misc.git
+notes: git=git@github.com:vstinner/notes.git
+private: git=ssh://git@bitbucket.org/vstinner/private2.git
+pyperf: git=git@github.com:vstinner/pyperf.git
+python-ci: git=git@github.com:vstinner/python-ci.git
+python-security: git=git@github.com:vstinner/python-security.git
+pythondev: git=git@github.com:vstinner/pythondev.git
+talks: git=git@github.com:vstinner/talks.git

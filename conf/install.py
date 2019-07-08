@@ -19,6 +19,7 @@ FILES = [
     'screenrc',
     'vimrc',
     ('gtk.css', '.config/gtk-3.0/gtk.css'),
+    ('myprojects_scm_config', 'myprojects/scm_config'),
     ('python_scm_config', 'python/scm_config'),
 ]
 if platform.startswith('freebsd'):
@@ -53,6 +54,7 @@ def create_symlinks():
         else:
             dstdir = home
             dstname = '.' + name
+
         src = path_join(srcdir, name)
         dst = path_join(dstdir, dstname)
         try:
