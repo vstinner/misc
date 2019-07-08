@@ -1,4 +1,4 @@
-GIT/conf: git=git@github.com:vstinner/conf.git
+GIT/talks: git=git@github.com:vstinner/talks.git
 GIT/cpython_core_tutorial: git=git@github.com:vstinner/cpython_core_tutorial.git
 GIT/notes: git=git@github.com:vstinner/notes.git
 GIT/pythondev: git=git@github.com:vstinner/pythondev.git
