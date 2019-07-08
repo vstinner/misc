@@ -19,6 +19,7 @@ FILES = [
     'screenrc',
     'vimrc',
     ('gtk.css', '.config/gtk-3.0/gtk.css'),
+    ('python_scm_config', 'python/scm_config'),
 ]
 if platform.startswith('freebsd'):
     FILES.append(('bashrc', '.bash_profile'))
