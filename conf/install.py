@@ -10,7 +10,7 @@ from errno import EEXIST
 import subprocess
 
 
-SYSTEMD = False
+SYSTEMD = True
 FILES = [
     'gdbinit',
     'gitconfig',
