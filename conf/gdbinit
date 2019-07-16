@@ -1,4 +1,4 @@
-add-auto-load-safe-path ~/prog/
+add-auto-load-safe-path ~/python
 set disassembly-flavor intel
 set print pretty on
 # for macOS
