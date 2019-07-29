@@ -1386,7 +1386,7 @@ class RepositoryGIT(Repository):
         try:
             content = StringIO('\n'.join(lines))
             parser = RawConfigParser()
-            parser.readfp(content)
+            parser.read_file(content)
             return parser.get('remote "origin"', 'url')
         except Exception as err:
             print("WARNING: Fail to parse %s: %s" % (gitconfig, err),
