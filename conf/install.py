@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-from __future__ import with_statement
+#!/usr/bin/env python3
 from os.path import dirname, realpath, join as path_join, expanduser, exists, islink
 from os import stat, readlink, symlink, lstat, unlink, makedirs
 from stat import S_ISLNK

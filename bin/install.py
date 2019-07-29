@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Install scripts as symbolic links in ~/.local/bin/
 """
-from __future__ import with_statement
 from os.path import dirname, realpath, join as path_join, expanduser, exists, islink
 from os import stat, readlink, symlink, lstat, unlink, mkdir
 from stat import S_ISLNK
