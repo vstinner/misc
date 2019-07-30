@@ -13,7 +13,9 @@ python-ci: git=git@github.com:vstinner/python-ci.git
 python-security: git=git@github.com:vstinner/python-security.git
 pythoncapi: git=git@github.com:pythoncapi/pythoncapi.git
 pythondev: git=git@github.com:vstinner/pythondev.git
-pytracemalloc: git=git@github.com:vstinner/pytracemalloc.git
-sixer: git=git@github.com:vstinner/sixer.git
 talks: git=git@github.com:vstinner/talks.git
-unicode_book: git=git@github.com:vstinner/unicode_book.git
+
+# Old projects:
+# sixer: git=git@github.com:vstinner/sixer.git
+# unicode_book: git=git@github.com:vstinner/unicode_book.git
+# pytracemalloc: git=git@github.com:vstinner/pytracemalloc.git
