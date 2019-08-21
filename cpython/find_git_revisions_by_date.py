@@ -22,7 +22,7 @@ def add_months(date, months):
 class Application:
     def __init__(self):
         self.debug = False
-        self.git_dir = '/home/haypo/prog/python/master/.git'
+        self.git_dir = '/home/vstinner/python/master/.git'
         self.remote = 'origin'
 
     def get_output(self, *cmd):
