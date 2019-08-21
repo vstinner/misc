@@ -1,4 +1,4 @@
-MODULES="pip testtools virtualenv wheel"
+MODULES="pip virtualenv wheel"
 #MODULES="$MODULES setuptools"
 set -e -x
 python2 -m pip install --user -U $MODULES tox
