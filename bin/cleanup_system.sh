@@ -5,7 +5,9 @@ df -h
 echo
 
 # Remove files built by development tools
-find /home/vstinner/prog -name build -print0|xargs -0 rm -rf
+find /home/vstinner/dev -name build -print0|xargs -0 rm -rf
+find /home/vstinner/python -name build -print0|xargs -0 rm -rf
+find /home/vstinner/myprojects -name build -print0|xargs -0 rm -rf
 find /home -name .testrepository -print0|xargs -0 rm -rf
 find /home -name .tox -print0|xargs -0 rm -rf
 find /home -name __pycache__ -print0|xargs -0 rm -rf
