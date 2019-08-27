@@ -4,7 +4,7 @@ ui = auto
 
 [user]
 name = Victor Stinner
-email = vstinner@redhat.com
+email = vstinner@python.org
 
 [alias]
 glog = log --graph

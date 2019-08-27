@@ -1,5 +1,5 @@
 [ui]
-username = Victor Stinner <victor.stinner@gmail.com>
+username = Victor Stinner <vstinner@python.org>
 verbose = True
 
 [diff]
