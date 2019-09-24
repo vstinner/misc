@@ -1,7 +1,7 @@
-TAG=R_2_2_3
+TAG=R_2_2_8
 ROOT=$PWD
 # Checkout of the https://github.com/libexpat/libexpat/ project
-LIBEXPAT=/home/haypo/prog/libexpat/
+LIBEXPAT=/home/vstinner/libexpat/
 DST=$PWD/Modules/expat
 
 set -e -x
