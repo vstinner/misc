@@ -73,3 +73,6 @@ if [ "$HOSTNAME" = "selma" -o "$HOSTNAME" = "apu" ]; then
     # Based on ~/.config/systemd/user/ssh-agent.service
     export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 fi
+
+# Red Hat qa-tools package sets PYTHONPATH
+unset PYTHONPATH
