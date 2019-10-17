@@ -1,5 +1,5 @@
 PEP: xxx
-Title: Python minimum version
+Title: Python compatibility version
 Author: Victor Stinner <vstinner@python.org>
 Status: Draft
 Type: Standards Track
@@ -8,120 +8,228 @@ Created: 16-Oct-2019
 Python-Version: 3.9
 
 
+XXX Open Questions XXX
+======================
+
+* Well, first of all: do we want this? :-)
+* Do we need command line option and environment variable for these
+  features? In addition to the 3 new ``sys`` module functions.
+* Do we want the parser (grammar) to handle the backward compatibility?
+* Is it possible to modify the Python parser to support multiple
+  versions of the Python grammars? AST and grammar are hardcoded to a
+  single Python version. ``compile()`` has an undocumented
+  ``_feature_version`` to not consider ``async`` and ``await`` as
+  keywords.
+* Parser and ``cache_tag``: regular users cannot write ``.pyc`` files
+  into system directories. For example, users cannot write write
+  ``/usr/lib64/python3.9/__pycache__/os.cpython-39-380.pyc`` on Linux.
+  Basically, the optimization of precompiled ``.pyc`` files lost.
+
+
 Abstract
 ========
 
-Add ``sys.set_python_min_version(version)`` and
-``sys.get_python_min_version()`` to request Python to behave as the
-specified older Python version.
+Add ``sys.set_python_compat_version(version)`` to request Python 3.9 to
+behave as Python 3.8.
 
-The Python 3.9 standard library will be modified to provide a partial
-compatibility with Python 3.8 when using
-``sys.set_python_min_version((3, 8))``.
+Add ``sys.get_python_compat_version()`` and modify the standard library
+to use it in some places to provide Python 3.8 compatibility on demand.
 
-This change allows to decouple upgrading Python and upgrading all Python
-projects for latest incompatible changes. It should promote the usage
-of newer Python and encourage developers to update their code to the
-latest Python version.
+Add ``sys.set_python_min_compat_version(version)`` to prevent code to
+request compatibility with Python older than *version*.
+``sys.set_python_compat_version(old_version)`` raises an exception in
+this case.
 
-It's a way to involve authors of backward incompatible changes in
-updating Python projects for these changes.
-
-It is possible to block downgrading the Python version. In this case,
-``sys.set_python_min_version()`` raises an exception.
-
-
-Motivation
-==========
-
-XXX
-
-[Clearly explain why the existing language specification is inadequate
-to address the problem that the PEP solves.]
+By default, ``sys.get_python_compat_version()`` is the current Python
+version, and the minimum compatibility version is set to Python 3.0.
 
 
 Rationale
 =========
 
-The overall idea is to allow developers to continue to push backward
-incompatible changes in Python **and** slowdown changes from the user
-perspective. The idea is the same trend than the Python LTS (Long Time
-Support) idea.
+The need to evolve frequently
+-----------------------------
 
-Most Linux distributions only provide a single Python version, so users
-are stick to one version. The idea is to help distributors to update
-Python more frequently and help them to provide multiple Python versions
-(if they want) and reduce the number of broken applications.
+To remain relevant and useful, Python has to evolve frequently. Some
+enhancements require backward incompatible changes. Any backward
+compatibility change can break an unknown number of projects which can
+prevent developers to implement some features.
 
-During the transition between Python 2.7 and "Python 3" (the minor version
-increased during the 10 years of co-existence), more and more users reported
-that they like Python 2.7 for its stability, whereas Python 3 was a fast moving
-language. Not only the Python language evolves, but also its standard library.
-Each minor version comes with its set of backward incompatible changes. Some
-are major (like Python 3.7 which made "async" and "await" keywords), some are
-minor (ex: remove "os.errno").
+Users want to get the latest Python version to get new features and
+better performance. A few backward incompatible changes prevent users to
+use their applications on the latest Python version.
 
-Core developers tends to purity: fix old issues. Users want stability and have
-enough time to upgrade to the latest Python version.
+This PEP proposes to add a partial compatibility with old Python
+versions as a tradeoff to fit both use cases.
 
-The Perl language has a `use function
-<https://perldoc.perl.org/functions/use.html>`_ to opt-in for the behavior of
-an older Perl version. Example: ``use 5.24.1;``.
 
-This PEP proposes to add a ``sys.set_python_min_version(version)``
-function to Python 3.9 to opt-in for Python 3.8 backward compatibility.
-Only a limited set of functions will use it. The standard library can
-use ``sys.get_python_min_version()`` to change its behavior. The parser
-might also use it.
+Minimize the Python maintenance burden
+--------------------------------------
 
-To reduce the Python maintenance burden, old Python versions will only be
-supported for a limited amount of time. The exact support duration will be
-decided on a case by case basis, depending on the cost of supporting the code.
-If the special cases for a specific Python version is cheap to maintain,
-we may support it longer.
+While technically it is possible to provide a full compatibility with
+old Python versions, this PEP proposes to minimize the number of
+functions handling backward compatibility to reduce the maintenance
+burden.
 
-The plan is not to support the behavior of older Python forever.
-Moreover, the PEP only provides a partial compatibility with older
-Python versions. It has no effect on the C API for example. Each time
-that a developer wants to introduce a "if
-sys.implementation.min_version" test, it should be properly discussed to
-evaluate the additional maintenance burden, the risks, etc.
+Each compatibility change should be properly discussed to estimance the
+maintenance cost in the long-term.
 
-In practice, developers don't pay attention to ``DeprecationWarning``
-and ``PendingDeprecationWarning``.
+At each Python release, compatibility code for old Python versions will
+be removed. Each compatibility function can have a different support
+depending on its maintenance cost and the estimated number of impacted
+projects if it's removed.
 
-When porting a large Python 2 code base to Python 3, usually it requires
-to update all imports to the standard library before even being able to
-load the code in Python 3 without executing it.
+The maintenance is not only on the code to implement the backward
+compatibility, but also on the additional tests to check that it's not
+broken.
 
-XXX how to deny applications to downgrade to Python 3.8?
 
-The C API is out of the scope of this PEP: Py_LIMITED_API already covers
-the C API case.
+Cases excluded from backward compatibility
+------------------------------------------
+
+The performance overhead of a compatibility layer must be small or even
+not significant when it's not used.
+
+The C API is out of the scope of this PEP: Py_LIMITED_API and the stable
+ABI are already solving this problem. See the `PEP 384: Defining a
+Stable ABI <https://www.python.org/dev/peps/pep-0384/>`_.
+
+Security fixes which break the backward compatibility on purpose will
+not get a compatibility layer. Security matters more than compatibility.
+For example, ``http.client.HTTPSConnection`` was modified in Python
+3.4.3 to performs all the necessary certificate and hostname checks by
+default. It was a deliberate change motivated by the `PEP 476: Enabling
+certificate verification by default for stdlib http clients
+<https://www.python.org/dev/peps/pep-0476/>`_ (`bpo-22417
+<https://bugs.python.org/issue22417>`_).
+
+Changes which are not clearly backward incompatible are not covered by
+this PEP. For example, the default protocol in the ``pickle`` module is
+now Protocol 4 in Python 3.9, first introduced in Python 3.4. This
+change is backward compatible up to Python 3.4.
+
+
+Update your project to a newer Python
+-------------------------------------
+
+Without backward compatibility, all backward incompatible changes must
+be fixed at once, which can be a blocker issue. It is even worse when
+the old Python is separated by multiple releases from the newer Python.
+
+Postponing an upgrade only makes things worse: each skipped release will
+add more backward incompatible changes. The technical debt can only
+increase.
+
+With backward compatibility, it becomes possible to upgrade Python
+increamentally in a project, without having to fix all issues at once.
+
+The "all-or-nothing" is a show-stopper to port large Python 2 code bases
+to Python 3.
+
+
+Cleanup old Python code and DeprecationWarning
+----------------------------------------------
+
+One of the `Zen of Python (PEP 20)
+<https://www.python.org/dev/peps/pep-0020/>`_ motto is:
+
+    There should be one-- and preferably only one --obvious way to do
+    it.
+
+When Python evolves, new ways emerge. ``DeprecationWarning`` are emitted
+to suggest to use the new way, but many developers ignore these
+warnings, which are silent by default (except in the ``__main__``
+module: see the `PEP 565 <https://www.python.org/dev/peps/pep-0565/>_`).
+
+Sometimes, supporting both ways has a minor maintenance cost, but
+developers prefer to drop the old way to cleanup the code anyway. Such
+kind of change is backward incompatible.
+
+Adding an optional backward compatibility prevents to break applications
+and allows to continue to do such cleanup.
+
+
+Redistribute the maintenance burden
+-----------------------------------
+
+The backward compatibility better involves authors of backward
+incompatible changes in the upgrade path.
+
+
+Examples
+========
+
+collections ABC aliases
+-----------------------
+
+``collections.abc`` aliases to ABC classes have been removed from the
+``collections`` module in Python 3.9, after being deprecated since
+Python 3.3. For example, ``collections.Mapping`` no longer exists.
+
+In Python 3.6, aliases were created by ``from _collections_abc import
+*``.
+
+In Python 3.7, a ``__getattr__()`` has been added to the ``collections``
+module to emit a DeprecationWarning at the first access to an
+attribute::
+
+    def __getattr__(name):
+        # For backwards compatibility, continue to make the collections ABCs
+        # through Python 3.6 available through the collections module.
+        # Note, no new collections ABCs were added in Python 3.7
+        if name in _collections_abc.__all__:
+            obj = getattr(_collections_abc, name)
+            import warnings
+            warnings.warn("Using or importing the ABCs from 'collections' instead "
+                          "of from 'collections.abc' is deprecated since Python 3.3, "
+                          "and in 3.9 it will stop working",
+                          DeprecationWarning, stacklevel=2)
+            globals()[name] = obj
+            return obj
+        raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+
+Compatibility with Python 3.8 can be restore in Python 3.9 by adding
+back the ``__getattr__()`` function, but only when backward
+compatibility is requested::
+
+    def __getattr__(name):
+        if (sys.get_python_compat_version() < (3, 9)
+           and name in _collections_abc.__all__):
+            ...
+        raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+
+
+Deprecated open() "U" mode
+--------------------------
+
+Using the "U" mode of ``open()`` is deprecated since Python 3.4 and
+emits a ``DeprecationWarning``.  The `bpo-37330
+<https://bugs.python.org/issue37330>`_ proposes to drop this mode: raise
+an exception if it's used.
+
+This change is more in the "cleanup" category than change required to
+enhance Python. A backward compatibility mode would be welcome here, it
+is likely to be trivial to implement.
+
 
 Backward incompatible changes
------------------------------
+=============================
 
 Python 3.7 to Python 3.8
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Concrete example for ``use Python 3.8;``:
-
-* Enable ``collections.abc`` aliases: https://bugs.python.org/issue37324
-* Enable ``U`` mode for ``open()``: https://bugs.python.org/issue37330
-* Don't call ``tp_traverse()`` in ``PyObject_GC_Track()``:
-  https://bugs.python.org/issue38392
-
 When Python has been upgraded from 3.7 to 3.8, the build of more than
-200 packages failed for various reasons:
+200 packages failed in Fedora Rawhide for various reasons:
 
-* PyCode_New() requires a new parameter: broke all Cython extensions
+* ``PyCode_New()`` requires a new parameter: broke all Cython extensions
   (all projects distribute precompiled Cython code). Fedora packages
   have been fixed to force rebuilding all Cython extensions.
+  This change has been reverted during the beta phase and a new function
+  ``PyCode_NewWithPosOnlyArgs()`` was added instead.
 
-* types.CodeType now requires an additional mandatory parameter.
-  Python 3.8 added CodeType.replace() to help projects to no longer
-  depend on the exact signature of the CodeType constructor.
+* ``types.CodeType`` now requires an additional mandatory parameter.
+  Python 3.8 added ``CodeType.replace()`` to help projects to no longer
+  depend on the exact signature of the ``CodeType`` constructor.
 
 * C extensions are no longer linked to libpython
 
@@ -145,110 +253,151 @@ When Python has been upgraded from 3.7 to 3.8, the build of more than
 * etc.
 
 This PEP doesn't cover all cases. It doesn't handle backward
-incompatibles in the C API for example.
+incompatibles in the C API nor in the build system for example.
+
 
 Python 3.6 to Python 3.7
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Changes which impacted most projects.
+Example of Python 3.7 backward incompatible changes:
 
-* async and await became keywords
+* ``async`` and ``await`` are now reserved keywords.
+* Several undocumented internal imports were removed. One example is
+  that ``os.errno`` is no longer available; use ``import errno``
+  directly instead. Note that such undocumented internal imports may be
+  removed any time without notice, even in micro version releases.
 
-Changes done in minor versions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Moreover, sometimes the behavior changes in minor releases. To fix a bug
-or a major design issue. Examples:
+Micro releases
+^^^^^^^^^^^^^^
 
-* compileall 3.7.2
+Sometimes, backward incompatible changes are introduced in micro
+releases (``micro`` in ``major.minor.micro``) to fix bugs and security
+vulnerabilities. Examples:
+
+* Python 3.7.2, ``compileall`` and  ``py_compile`` module: the
+  *invalidation_mode* parameter's default value is updated to ``None``;
+  the :envvar:`SOURCE_DATE_EPOCH` environment variable no longer
+  overrides the value of the *invalidation_mode* argument, and
+  determines its default value instead.
+
+* Python 3.7.1, ``xml`` modules: the SAX parser no longer processes
+  general external entities by default to increase security by default.
+
+* Python 3.5.2, ``os.urandom()``: on Linux, if the ``getrandom()``
+  syscall blocks (the urandom entropy pool is not initialized yet), fall
+  back on reading ``/dev/urandom``.
+
+* Python 3.5.1, ``sys.setrecursionlimit()``: a :exc:`RecursionError`
+  exception is now raised if the new limit is too low at the current
+  recursion depth.
+
+* Python 3.4.4, ``ssl.create_default_context()``: RC4 was dropped from
+  the default cipher string.
+
+* Python 3.4.3, ``http.client``: ``HTTPSConnection`` now performs all
+  the necessary certificate and hostname checks by default.
+
+* Python 3.4.2, ``email.message``: ``EmailMessage.is_attachment()`` is
+  now a method instead of a property, for consistency with
+  ``Message.is_multipart()``.
+
+* Python 3.4.1, ``os.makedirs(name, mode=0o777, exist_ok=False)``:
+  Before Python 3.4.1, if *exist_ok* was ``True`` and the directory
+  existed, ``makedirs()`` would still raise an error if *mode* did not
+  match the mode of the existing directory. Since this behavior was
+  impossible to implement safely, it was removed in Python 3.4.1
+  (`bpo-21082 <https://bugs.python.org/issue21082>`_).
+
+Changes which are not backward compatible are also made in minor
+releases. Example:
+
+* ``ssl.OP_NO_TLSv1_3`` constant was added to 2.7.15, 3.6.3 and 3.7.0
+  for backwards compatibility with OpenSSL 1.0.2.
+* ``typing.AsyncContextManager`` was added to Python 3.6.2.
+* The ``zipfile`` module accepts a :term:`path-like object` since
+  Python 3.6.2.
+* ``loop.create_future()`` was added to Python 3.5.2 in the ``asyncio``
+  module.
+
+Such changes don't need to be handled by the backward compatibility
+proposd in this PEP.
 
 
 Specification
 =============
 
-Syntax::
+Add 3 functions to the ``sys`` module:
 
-    sys.set_python_min_version(version)
+* ``sys.set_python_min_compat_version(min_version)``: Set the minimum
+  compatibility version. ``sys.set_python_compat_version(old_version)``
+  will raise an exception if ``old_version < min_version``.
+  *min_version* must be greater than or equal to (3, 0).
 
-where version must a be tuple of 2 or 3 positive integers. Examples::
+* ``sys.set_python_compat_version(version)``: set the Python
+  compatibility version. If it has been called previously, use the
+  minimum of requested versions. If if is smaller than the minimum
+  compatibility version, raise an exception.
+  *version* must be greater than or equal to (3, 0).
 
-    # Python 3.8: it is equivalent of Python 3.8.0
-    sys.set_python_min_version((3, 8))
+* ``sys.get_python_compat_version()``: get the Python compatibility
+  version.
 
-    # Python 3.7.2
-    sys.set_python_min_version((3, 7, 2))
+A *version* must a tuple of 2 or 3 integers: ``(x, y)`` is equivalent to
+``(x, y, 0)``.
 
+By default, ``sys.get_python_compat_version()`` is the current Python
+version.
 
-Multiple use statements
------------------------
+Example to request compatibility with Python 3.8.0::
 
-If an application uses two modules which require two different Python versions,
-the oldest version will be picked. ``sys.implementation.used_version`` is
-updated dynamically. It means that the supported Python version depends on the
-import order.
+    import collections
 
-Example::
+    sys.set_python_compat_version((3, 8))
 
-    # collections.abc doesn't exist here
-    use Python 3.8;
-    # collections.abc exists again
+    # collections.Mapping alias removed in Python 3.9 is available
+    # again, even if collections has been imported before calling
+    # set_python_compat_version().
+    class MyMapping(collections.Mapping):
+        ...
 
-
-Impact on testing
------------------
-
-Introducing ``use`` statement means that an application will behave
-differently depending on the chosen version. Moreover, since the version
-can be decreased multiple times, the application will behave differently
-depending on the import order.
-
-Python 3.9 with ``sys.set_python_min_version((3, 8))`` is not the same
-as Python 3.8.
+Calling ``sys.set_python_compat_version(version)`` has no effect of the
+code which has been executed previously.
 
 
 The parser case and .pyc filenames
 ----------------------------------
 
-XXX would it be possible to support multiple Python syntax versions in
-a single Python version? AST and grammar are hardcoded to a single
-Python version.
+The parser will produce a different output depending on the
+compatibility version.
 
-The parser will produce a different output depending on ``min_version``.
-If ``min_version`` is used (different than the current Python version),
-importlib will change ``sys.implementation.cache_tag`` to change the
-``.pyc`` filenames, to include ``min_version``.
+If the compatibility version is different than the current Python
+version, the ``importlib`` module will change
+``sys.implementation.cache_tag`` to include the compatibility version in
+the ``.pyc`` filename.
 
-For example, Python 3.9 uses ``'cpython-39'`` by default, but the
-``cache_tag`` becomes ``'cpython-380'`` for ``min_version=(3, 8)`` and
-``'cpython-372'`` for ``min_version=(3, 7, 2)``.
-
-Drawbacks:
-
-* most ``.pyc`` variants
-* Regular users cannot write ``.pyc`` into system directory (ex: cannot
-  write ``/usr/lib64/python3.9/__pycache__/os.cpython-39-380.pyc``)
-  and so precompiled files optimization is basically lost.
-
+Example. Python 3.9 uses ``'cpython-39'`` by default.
+``sys.set_python_compat_version((3, 8))`` sets the ``cache_tag`` to
+``'cpython-39-380'``.
 
 
 Backwards Compatibility
 =======================
 
-[Describe potential impact and severity on pre-existing code.]
+Introducing ``sys.set_python_compat_version()`` function means that an
+application will behave differently depending on the compatibility
+version. Moreover, since the version can be decreased multiple times,
+the application can behave differently depending on the import order.
+
+Python 3.9 with ``sys.set_python_compat_version((3, 8))`` is not fully
+compatible with Python 3.8: the compatibility is only partial.
 
 
 Security Implications
 =====================
 
-Opt-in for an older Python version can reduce the Python security. It should
-be taken in account each time a function is modified to support multiple
-Python versions.
+Security fixes must be disabled by the backward compatibility.
 
-
-How to Teach This
-=================
-
-XXX
 
 Alternatives
 ============
@@ -256,8 +405,8 @@ Alternatives
 Command line option and environment variable
 --------------------------------------------
 
-Don't add ``sys.set_python_min_version(version)`` but add ``-X
-min_version=VERSION`` command line option and
+Don't add ``sys.set_python_compat_version(version)`` but add ``-X
+compat_version=VERSION`` command line option and
 ``PYTHONMINVERSION=VERSION`` environment variable to set the minimum
 version since the Python startup.
 
@@ -297,10 +446,10 @@ PyObject_GC_Track():
 
     There is no known workaround.
 
-parser: set min_version per file
---------------------------------
+parser: set compat_version per file
+-----------------------------------
 
-``sys.set_python_min_version()`` doens't impact the parser. A special
+``sys.set_python_compat_version()`` doens't impact the parser. A special
 statement to opt-in for an older Python syntax. It only impacts the
 current file. For example::
 
@@ -309,7 +458,7 @@ current file. For example::
     async = 1
     await = 2
 
-It avoids the need to have one each ``.pyc`` file per ``min_version``
+It avoids the need to have one each ``.pyc`` file per ``compat_version``
 per ``.py`` source file.
 
 Temporary moratorium on backward incompatible changes
@@ -335,13 +484,21 @@ down Python changes: see the python-dev thread `Slow down...
 Python LTS and release cycle changes
 ------------------------------------
 
-XXX
+XXX Elaborate the relationship with the two proposed PEPs.
 
 PEP 602 -- Annual Release Cycle for Python
 https://www.python.org/dev/peps/pep-0602/
 
 PEP 605 -- A rolling feature release stream for CPython
 https://www.python.org/dev/peps/pep-0605/
+
+
+References
+==========
+
+The Perl programming language has an `use function
+<https://perldoc.perl.org/functions/use.html>`_ to opt-in for backward
+compatibility with an older Perl version. Example: ``use 5.24.1;``.
 
 
 Copyright
