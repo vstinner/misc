@@ -10,18 +10,6 @@ PEP headers::
     Python-Version: 3.9
 
 
-XXX Open Questions XXX
-======================
-
-* Well, first of all: do we want this? :-)
-* Do we need command line option and environment variable for these
-  features, in addition to the 3 new ``sys`` module functions?
-* Do we need to support backward compatibility in the parser?
-  I don't think that it's worth it. I am only aware of one project
-  affected by ``async`` and ``await`` becoming keywords: Twisted.
-  In this project, only the API of a single function had to be updated,
-  it had a parameter called ``async``.
-
 Abstract
 ========
 
@@ -36,8 +24,11 @@ request compatibility with Python older than *version*.
 ``sys.set_python_compat_version(old_version)`` raises an exception in
 this case.
 
-By default, ``sys.get_python_compat_version()`` is the current Python
-version, and the minimum compatibility version is set to Python 3.0.
+Add ``-X compat_version=VERSION`` and ``-X min_compat_version=VERSION``
+command line options.
+
+Add ``PYTHONCOMPATVERSION`` and ``PYTHONCOMPATMINVERSION`` environment
+variables.
 
 
 Rationale
@@ -362,6 +353,20 @@ Example to request compatibility with Python 3.8.0::
 Calling ``sys.set_python_compat_version(version)`` has no effect of the
 code which has been executed previously.
 
+Add ``-X compat_version=VERSION`` and ``-X min_compat_version=VERSION``
+command line options: call respectivelly
+``sys.set_python_compat_version()`` and
+``sys.set_python_min_compat_version()``. ``VERSION`` is a version string
+with 2 or 3 numbers (``major.minor.micro`` or ``major.minor``). For
+example, ``-X compat_version=3.8`` calls
+``sys.set_python_compat_version((3, 8)``.
+
+Add ``PYTHONCOMPATVERSIONVERSION=VERSION`` and
+``PYTHONCOMPATMINVERSION=VERSION=VERSION`` environment variables: call
+respectivelly ``sys.set_python_compat_version()`` and
+``sys.set_python_min_compat_version()``.  ``VERSION`` is a version
+string: same format that the command line options.
+
 
 Backwards Compatibility
 =======================
@@ -434,15 +439,21 @@ Parser handling backward compatibility
 The parser is modified to support multiple versions of the Python
 language (grammar).
 
-Open issue:
+The current Python parser cannot be easily modified for that. AST and
+grammar are hardcoded to a single Python version.
 
-    Is it possible to modify the Python parser to support multiple
-    versions of the Python grammars? AST and grammar are hardcoded to a
-    single Python version.
+In Python 3.8, ``compile()`` has an undocumented
+``_feature_version`` to not consider ``async`` and ``await`` as
+keywords.
 
-    In Python 3.8, ``compile()`` has an undocumented
-    ``_feature_version`` to not consider ``async`` and ``await`` as
-    keywords.
+The last major language backward incompatible change was Python 3.7
+which made ``async`` and ``await`` real keywords. It seems like Twisted
+was the only affected project, and there was a single function of
+Twisted was affected (it used a parameter called ``async``).
+
+Handling backward compatibility in the parser seems quite complex, not
+only to modify the parser, but also for developers who have to check
+which version of the Python language is used.
 
 from __future__ import python38_syntax
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -465,8 +476,8 @@ Example::
 Update cache_tag
 ^^^^^^^^^^^^^^^^
 
-The parser uses ``sys.get_python_compat_version()`` to choose the
-version of the Python language.
+Modify the parser to use ``sys.get_python_compat_version()`` to choose
+the version of the Python language.
 
 ``sys.set_python_compat_version()`` updates
 ``sys.implementation.cache_tag`` to include the compatibility version
@@ -475,15 +486,24 @@ without the micro version as a suffix. For example, Python 3.9 uses
 ``sys.set_python_compat_version((3, 7, 2))`` sets ``cache_tag`` to
 ``'cpython-39-37'``.
 
-The problem is that the Python installer must be modified to precompile
-``.pyc`` files not only for the current Python version, but also for
-multiple older Python versions (up to Python 3.0?). Each ``.py`` file
-would have 3n ``.pyc`` files (3 optimization levels), where ``n`` is the
-number of supported Python versions. For example, it means 6 ``.pyc``
-files to support Python 3.8 and Python 3.9 (instead of 3).
+One problem is that ``import asyncio`` is likely to fail if
+``sys.set_python_compat_version((3, 6))`` has been called previously.
+The code of the ``asyncio`` module requires ``async`` and ``await`` to
+be real keywords (change done in Python 3.7).
 
-On Linux, regular users cannot write ``.pyc`` files into system
-directories, and so cannot create them on demand.
+Another problem is that regular users cannot write ``.pyc`` files into
+system directories, and so cannot create them on demand. It means that
+``.pyc`` optimization cannot be used in the backward compatibility mode.
+
+One solution for that is to modify the Python installer and Python
+package installers to precompile ``.pyc`` files not only for the current
+Python version, but also for multiple older Python versions (up to
+Python 3.0?).
+
+Each ``.py`` file would have 3n ``.pyc`` files (3 optimization levels),
+where ``n`` is the number of supported Python versions. For example, it
+means 6 ``.pyc`` files, instead of 3, to support Python 3.8 and Python
+3.9.
 
 
 Temporary moratorium on backward incompatible changes
