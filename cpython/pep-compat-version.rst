@@ -216,7 +216,7 @@ Backward incompatible changes
 =============================
 
 Python 3.7 to Python 3.8
-^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------
 
 When Python has been upgraded from 3.7 to 3.8, the build of more than
 200 packages failed in Fedora Rawhide for various reasons:
@@ -257,7 +257,7 @@ incompatibles in the C API nor in the build system for example.
 
 
 Python 3.6 to Python 3.7
-^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------
 
 Example of Python 3.7 backward incompatible changes:
 
@@ -269,7 +269,7 @@ Example of Python 3.7 backward incompatible changes:
 
 
 Micro releases
-^^^^^^^^^^^^^^
+--------------
 
 Sometimes, backward incompatible changes are introduced in micro
 releases (``micro`` in ``major.minor.micro``) to fix bugs and security
@@ -277,7 +277,7 @@ vulnerabilities. Examples:
 
 * Python 3.7.2, ``compileall`` and  ``py_compile`` module: the
   *invalidation_mode* parameter's default value is updated to ``None``;
-  the :envvar:`SOURCE_DATE_EPOCH` environment variable no longer
+  the ``SOURCE_DATE_EPOCH`` environment variable no longer
   overrides the value of the *invalidation_mode* argument, and
   determines its default value instead.
 
@@ -288,7 +288,7 @@ vulnerabilities. Examples:
   syscall blocks (the urandom entropy pool is not initialized yet), fall
   back on reading ``/dev/urandom``.
 
-* Python 3.5.1, ``sys.setrecursionlimit()``: a :exc:`RecursionError`
+* Python 3.5.1, ``sys.setrecursionlimit()``: a ``RecursionError``
   exception is now raised if the new limit is too low at the current
   recursion depth.
 
@@ -309,14 +309,13 @@ vulnerabilities. Examples:
   impossible to implement safely, it was removed in Python 3.4.1
   (`bpo-21082 <https://bugs.python.org/issue21082>`_).
 
-Changes which are not backward compatible are also made in minor
-releases. Example:
+Changes which are not backward compatible are also made in micro
+releases. Examples:
 
 * ``ssl.OP_NO_TLSv1_3`` constant was added to 2.7.15, 3.6.3 and 3.7.0
   for backwards compatibility with OpenSSL 1.0.2.
 * ``typing.AsyncContextManager`` was added to Python 3.6.2.
-* The ``zipfile`` module accepts a :term:`path-like object` since
-  Python 3.6.2.
+* The ``zipfile`` module accepts a path-like object since Python 3.6.2.
 * ``loop.create_future()`` was added to Python 3.5.2 in the ``asyncio``
   module.
 
