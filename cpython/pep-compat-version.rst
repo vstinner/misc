@@ -15,18 +15,12 @@ XXX Open Questions XXX
 
 * Well, first of all: do we want this? :-)
 * Do we need command line option and environment variable for these
-  features? In addition to the 3 new ``sys`` module functions.
-* Do we want the parser (grammar) to handle the backward compatibility?
-* Is it possible to modify the Python parser to support multiple
-  versions of the Python grammars? AST and grammar are hardcoded to a
-  single Python version. ``compile()`` has an undocumented
-  ``_feature_version`` to not consider ``async`` and ``await`` as
-  keywords.
-* Parser and ``cache_tag``: regular users cannot write ``.pyc`` files
-  into system directories. For example, users cannot write write
-  ``/usr/lib64/python3.9/__pycache__/os.cpython-39-380.pyc`` on Linux.
-  Basically, the optimization of precompiled ``.pyc`` files lost.
-
+  features, in addition to the 3 new ``sys`` module functions?
+* Do we need to support backward compatibility in the parser?
+  I don't think that it's worth it. I am only aware of one project
+  affected by ``async`` and ``await`` becoming keywords: Twisted.
+  In this project, only the API of a single function had to be updated,
+  it had a parameter called ``async``.
 
 Abstract
 ========
@@ -104,6 +98,9 @@ default. It was a deliberate change motivated by the `PEP 476: Enabling
 certificate verification by default for stdlib http clients
 <https://www.python.org/dev/peps/pep-0476/>`_ (`bpo-22417
 <https://bugs.python.org/issue22417>`_).
+
+Python language (grammar) changes are not covered by the backward
+compatibility.
 
 Changes which are not clearly backward incompatible are not covered by
 this PEP. For example, the default protocol in the ``pickle`` module is
@@ -366,22 +363,6 @@ Calling ``sys.set_python_compat_version(version)`` has no effect of the
 code which has been executed previously.
 
 
-The parser case and .pyc filenames
-----------------------------------
-
-The parser will produce a different output depending on the
-compatibility version.
-
-If the compatibility version is different than the current Python
-version, the ``importlib`` module will change
-``sys.implementation.cache_tag`` to include the compatibility version in
-the ``.pyc`` filename.
-
-Example. Python 3.9 uses ``'cpython-39'`` by default.
-``sys.set_python_compat_version((3, 8))`` sets the ``cache_tag`` to
-``'cpython-39-380'``.
-
-
 Backwards Compatibility
 =======================
 
@@ -447,20 +428,63 @@ PyObject_GC_Track():
 
     There is no known workaround.
 
-parser: set compat_version per file
------------------------------------
+Parser handling backward compatibility
+--------------------------------------
 
-``sys.set_python_compat_version()`` doens't impact the parser. A special
-statement to opt-in for an older Python syntax. It only impacts the
-current file. For example::
+The parser is modified to support multiple versions of the Python
+language (grammar).
+
+Open issue:
+
+    Is it possible to modify the Python parser to support multiple
+    versions of the Python grammars? AST and grammar are hardcoded to a
+    single Python version.
+
+    In Python 3.8, ``compile()`` has an undocumented
+    ``_feature_version`` to not consider ``async`` and ``await`` as
+    keywords.
+
+from __future__ import python38_syntax
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Add ``pythonXY_syntax`` to the ``__future__`` module. It would enable
+backward compatibility with Python X.Y syntax, but only for the current
+file.
+
+With this option, there is no problem of changing
+``sys.implementation.cache_tag``, since the parser would always produce
+the same output for the same input.
+
+Example::
 
     from __future__ import python35_syntax
 
     async = 1
     await = 2
 
-It avoids the need to have one each ``.pyc`` file per ``compat_version``
-per ``.py`` source file.
+Update cache_tag
+^^^^^^^^^^^^^^^^
+
+The parser uses ``sys.get_python_compat_version()`` to choose the
+version of the Python language.
+
+``sys.set_python_compat_version()`` updates
+``sys.implementation.cache_tag`` to include the compatibility version
+without the micro version as a suffix. For example, Python 3.9 uses
+``'cpython-39'`` by default, but
+``sys.set_python_compat_version((3, 7, 2))`` sets ``cache_tag`` to
+``'cpython-39-37'``.
+
+The problem is that the Python installer must be modified to precompile
+``.pyc`` files not only for the current Python version, but also for
+multiple older Python versions (up to Python 3.0?). Each ``.py`` file
+would have 3n ``.pyc`` files (3 optimization levels), where ``n`` is the
+number of supported Python versions. For example, it means 6 ``.pyc``
+files to support Python 3.8 and Python 3.9 (instead of 3).
+
+On Linux, regular users cannot write ``.pyc`` files into system
+directories, and so cannot create them on demand.
+
 
 Temporary moratorium on backward incompatible changes
 -----------------------------------------------------
