@@ -1,11 +1,13 @@
-PEP: xxx
-Title: Python compatibility version
-Author: Victor Stinner <vstinner@python.org>
-Status: Draft
-Type: Standards Track
-Content-Type: text/x-rst
-Created: 16-Oct-2019
-Python-Version: 3.9
+PEP headers::
+
+    PEP: xxx
+    Title: Python compatibility version
+    Author: Victor Stinner <vstinner@python.org>
+    Status: Draft
+    Type: Standards Track
+    Content-Type: text/x-rst
+    Created: 16-Oct-2019
+    Python-Version: 3.9
 
 
 XXX Open Questions XXX
