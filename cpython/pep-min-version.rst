@@ -11,8 +11,24 @@ Python-Version: 3.9
 Abstract
 ========
 
-Add ``sys.set_min_python_version(version)`` function to request Python
-to behave as the specified older Python version.
+Add ``sys.set_python_min_version(version)`` and
+``sys.get_python_min_version()`` to request Python to behave as the
+specified older Python version.
+
+The Python 3.9 standard library will be modified to provide a partial
+compatibility with Python 3.8 when using
+``sys.set_python_min_version((3, 8))``.
+
+This change allows to decouple upgrading Python and upgrading all Python
+projects for latest incompatible changes. It should promote the usage
+of newer Python and encourage developers to update their code to the
+latest Python version.
+
+It's a way to involve authors of backward incompatible changes in
+updating Python projects for these changes.
+
+It is possible to block downgrading the Python version. In this case,
+``sys.set_python_min_version()`` raises an exception.
 
 
 Motivation
@@ -20,7 +36,8 @@ Motivation
 
 XXX
 
-[Clearly explain why the existing language specification is inadequate to address the problem that the PEP solves.]
+[Clearly explain why the existing language specification is inadequate
+to address the problem that the PEP solves.]
 
 
 Rationale
@@ -51,17 +68,42 @@ The Perl language has a `use function
 <https://perldoc.perl.org/functions/use.html>`_ to opt-in for the behavior of
 an older Perl version. Example: ``use 5.24.1;``.
 
-This PEP proposes to add a similar ``use Python 3.8;`` statement to Python 3.9
-to opt-in for Python 3.8 backward compatibility. Only a limited set of
-functions will use it. The standard library can use
-``sys.implementation.used_version`` to change its behavior. The parser might
-also use it.
+This PEP proposes to add a ``sys.set_python_min_version(version)``
+function to Python 3.9 to opt-in for Python 3.8 backward compatibility.
+Only a limited set of functions will use it. The standard library can
+use ``sys.get_python_min_version()`` to change its behavior. The parser
+might also use it.
 
 To reduce the Python maintenance burden, old Python versions will only be
 supported for a limited amount of time. The exact support duration will be
 decided on a case by case basis, depending on the cost of supporting the code.
 If the special cases for a specific Python version is cheap to maintain,
 we may support it longer.
+
+The plan is not to support the behavior of older Python forever.
+Moreover, the PEP only provides a partial compatibility with older
+Python versions. It has no effect on the C API for example. Each time
+that a developer wants to introduce a "if
+sys.implementation.min_version" test, it should be properly discussed to
+evaluate the additional maintenance burden, the risks, etc.
+
+In practice, developers don't pay attention to ``DeprecationWarning``
+and ``PendingDeprecationWarning``.
+
+When porting a large Python 2 code base to Python 3, usually it requires
+to update all imports to the standard library before even being able to
+load the code in Python 3 without executing it.
+
+XXX how to deny applications to downgrade to Python 3.8?
+
+The C API is out of the scope of this PEP: Py_LIMITED_API already covers
+the C API case.
+
+Backward incompatible changes
+-----------------------------
+
+Python 3.7 to Python 3.8
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 Concrete example for ``use Python 3.8;``:
 
@@ -70,13 +112,7 @@ Concrete example for ``use Python 3.8;``:
 * Don't call ``tp_traverse()`` in ``PyObject_GC_Track()``:
   https://bugs.python.org/issue38392
 
-Moreover, sometimes the behavior changes in minor releases. To fix a bug
-or a major design issue. Examples: XXX
-
-Backward incompatible changes
------------------------------
-
-When Python has been upgraded from 3.7 to 3.7, the build of more than
+When Python has been upgraded from 3.7 to 3.8, the build of more than
 200 packages failed for various reasons:
 
 * PyCode_New() requires a new parameter: broke all Cython extensions
@@ -92,10 +128,39 @@ When Python has been upgraded from 3.7 to 3.7, the build of more than
 * sys.abiflags changed from ``'m'`` to an empty string: ``python3.8m``
   program is gone for example.
 
+* PyInterpreterState made opaque.
+
+  * Blender:
+
+    * https://bugzilla.redhat.com/show_bug.cgi?id=1734980#c6
+    * https://developer.blender.org/D6038
+
+* XML attribute order. bpo-34160.
+
+  * coverage: https://bugs.python.org/issue34160#msg329612
+  * docutils: https://sourceforge.net/p/docutils/bugs/359/
+  * pcs: https://bugzilla.redhat.com/show_bug.cgi?id=1705475
+  * python-glyphsLib: https://bugzilla.redhat.com/show_bug.cgi?id=1705391
+
 * etc.
 
 This PEP doesn't cover all cases. It doesn't handle backward
 incompatibles in the C API for example.
+
+Python 3.6 to Python 3.7
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Changes which impacted most projects.
+
+* async and await became keywords
+
+Changes done in minor versions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Moreover, sometimes the behavior changes in minor releases. To fix a bug
+or a major design issue. Examples:
+
+* compileall 3.7.2
 
 
 Specification
@@ -103,15 +168,15 @@ Specification
 
 Syntax::
 
-    sys.set_min_python_version(version)
+    sys.set_python_min_version(version)
 
 where version must a be tuple of 2 or 3 positive integers. Examples::
 
-    # Python 3.7.2
-    sys.set_min_python_version((3, 7, 2))
-
     # Python 3.8: it is equivalent of Python 3.8.0
-    sys.set_min_python_version((3, 8))
+    sys.set_python_min_version((3, 8))
+
+    # Python 3.7.2
+    sys.set_python_min_version((3, 7, 2))
 
 
 Multiple use statements
@@ -137,7 +202,7 @@ differently depending on the chosen version. Moreover, since the version
 can be decreased multiple times, the application will behave differently
 depending on the import order.
 
-Python 3.9 with ``sys.set_min_python_version((3, 8))`` is not the same
+Python 3.9 with ``sys.set_python_min_version((3, 8))`` is not the same
 as Python 3.8.
 
 
@@ -191,7 +256,7 @@ Alternatives
 Command line option and environment variable
 --------------------------------------------
 
-Don't add ``sys.set_min_python_version(version)`` but add ``-X
+Don't add ``sys.set_python_min_version(version)`` but add ``-X
 min_version=VERSION`` command line option and
 ``PYTHONMINVERSION=VERSION`` environment variable to set the minimum
 version since the Python startup.
@@ -235,7 +300,7 @@ PyObject_GC_Track():
 parser: set min_version per file
 --------------------------------
 
-``sys.set_min_python_version()`` doens't impact the parser. A special
+``sys.set_python_min_version()`` doens't impact the parser. A special
 statement to opt-in for an older Python syntax. It only impacts the
 current file. For example::
 
