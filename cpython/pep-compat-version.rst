@@ -608,6 +608,8 @@ References
   <https://www.python.org/dev/peps/pep-0236/>`_
 * `PEP 411 -- Provisional packages in the Python standard library
   <https://www.python.org/dev/peps/pep-0411/>`_
+* `PEP 3002 -- Procedure for Backwards-Incompatible Changes
+  <https://www.python.org/dev/peps/pep-3002/>`_
 
 
 Copyright
