@@ -14,19 +14,18 @@ Abstract
 ========
 
 Add ``sys.set_python_compat_version(version)`` to enable partial
-compatibility with requested Python version.
+compatibility with requested Python version. Add
+``sys.get_python_compat_version()``.
 
-Add ``sys.get_python_compat_version()`` and modify a few functions to
-use it to implement a partial compatibility with Python 3.8.
+Modify a few functions of the standard library to implement a partial
+compatibility with Python 3.8.
 
-Add ``sys.set_python_min_compat_version(version)`` to block backward
+Add ``sys.set_python_min_compat_version(version)`` to deny backward
 compatibility with Python older than *version*.
 
 Add ``-X compat_version=VERSION`` and ``-X min_compat_version=VERSION``
-command line options.
-
-Add ``PYTHONCOMPATVERSION`` and ``PYTHONCOMPATMINVERSION`` environment
-variables.
+command line options. Add ``PYTHONCOMPATVERSION`` and
+``PYTHONCOMPATMINVERSION`` environment variables.
 
 
 Rationale
@@ -71,8 +70,8 @@ backward compatibility, but come also from additional tests.
 Cases excluded from backward compatibility
 ------------------------------------------
 
-The performance overhead of a compatibility layer must be small (or even
-not significant) when it's not used.
+The performance overhead of a compatibility code must be low when
+``sys.set_python_compat_version()`` is not called.
 
 The C API is out of the scope of this PEP: ``Py_LIMITED_API`` macro and
 the stable ABI are solving this problem differently, see the `PEP 384:
