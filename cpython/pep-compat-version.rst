@@ -412,20 +412,6 @@ down Python changes: see the python-dev thread: `Slow down...
     let alone 10?  Something as arbitrary as a 10 year moratorium is
     (again, IMHO) a death sentence for the language.
 
-Python LTS and release cycle changes
-------------------------------------
-
-XXX Elaborate the relationship with the two proposed PEPs.
-
-PEP 602 -- Annual Release Cycle for Python
-https://www.python.org/dev/peps/pep-0602/
-
-PEP 605 -- A rolling feature release stream for CPython
-https://www.python.org/dev/peps/pep-0605/
-
-See also withdrawn `PEP 598 -- Introducing incremental feature releases
-<https://www.python.org/dev/peps/pep-0598/>`_.
-
 PEP 387
 -------
 
@@ -602,6 +588,8 @@ No backward compatibility code is needed for such kind of changes.
 References
 ==========
 
+Accepted PEPs:
+
 * `PEP 5 -- Guidelines for Language Evolution
   <https://www.python.org/dev/peps/pep-0005/>`_
 * `PEP 236 -- Back to the __future__
@@ -610,6 +598,15 @@ References
   <https://www.python.org/dev/peps/pep-0411/>`_
 * `PEP 3002 -- Procedure for Backwards-Incompatible Changes
   <https://www.python.org/dev/peps/pep-3002/>`_
+
+Draft PEPs:
+
+* `PEP 602 -- Annual Release Cycle for Python
+  <https://www.python.org/dev/peps/pep-0602/>`_
+* `PEP 605 -- A rolling feature release stream for CPython
+  <https://www.python.org/dev/peps/pep-0605/>`_
+* See also withdrawn `PEP 598 -- Introducing incremental feature
+  releases <https://www.python.org/dev/peps/pep-0598/>`_
 
 
 Copyright
