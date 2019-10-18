@@ -1,7 +1,7 @@
 PEP headers::
 
     PEP: xxx
-    Title: Python compatibility version
+    Title: Python Compatibility Version
     Author: Victor Stinner <vstinner@python.org>
     Status: Draft
     Type: Standards Track
@@ -35,16 +35,20 @@ The need to evolve frequently
 -----------------------------
 
 To remain relevant and useful, Python has to evolve frequently. Some
-enhancements require backward incompatible changes. Any backward
-compatibility change can break an unknown number of Python projects.
-Developers can decide to not implement a feature because of that.
+enhancements require incompatible changes. Any incompatible change can
+break an unknown number of Python projects.  Developers can decide to
+not implement a feature because of that.
 
 Users want to get the latest Python version to get new features and
-better performance. A few backward incompatible changes prevent them to
-use their applications on the latest Python version.
+better performance. A few incompatible changes prevent them to use their
+applications on the latest Python version.
 
 This PEP proposes to add a partial compatibility with old Python
 versions as a tradeoff to fit both use cases.
+
+The main issue with the migration from Python 2 to Python 3 is  not that
+Python 3 is backward incompatible, but how incompatible changes were
+introduced.
 
 
 Partial compatibility to minimize the Python maintenance burden
@@ -88,12 +92,12 @@ certificate verification by default for stdlib http clients
 
 The Python language does not provide backward compatibility.
 
-Changes which are not clearly backward incompatible are not covered by
-this PEP. For example, Python 3.9 changed the default protocol in the
-``pickle`` module to Protocol 4 which was first introduced in Python
-3.4. This change is backward compatible up to Python 3.4. There is no
-need to use the Protocol 3 by default when compatibility with Python 3.8
-is requested.
+Changes which are not clearly incompatible are not covered by this PEP.
+For example, Python 3.9 changed the default protocol in the ``pickle``
+module to Protocol 4 which was first introduced in Python 3.4. This
+change is backward compatible up to Python 3.4. There is no need to use
+the Protocol 3 by default when compatibility with Python 3.8 is
+requested.
 
 New ``DeprecationWarning`` and ``PendingDeprecatingWarning`` warnings
 of Python 3.9 will not be disabled in Python 3.8 compatibility mode.
@@ -105,22 +109,21 @@ warnings must be ignored on a case by case basis.
 Upgrade a project to a newer Python
 -----------------------------------
 
-Without backward compatibility, all backward incompatible changes must
-be fixed at once, which can be a blocker issue. It is even worse when a
-project is upgraded to a newer Python which is separated by multiple
-releases from the old Python.
+Without backward compatibility, all incompatible changes must be fixed
+at once, which can be a blocker issue. It is even worse when a project
+is upgraded to a newer Python which is separated by multiple releases
+from the old Python.
 
 Postponing an upgrade only makes things worse: each skipped release adds
-more backward incompatible changes. The technical debt is only steadily
+more incompatible changes. The technical debt is only steadily
 increasing.
 
 With backward compatibility, it becomes possible to upgrade Python
 increamentally in a project, without having to fix all issues at once.
 
-The "all-or-nothing" is a show-stopper to port large Python 2 code bases
-to Python 3. The list of backward incompatible changes between Python 2
-and Python 3 is long, and it's getting longer at each Python 3.x
-release.
+The "all-or-nothing" is a showstopper to port large Python 2 code bases
+to Python 3. The list of incompatible changes between Python 2 and
+Python 3 is long, and it's getting longer at each Python 3.x release.
 
 
 Cleaning up Python and DeprecationWarning
@@ -302,11 +305,11 @@ Security Implications
 Alternatives
 ============
 
-Provide a workaround for each backward incompatible change
-----------------------------------------------------------
+Provide a workaround for each incompatible change
+-------------------------------------------------
 
-An application can works around some of the backward incompatible
-changes which impacts it.
+An application can works around most of the incompatible changes which
+impacts it.
 
 For example, ``collections`` aliases can be added again using::
 
@@ -389,8 +392,8 @@ means 6 ``.pyc`` files, instead of 3, to support Python 3.8 and Python
 3.9.
 
 
-Temporary moratorium on backward incompatible changes
------------------------------------------------------
+Temporary moratorium on incompatible changes
+--------------------------------------------
 
 In 2009, the PEP 3003 "Python Language Moratorium" proposed to a
 temporary moratorium (suspension) of all changes to the Python language
@@ -420,14 +423,45 @@ https://www.python.org/dev/peps/pep-0602/
 PEP 605 -- A rolling feature release stream for CPython
 https://www.python.org/dev/peps/pep-0605/
 
+See also withdrawn `PEP 598 -- Introducing incremental feature releases
+<https://www.python.org/dev/peps/pep-0598/>`_.
 
-Examples of backward incompatible changes
-=========================================
+PEP 387
+-------
+
+`PEP 387 -- Backwards Compatibility Policy
+<https://www.python.org/dev/peps/pep-0387/>`_ proposes a process to make
+incompatible changes. The main point is the 4th step of the process:
+
+    See if there's any feedback. Users not involved in the original
+    discussions may comment now after seeing the warning. Perhaps
+    reconsider.
+
+PEP 497
+-------
+
+`PEP 497 -- A standard mechanism for backward compatibility
+<https://www.python.org/dev/peps/pep-0497/>`_ proposes different
+solutions to provide backward compatibility.
+
+Except of the ``__past__`` mechanism idea, the PEP 497 does not propose
+concrete solutions:
+
+    When an incompatible change to core language syntax or semantics is
+    being made, Python-dev's policy is to prefer and expect that,
+    wherever possible, a mechanism for backward compatibility be
+    considered and provided for future Python versions after the
+    breaking change is adopted by default, in addition to any mechanisms
+    proposed for forward compatibility such as new future_statements.
+
+
+Examples of incompatible changes
+================================
 
 Python 3.8
 ----------
 
-Examples of Python 3.8 backward incompatible changes:
+Examples of Python 3.8 incompatible changes:
 
 * (During beta phase) ``PyCode_New()`` required a new parameter: it
   broke all Cython extensions (all projects distributing precompiled
@@ -475,7 +509,7 @@ section of What’s New In Python 3.8.
 Python 3.7
 ----------
 
-Examples of Python 3.7 backward incompatible changes:
+Examples of Python 3.7 incompatible changes:
 
 * ``async`` and ``await`` are now reserved keywords.
 * Several undocumented internal imports were removed. One example is
@@ -514,8 +548,8 @@ section of What’s New In Python 3.7.
 Micro releases
 --------------
 
-Sometimes, backward incompatible changes are introduced in micro
-releases (``micro`` in ``major.minor.micro``) to fix bugs or security
+Sometimes, incompatible changes are introduced in micro releases
+(``micro`` in ``major.minor.micro``) to fix bugs or security
 vulnerabilities. Examples:
 
 * Python 3.7.2, ``compileall`` and  ``py_compile`` module: the
@@ -563,6 +597,17 @@ incompatible:
   module.
 
 No backward compatibility code is needed for such kind of changes.
+
+
+References
+==========
+
+* `PEP 5 -- Guidelines for Language Evolution
+  <https://www.python.org/dev/peps/pep-0005/>`_
+* `PEP 236 -- Back to the __future__
+  <https://www.python.org/dev/peps/pep-0236/>`_
+* `PEP 411 -- Provisional packages in the Python standard library
+  <https://www.python.org/dev/peps/pep-0411/>`_
 
 
 Copyright
