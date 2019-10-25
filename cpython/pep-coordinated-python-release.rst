@@ -241,8 +241,8 @@ Python code.
 Distributed CI
 ==============
 
-Checking if projects of the `selected projects`_ are running well on the
-master branch of Python can be automated using a distributed CI.
+Checking if `selected projects`_ are compatible with the master branch
+of Python can be automated using a distributed CI.
 
 Existing CIs can be reused.
 
