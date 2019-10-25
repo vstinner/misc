@@ -91,7 +91,7 @@ The `PEP 602: Annual Release Cycle for Python
 <https://www.python.org/dev/peps/pep-0602/>`_ and the `PEP 605: A
 rolling feature release stream for CPython
 <https://www.python.org/dev/peps/pep-0605/>`_ would like to release
-Python more often to ship new features more often.
+Python more often to ship new features more quickly.
 
 The problem is that each Python ``3.x`` release breaks many projects.
 
