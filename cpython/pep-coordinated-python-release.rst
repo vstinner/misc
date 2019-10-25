@@ -10,27 +10,27 @@ Python-Version: 3.9
 Abstract
 ========
 
-Block a Python release until a compatible version of 24 selected
-projects is available.
+Block a Python release until a compatible version of `24 selected
+projects <Selected projects>`_ is available.
 
 The Python release manager can decide to release even if a project is
 not compatible, if they decide that the project is going to be fixed
-soon enough, or if the issues severity is low enough.
+soon enough, or if the issue severity is low enough.
 
 
 Rationale
 =========
 
-The PEP involves maintainers of the selected projects in the Python
+The PEP involves maintainers of the `selected projects`_ in the Python
 release cycle. There are multiple benefit:
 
-* Detect most bugs before a Python release
+* Detect more bugs before a Python release
 * Discuss and maybe revert incompatible changes before a Python release
 * Increase the number of projects compatible with the next Python
   when the new Python is released
 
-The beta phase is not enough
-----------------------------
+Too few projects are involved in the Python beta phase
+------------------------------------------------------
 
 Currently, Python beta versions are available four months before the
 final 3.x.0 release.
@@ -39,7 +39,8 @@ Bugs reported during the beta phase can be easily fixed and can block a
 release if they are serious enough.
 
 Incompatible changes are discussed during the beta phase: enhance
-documentation to update code or consider to revert these changes.
+documentation explaining how to update code, or consider to revert these
+changes.
 
 Even if more and more projects are tested on the master branch of Python
 in their CI, too many projects of the top 50 projects on PyPI are only
@@ -50,36 +51,54 @@ DeprecatedWarning is being ignored
 ----------------------------------
 
 Python has well defined process to deprecate features. A
-DeprecatedWarning must be emited during at least one Python release
+DeprecatedWarning must be emited during at least one Python release,
 before a feature can be removed.
 
-In practice, DeprecatedWarning are ignored for years in major Python
-projects. Usually, maintainers explain that there are too many warnings
-and so they simply ignore warnings. Moreover, DeprecatedWarning are
-silent by default (except in the __main__ module: `PEP 565
+In practice, DeprecatedWarning warnings are ignored for years in major
+Python projects. Usually, maintainers explain that there are too many
+warnings and so they simply ignore warnings. Moreover, DeprecatedWarning
+is silent by default (except in the ``__main__`` module: `PEP 565
 <https://www.python.org/dev/peps/pep-0565/>`_).
 
 Even if more and more projects are running their test suite with
 warnings treated as errors (``-Werror``), Python core developers still
-have no idea how many projects will be broken when a feature is removed.
-Usually, it's way greater than one.
+have no idea how many projects are broken when a feature is removed.
 
 Need to coordinate
 ------------------
 
 When issues and incompatible changes are discovered and discussed after
-the final Python release, it becomes way more complicated to fix Python.
-Once an API is part of an official final release, usually Python should
-provide backward compatibility for the whole 3.x release lifetime. Some
-operating systems can be shipped with the buggy final release and can
-take several months before being updated.
+the final Python release, it becomes way more complicated and expensive
+to fix Python.  Once an API is part of an official final release, Python
+should provide backward compatibility for the whole 3.x release
+lifetime. Some operating systems can be shipped with the buggy final
+release and can take several months before being updated.
 
 Too many projects are only updated to the new Python after the final
 Python release, which makes this new Python version barely usable to run
-large applications.
+large applications when Python is released.
 
 It is proposed to block a Python release until a compatible version of
-all selected projects is available.
+all `selected projects`_ is available.
+
+
+Specification
+=============
+
+By default, a release is blocked until a compatible version of all
+`selected projects`_ is available.
+
+Before releasing the final Python version, the Python release manager is
+responsible to send a report of the compatibility status of each project
+of the `selected projects`_.
+
+The Python release manager can decide to release even if a project is
+not compatible, if they decide that the project is going to be fixed
+soon enough, or if the issue severity is low enough.
+
+After each Python release, the project list can be updated to remove
+projects and add new ones. The list can grow if the whole process
+doesn't block Python releases for too long.
 
 Limit the delay
 ---------------
@@ -98,28 +117,10 @@ discussed between the Python release manager and involved project
 maintainers on a case by case basis. Not all issues require to block a
 release.
 
-
-Specification
-=============
-
-By default, a release is blocked until a compatible version of all
-selected projects is available.
-
-Before releasing the final Python version, the Python release manager is
-responsible to send a report to check the compatibility status of each
-project of the curated projects list.
-
-The Python release manager can decide to release even if a project is
-not compatible, if they decide that the project is going to be fixed
-soon enough, or if the issues severity is low enough.
-
-After each Python release, the project list can be updated to remove
-projects and add new ones.
-
 Selected projects
 -----------------
 
-Curated list of projects blocking a Python release (24 projects):
+List of projects blocking a Python release (24 projects):
 
 * Cython
 * Django
@@ -226,8 +227,8 @@ Python code.
 Distributed CI?
 ===============
 
-Checking if projects of the curated list are running well on the master
-branch of Python can be automated using a distribured CI.
+Checking if projects of the `selected projects`_ are running well on the
+master branch of Python can be automated using a distribured CI.
 
 Existing CIs using by each projects can be used.
 
