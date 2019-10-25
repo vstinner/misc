@@ -84,6 +84,20 @@ large applications when Python is released.
 It is proposed to block a Python release until a compatible version of
 all `selected projects`_ is available.
 
+Shorter Python release schedule
+-------------------------------
+
+The `PEP 602: Annual Release Cycle for Python
+<https://www.python.org/dev/peps/pep-0602/>`_ and the `PEP 605: A
+rolling feature release stream for CPython
+<https://www.python.org/dev/peps/pep-0605/>`_ would like to release
+Python more often to ship new features more often.
+
+The problem is that each Python ``3.x`` release breaks many projects.
+
+Coordinated Python releases reduces the number of broken projects and
+makes new Python release more usable.
+
 
 Specification
 =============
@@ -126,22 +140,25 @@ case by case basis. Not all issues deserve to block a Python release.
 Selected projects
 -----------------
 
-List of projects blocking a Python release (total: 26):
+List of projects blocking a Python release (total: 27):
 
-* Projects (10):
+* Projects (13):
 
   * aiohttp
   * cryptography
   * Cython
   * Django
+  * numpy
   * pandas
   * pip
   * requests
   * scipy
   * Sphinx (needed to build Python)
   * sqlalchemy
+  * pytest
+  * tox
 
-* Direct and indirect dependencies (16):
+* Direct and indirect dependencies (14):
 
   * certifi (needed by urllib3)
   * cffi (needed by cryptography)
@@ -151,10 +168,8 @@ List of projects blocking a Python release (total: 26):
   * idna (needed by Sphinx and requests)
   * jinja2 (needed by Sphinx)
   * MarkupSafe (needed by Sphinx)
-  * numpy (needed by scipy and pandas)
   * psycopg2 (needed by Django)
   * pycparser (needed by cffi)
-  * pytest (needed by tons of Python projects)
   * setuptools (needed by pip and tons of Python projects)
   * six (needed by tons of Python projects)
   * urllib3 (needed by requests)
@@ -171,13 +186,16 @@ Most of project dependencies are included in the list as well, since a
 single incompatible dependency can block a whole project. Some
 dependencies are excluded to reduce the list length.
 
+Test dependencies as pytest and tox should be included as well. If a
+project cannot be tested, a new version cannot be shipped neither.
+
 The list should be long enough to have a good idea of the cost of
 porting a project to the next Python, but small enough to not block a
 Python release for too long.
 
-Obviously, projects which are not part of the list are encouraged to
-report issues with the next Python and to have a CI running on the next
-Python version.
+Obviously, projects which are not part of the list also are encouraged
+to report issues with the next Python and to have a CI running on the
+next Python version.
 
 
 Incompatible changes
@@ -185,6 +203,10 @@ Incompatible changes
 
 The definition here is large: any Python change which cause an issue
 when building or testing a project.
+
+See also the `PEP 606: Python Compatibility Version
+<https://www.python.org/dev/peps/pep-0606/>`_ for more examples of
+incompatible changes.
 
 Examples
 --------
@@ -256,17 +278,6 @@ A job testing a project on the next Python doesn't have to be
 "mandatory" (block the whole CI). It is fine to have failures during the
 beta phase of a Python release. The job only has to pass for the final
 Python release.
-
-
-References
-==========
-
-* `PEP 602: Annual Release Cycle for Python
-  <https://www.python.org/dev/peps/pep-0602/>`_
-* `PEP 605: A rolling feature release stream for CPython
-  <https://www.python.org/dev/peps/pep-0605/>`_
-* `PEP 606: Python Compatibility Version
-  <https://www.python.org/dev/peps/pep-0606/>`_
 
 
 Copyright
