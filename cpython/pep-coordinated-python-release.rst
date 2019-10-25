@@ -10,13 +10,18 @@ Python-Version: 3.9
 Abstract
 ========
 
-Use 24 projects to detect bugs and to measure the cost of new
-incompatible changes before releasing the next Python version.
+Block a Python release until a compatible version of 24 selected
+projects is available.
+
+The Python release manager can decide to release even if a project is
+not compatible, if they decide that the project is going to be fixed
+soon enough, or if the issues severity is low enough.
+
 
 Rationale
 =========
 
-The PEP involves maintainers of a curated list of projects in the Python
+The PEP involves maintainers of the selected projects in the Python
 release cycle. There are multiple benefit:
 
 * Detect most bugs before a Python release
@@ -73,10 +78,8 @@ Too many projects are only updated to the new Python after the final
 Python release, which makes this new Python version barely usable to run
 large applications.
 
-It is proposed to block a Python release until a curated list of
-projects is updated to support the next Python. The best case is when
-new project releases are available before the new Python is released,
-but it is not strictly required.
+It is proposed to block a Python release until a compatible version of
+all selected projects is available.
 
 Limit the delay
 ---------------
@@ -99,22 +102,24 @@ release.
 Specification
 =============
 
+By default, a release is blocked until a compatible version of all
+selected projects is available.
+
 Before releasing the final Python version, the Python release manager is
 responsible to send a report to check the compatibility status of each
-project of the curated projects list. By default, a release is blocked
-until a new compatible version of each project is released.
+project of the curated projects list.
 
-The release manager can decide to ignore a project if they decide that
-the project is going to be fixed soon enough, or if the issues severity
-is low enough.
+The Python release manager can decide to release even if a project is
+not compatible, if they decide that the project is going to be fixed
+soon enough, or if the issues severity is low enough.
 
 After each Python release, the project list can be updated to remove
 projects and add new ones.
 
-Curated list of projects blocking a Python release
---------------------------------------------------
+Selected projects
+-----------------
 
-24 projects:
+Curated list of projects blocking a Python release (24 projects):
 
 * Cython
 * Django
