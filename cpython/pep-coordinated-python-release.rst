@@ -12,8 +12,8 @@ PEP headers::
 Abstract
 ========
 
-Block a Python release until a compatible version of `selected projects
-<Selected projects>`_ is available.
+Block a Python release until a compatible version of selected projects
+is available.
 
 The Python release manager can decide to release Python even if a
 project is not compatible, if they decide that the project is going to
@@ -23,7 +23,7 @@ be fixed soon enough, or if the issue severity is low enough.
 Rationale
 =========
 
-The PEP involves maintainers of the `selected projects`_ in the Python
+The PEP involves maintainers of the selected projects in the Python
 release cycle. There are multiple benefit:
 
 * Detect more bugs before a Python final release
@@ -82,7 +82,7 @@ Python release, which makes this new Python version barely usable to run
 large applications when Python is released.
 
 It is proposed to block a Python release until a compatible version of
-all `selected projects`_ is available.
+all selected projects is available.
 
 Shorter Python release schedule
 -------------------------------
@@ -103,11 +103,11 @@ Specification
 =============
 
 By default, a Python release is blocked until a compatible version of
-all `selected projects`_ is available.
+all selected projects is available.
 
 Before releasing the final Python version, the Python release manager is
 responsible to send a report of the compatibility status of each project
-of the `selected projects`_. It is recommended to send such report at
+of the selected projects. It is recommended to send such report at
 each beta release to see the evolution and detects issues as soon as
 possible.
 
@@ -263,7 +263,7 @@ Python code.
 Distributed CI
 ==============
 
-Checking if `selected projects`_ are compatible with the master branch
+Checking if selected projects are compatible with the master branch
 of Python can be automated using a distributed CI.
 
 Existing CIs can be reused.
