@@ -261,9 +261,9 @@ Python release.
 References
 ==========
 
-* `PEP 602 -- Annual Release Cycle for Python
+* `PEP 602: Annual Release Cycle for Python
   <https://www.python.org/dev/peps/pep-0602/>`_
-* `PEP 605 -- A rolling feature release stream for CPython
+* `PEP 605: A rolling feature release stream for CPython
   <https://www.python.org/dev/peps/pep-0605/>`_
 * `PEP 606: Python Compatibility Version
   <https://www.python.org/dev/peps/pep-0606/>`_
