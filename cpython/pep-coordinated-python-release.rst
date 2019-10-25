@@ -244,7 +244,7 @@ Distributed CI
 Checking if projects of the `selected projects`_ are running well on the
 master branch of Python can be automated using a distributed CI.
 
-Existing CIs using by each projects can be used.
+Existing CIs can be reused.
 
 New CIs can be added for projects which are not tested on the next
 Python yet.
