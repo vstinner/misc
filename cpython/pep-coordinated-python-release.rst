@@ -38,7 +38,7 @@ documentation to update code or consider to revert these changes.
 
 Even if more and more projects are tested on the master branch of Python
 in their CI, too many projects of the top 50 projects on PyPI are only
-compatible with the new Python a few weeks or even months after the
+compatible with the new Python a few weeks, or even months, after the
 final Python release.
 
 DeprecatedWarning is being ignored
@@ -49,25 +49,29 @@ DeprecatedWarning must be emited during at least one Python release
 before a feature can be removed.
 
 In practice, DeprecatedWarning are ignored for years in major Python
-projects.
+projects. Usually, maintainers explain that there are too many warnings
+and so they simply ignore warnings. Moreover, DeprecatedWarning are
+silent by default (except in the __main__ module: `PEP 565
+<https://www.python.org/dev/peps/pep-0565/>`_).
 
 Even if more and more projects are running their test suite with
 warnings treated as errors (``-Werror``), Python core developers still
 have no idea how many projects will be broken when a feature is removed.
 Usually, it's way greater than one.
 
-Need to coordonate
+Need to coordinate
 ------------------
 
 When issues and incompatible changes are discovered and discussed after
 the final Python release, it becomes way more complicated to fix Python.
-Once an API is part of an official final release, backward compatibility
-on the shipped API is expected. Some operating systems can be shipped
-with the buggy final release and can take several months before being
-updated.
+Once an API is part of an official final release, usually Python should
+provide backward compatibility for the whole 3.x release lifetime. Some
+operating systems can be shipped with the buggy final release and can
+take several months before being updated.
 
 Too many projects are only updated to the new Python after the final
-Python release, which makes this new Python version barely usable.
+Python release, which makes this new Python version barely usable to run
+large applications.
 
 It is proposed to block a Python release until a curated list of
 projects is updated to support the next Python. The best case is when
@@ -79,18 +83,26 @@ Limit the delay
 
 When a build or test issue with the next Python version is reported to a
 project, maintainers have 30 days to answer. With no answer, the project
-is excluded from the list of projects blocking the Python release.
+can be excluded from the list of projects blocking the Python release.
 
 Multiple projects are already tested on the master branch of Python in a
 CI. Problems can be detected very early in a Python release which should
-provide enough time to handle them.
+provide enough time to handle them. More CI can be added for projects
+which are not tested on the next Python yet.
 
-This PEP proposes to involve the top popular PyPI projects (see the list
-below) in the release cycle of Python. A new Python version will only
-be released when new releases of these projects are available, but
-exceptions can be discussed on a case by case basis. The Python release
-manager will decide with the maintainers of involved projects if the
-final Python version can be released anyway.
+Once problems are known by projects and Python, exceptions can be
+discussed between the Python release manager and involved project
+maintainers on a case by case basis. Not all issues require to block a
+release.
+
+
+Specification
+=============
+
+The Python release manager is responsible to ensure that all projects of
+the curated projects list are compatible with the next Python. They can
+decide to ignore a project if they decide that the project is going to
+be fixed soon enough or if the issue severity is low enough.
 
 
 Projects blocking a Python release
@@ -111,7 +123,7 @@ Projects blocking a Python release
 * idna (used by Sphinx and requests)
 * jinja2 (needed by Sphinx)
 * numpy (needed by scipy and pandas)
-* pandas (numpy)
+* pandas
 * pip
 * psycopg2 (used by Django)
 * pytest (used by tons of Python projects)
@@ -126,45 +138,29 @@ Projects blocking a Python release
 Design of this list
 -------------------
 
-Projects used by the Python build system like Sphinx must be in the
-list. Their dependencies as well.
+Projects used by to build Python, like Sphinx, must be in the list.
 
-Curated list of the "top most popular packages on PyPI".
+Most popular projects are picked from the most downloaded projects on
+PyPI.
 
-The list should be long enough to have a good idea of porting a project
-to latest incompatible changes but small enough to not block a Python
-release for too long.
+Most of project dependencies are included in the list as well, since a
+single dependency not compatible with next Python can block a whole
+project.
 
-The list is based on download statistics but also by the "popularity" of
-packages.
+The list should be long enough to have a good idea of the cost of
+porting a project to the next Python, but small enough to not block a
+Python release for too long.
 
-Download statistics:
-
-* https://pypistats.org/top
-* https://hugovk.github.io/top-pypi-packages/
-
-To remain in the list, maintainers must be able to respond in less than
-30 days. Otherwise, the project can be removed from the list. A project
-can be added again if a maintainer becomes responsive again.
-
-Obviously, projects excluded from the list are encouraged to report
-issues with incompatible changes, but they cannot a Python release.
-
-Some projects are excluded because their release cycle doesn't allow
-to release minor versions compatible with the newer Python on time.
-
-It's way better when a project has a running CI on the master branch of
-Python.
-
-https://libraries.io/ can be used to list which projects are using
-a Python module.
+Obviously, projects which are not part of the list are encouraged to
+report issues with the next Python and to have a CI running on the next
+Python version.
 
 
 Incompatible changes
 ====================
 
-The definition here is quite large: any Python change which cause an
-issue when building or testing a project.
+The definition here is large: any Python change which cause an issue
+when building or testing a project.
 
 Examples
 --------
