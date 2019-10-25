@@ -12,12 +12,12 @@ PEP headers::
 Abstract
 ========
 
-Block a Python release until a compatible version of `24 selected
-projects <Selected projects>`_ is available.
+Block a Python release until a compatible version of `selected projects
+<Selected projects>`_ is available.
 
-The Python release manager can decide to release even if a project is
-not compatible, if they decide that the project is going to be fixed
-soon enough, or if the issue severity is low enough.
+The Python release manager can decide to release Python even if a
+project is not compatible, if they decide that the project is going to
+be fixed soon enough, or if the issue severity is low enough.
 
 
 Rationale
@@ -26,10 +26,11 @@ Rationale
 The PEP involves maintainers of the `selected projects`_ in the Python
 release cycle. There are multiple benefit:
 
-* Detect more bugs before a Python release
-* Discuss and maybe revert incompatible changes before a Python release
-* Increase the number of projects compatible with the next Python
-  when the new Python is released
+* Detect more bugs before a Python final release
+* Discuss and maybe revert incompatible changes before a Python final
+  release
+* Increase the number of compatible projects when the new Python final
+  version is released
 
 Too few projects are involved in the Python beta phase
 ------------------------------------------------------
@@ -45,7 +46,7 @@ documentation explaining how to update code, or consider to revert these
 changes.
 
 Even if more and more projects are tested on the master branch of Python
-in their CI, too many projects of the top 50 projects on PyPI are only
+in their CI, too many projects of the top 50 PyPI projects are only
 compatible with the new Python a few weeks, or even months, after the
 final Python release.
 
@@ -87,79 +88,88 @@ all `selected projects`_ is available.
 Specification
 =============
 
-By default, a release is blocked until a compatible version of all
-`selected projects`_ is available.
+By default, a Python release is blocked until a compatible version of
+all `selected projects`_ is available.
 
 Before releasing the final Python version, the Python release manager is
 responsible to send a report of the compatibility status of each project
-of the `selected projects`_.
+of the `selected projects`_. It is recommended to send such report at
+each beta release to see the evolution and detects issues as soon as
+possible.
 
-The Python release manager can decide to release even if a project is
-not compatible, if they decide that the project is going to be fixed
-soon enough, or if the issue severity is low enough.
+The Python release manager can decide to release Python even if a
+project is not compatible, if they decide that the project is going to
+be fixed soon enough, or if the issue severity is low enough.
 
 After each Python release, the project list can be updated to remove
-projects and add new ones. The list can grow if the whole process
+projects and add new ones. For example, to remove old unused
+dependencies and add new ones. The list can grow if the whole process
 doesn't block Python releases for too long.
 
 Limit the delay
 ---------------
 
 When a build or test issue with the next Python version is reported to a
-project, maintainers have 30 days to answer. With no answer, the project
-can be excluded from the list of projects blocking the Python release.
+project, maintainers have one month to answer. With no answer, the
+project can be excluded from the list of projects blocking the Python
+release.
 
 Multiple projects are already tested on the master branch of Python in a
 CI. Problems can be detected very early in a Python release which should
 provide enough time to handle them. More CI can be added for projects
 which are not tested on the next Python yet.
 
-Once problems are known by projects and Python, exceptions can be
-discussed between the Python release manager and involved project
-maintainers on a case by case basis. Not all issues require to block a
-release.
+Once selected projects issues are known, exceptions can be discussed
+between the Python release manager and involved project maintainers on a
+case by case basis. Not all issues deserve to block a Python release.
 
 Selected projects
 -----------------
 
-List of projects blocking a Python release (24 projects):
+List of projects blocking a Python release (total: 26):
 
-* Cython
-* Django
-* MarkupSafe (needed by Sphinx)
-* Sphinx (needed to build Python)
-* aiohttp
-* certifi (used by urllib3)
-* chardet (needed by Sphinx)
-* colorama (used by pip)
-* cryptography: cffi, pycparser
-* docutils (used by Sphinx)
-* idna (used by Sphinx and requests)
-* jinja2 (needed by Sphinx)
-* numpy (needed by scipy and pandas)
-* pandas
-* pip
-* psycopg2 (used by Django)
-* pytest (used by tons of Python projects)
-* requests
-* scipy
-* setuptools (used by pip and tons of Python projects)
-* six (needed by tons of Python projects)
-* sqlalchemy
-* urllib3 (used by requests)
-* wheel (used by pip)
+* Projects (9):
 
-Design of the projects list
----------------------------
+  * Cython
+  * Django
+  * aiohttp
+  * cryptography
+  * pandas
+  * pip
+  * requests
+  * scipy
+  * sqlalchemy
 
-Projects used by to build Python, like Sphinx, must be in the list.
+* Direct and indirect dependencies (17):
 
-Most popular projects are picked from the most downloaded projects on
-PyPI.
+  * MarkupSafe (needed by Sphinx)
+  * Sphinx (needed to build Python)
+  * certifi (needed by urllib3)
+  * chardet (needed by Sphinx)
+  * colorama (needed by pip)
+  * cffi (needed by cryptography)
+  * pycparser (needed by cffi)
+  * docutils (needed by Sphinx)
+  * idna (needed by Sphinx and requests)
+  * jinja2 (needed by Sphinx)
+  * numpy (needed by scipy and pandas)
+  * psycopg2 (needed by Django)
+  * pytest (needed by tons of Python projects)
+  * setuptools (needed by pip and tons of Python projects)
+  * six (needed by tons of Python projects)
+  * urllib3 (needed by requests)
+  * wheel (needed by pip)
+
+How projects are selected
+-------------------------
+
+Projects used by to build Python should be in the list, like Sphinx.
+
+Most popular projects are picked from the most downloaded PyPI projects.
 
 Most of project dependencies are included in the list as well, since a
-single dependency not compatible with next Python can block a whole
-project.
+single incompatible dependency can block a whole project. Some
+dependencies are excluded to reduce the list length.
 
 The list should be long enough to have a good idea of the cost of
 porting a project to the next Python, but small enough to not block a
@@ -181,28 +191,30 @@ Examples
 
 There are different kinds of incompatible changes:
 
-* Change in the Python build. For example, Python 3.8 removed ``m``
-  (which stands for pymalloc) from ``sys.abiflags``.
+* Change in the Python build. For example, Python 3.8 removed ``'m'``
+  (which stands for pymalloc) from ``sys.abiflags`` which impacts Python
+  vendors like Linux distributions.
 * Change in the C extensions build. For exmaple, Python 3.8 no longer
-  links C extensions to libpython.
+  links C extensions to libpython, and Python 3.7 removed
+  ``os.errno`` alias to the ``errno`` module.
 * Removed function. For example, collections aliases to ABC classes
   have been removed in Python 3.9.
-* Change a function signature:
+* Changed function signature:
 
-  * Reject a type which was previously accepted (ex: only accept int,
-    reject float)
+  * Reject a type which was previously accepted (ex: only accept ``int``,
+    reject ``float``).
   * Add a new mandatory parameter.
-  * Convert a positional-or-keyword parameter to positional-only
+  * Convert a positional-or-keyword parameter to positional-only.
 
 * Behavior change. For example, Python 3.8 now serializes XML attributes
   in their insertion order, rather than sorting them by name.
-* New warning. Since more and more projects are testing with warnings
+* New warning. Since more and more projects are tested with all warnings
   treated as errors, any new warning can cause a project test to fail.
 * Function removed from the C API.
 * Structure made opaque in the C API. For example, PyInterpreterState
   became opaque in Python 3.8 which broke projects accessing
-  ``interp->modules``: ``PyImport_GetModuleDict()`` must be used
-  instead.
+  ``interp->modules`` (``PyImport_GetModuleDict()`` should be used
+  instead).
 
 Cleaning up Python and DeprecationWarning
 -----------------------------------------
@@ -218,29 +230,41 @@ are emitted to suggest to use the new way, but many developers ignore
 these warnings which are silent by default.
 
 Sometimes, supporting both ways has a minor maintenance cost, but Python
-core developers prefer to drop the old way to clean up the code. Such
-kind of change is backward incompatible.
+core developers prefer to drop the old way to clean up the Python code
+base and standard library. Such kind of change is backward incompatible.
 
 More incompatible changes than usual should be expected with the end of
 the Python 2 support which is a good opportunity to cleaning up old
 Python code.
 
 
-Distributed CI?
-===============
+Distributed CI
+==============
 
 Checking if projects of the `selected projects`_ are running well on the
-master branch of Python can be automated using a distribured CI.
+master branch of Python can be automated using a distributed CI.
 
 Existing CIs using by each projects can be used.
 
 New CIs can be added for projects which are not tested on the next
 Python yet.
 
+It is recommended to treat DeprecationWarning warnings as errors when
+testing on the next Python.
+
+A job testing a project on the next Python doesn't have to be
+"mandatory" (block the whole CI). It is fine to have failures during the
+beta phase of a Python release. The job only has to pass for the final
+Python release.
+
 
 References
 ==========
 
+* `PEP 602 -- Annual Release Cycle for Python
+  <https://www.python.org/dev/peps/pep-0602/>`_
+* `PEP 605 -- A rolling feature release stream for CPython
+  <https://www.python.org/dev/peps/pep-0605/>`_
 * `PEP 606: Python Compatibility Version
   <https://www.python.org/dev/peps/pep-0606/>`_
 
