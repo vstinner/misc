@@ -99,14 +99,20 @@ release.
 Specification
 =============
 
-The Python release manager is responsible to ensure that all projects of
-the curated projects list are compatible with the next Python. They can
-decide to ignore a project if they decide that the project is going to
-be fixed soon enough or if the issue severity is low enough.
+Before releasing the final Python version, the Python release manager is
+responsible to send a report to check the compatibility status of each
+project of the curated projects list. By default, a release is blocked
+until a new compatible version of each project is released.
 
+The release manager can decide to ignore a project if they decide that
+the project is going to be fixed soon enough, or if the issues severity
+is low enough.
 
-Projects blocking a Python release
-==================================
+After each Python release, the project list can be updated to remove
+projects and add new ones.
+
+Curated list of projects blocking a Python release
+--------------------------------------------------
 
 24 projects:
 
@@ -135,8 +141,8 @@ Projects blocking a Python release
 * urllib3 (used by requests)
 * wheel (used by pip)
 
-Design of this list
--------------------
+Design of the projects list
+---------------------------
 
 Projects used by to build Python, like Sphinx, must be in the list.
 
@@ -201,29 +207,27 @@ One of the `Zen of Python (PEP 20)
 
 When Python evolves, new ways emerge inevitably. ``DeprecationWarning``
 are emitted to suggest to use the new way, but many developers ignore
-these warnings, which are silent by default (except in the ``__main__``
-module: see the `PEP 565 <https://www.python.org/dev/peps/pep-0565/>`_).
-Some developers simply ignore all warnings when there are too many
-warnings, and so only bother with exceptions when deprecated code is
-removed.
+these warnings which are silent by default.
 
-Sometimes, supporting both ways has a minor maintenance cost, but
-developers prefer to drop the old way to clean up the code. Such kind of
-change is backward incompatible.
+Sometimes, supporting both ways has a minor maintenance cost, but Python
+core developers prefer to drop the old way to clean up the code. Such
+kind of change is backward incompatible.
 
-Some developers can take the end of the Python 2 support as an
-opportunity to push even more incompatible changes than usual.
-
-Adding an opt-in backward compatibility prevents to break
-applications and allows developers to continue to do such cleanup.
+More incompatible changes than usual should be expected with the end of
+the Python 2 support which is a good opportunity to cleaning up old
+Python code.
 
 
 Distributed CI?
 ===============
 
-Checking if projects are running well on the master branch of Python may
-be automated using a distribured CI. Existing CIs using by each projects
-can be used. New CIs might be added.
+Checking if projects of the curated list are running well on the master
+branch of Python can be automated using a distribured CI.
+
+Existing CIs using by each projects can be used.
+
+New CIs can be added for projects which are not tested on the next
+Python yet.
 
 
 References
