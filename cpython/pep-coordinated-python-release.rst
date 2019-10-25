@@ -128,32 +128,32 @@ Selected projects
 
 List of projects blocking a Python release (total: 26):
 
-* Projects (9):
+* Projects (10):
 
-  * Cython
-  * Django
   * aiohttp
   * cryptography
+  * Cython
+  * Django
   * pandas
   * pip
   * requests
   * scipy
+  * Sphinx (needed to build Python)
   * sqlalchemy
 
-* Direct and indirect dependencies (17):
+* Direct and indirect dependencies (16):
 
-  * MarkupSafe (needed by Sphinx)
-  * Sphinx (needed to build Python)
   * certifi (needed by urllib3)
+  * cffi (needed by cryptography)
   * chardet (needed by Sphinx)
   * colorama (needed by pip)
-  * cffi (needed by cryptography)
-  * pycparser (needed by cffi)
   * docutils (needed by Sphinx)
   * idna (needed by Sphinx and requests)
   * jinja2 (needed by Sphinx)
+  * MarkupSafe (needed by Sphinx)
   * numpy (needed by scipy and pandas)
   * psycopg2 (needed by Django)
+  * pycparser (needed by cffi)
   * pytest (needed by tons of Python projects)
   * setuptools (needed by pip and tons of Python projects)
   * six (needed by tons of Python projects)
