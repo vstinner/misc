@@ -44,7 +44,7 @@ alias df='df -h'
 alias grep='grep --color'
 alias nssh='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 alias nscp='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-alias cat='cat -v'
+#alias cat='cat -v'
 
 # Protect myself against stupid commands like "echo user:password: >/etc/passwd"
 set -C
