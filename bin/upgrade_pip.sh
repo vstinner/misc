@@ -1,8 +1,8 @@
 MODULES="pip virtualenv wheel"
 #MODULES="$MODULES setuptools"
 set -e -x
-python2 -m pip install --user -U $MODULES tox
-python3 -m pip install --user -U $MODULES vex twine
+python2 -m pip install --user -U $MODULES
+python3 -m pip install --user -U $MODULES tox twine
 #cp /usr/bin/pip2 /usr/bin/pip
 # pip is now Python 3
 
