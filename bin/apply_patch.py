@@ -58,7 +58,7 @@ def parse_filenames(filename):
             if step == 'input_file':
                 if line.startswith("--- "):
                     # split by space or tab
-                    input_filename = line[4:].split(None, 1)[0]
+                    input_filename = line[4:] #.split(None, 1)[0]
                     step = 'output_file'
                 elif any(line.startswith(prefix) for prefix in PREFIXES):
                     # ignore "index 4bb3c01..9e84d63 100644"
@@ -71,7 +71,7 @@ def parse_filenames(filename):
                 if not line.startswith("+++ "):
                     raise ValueError("Output filename line doesn't start with +++: %r" % line)
                 # split by space or tab
-                output_filename = line[4:].split(None, 1)[0]
+                output_filename = line[4:] #.split(None, 1)[0]
                 yield (input_filename, output_filename)
                 step = None
             else:
