@@ -1,26 +1,3 @@
-Comments:
-
-GraalPython: (n.b.: actually actively supporting it with money ;-)
--timfel, not knowing if there's a "comment" tool)
-
-Petr: I think this should be spit into two PEPs: one for the goals and
-progress for the C API (which should not be very controversial, at least
-until we get to deprecating old API), and one for introducing the new
-runtime (which should address very different practical problems like
-naming of executables, system integration, support windows, ).
-
-Petr: [[ Why is HPy here? What does this section propose? ]]
-=> HPy is the "ideal" C API. This PEP is designed to converge to this
-API in the long term. That's summarized in the sentence: "The PEP moves
-the C API towards HPy design and API."
-
-Petr: "The internal C API is only partially exported: some functions are
-exported with "extern" (cannot be used ouside CPython) [[ is that really
-what "extern" means? ]]"
-=> Python 3.9 is now built with -fvisibility=hidden: symbols which are
-not declared with PyAPI_FUNC() or PyAPI_DATA() are no longer exported in
-the dynamical library (libpython) symbols.
-
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 PEP xxx: Modify the C API to hide implementation details
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -28,14 +5,26 @@ PEP xxx: Modify the C API to hide implementation details
 Abstract
 ========
 
-* Hide implementation details from the C API to allow implementing optimizations in CPython and make PyPy more efficient.
-* Provide a new "optimized" but incompatible CPython runtime, using the same CPython code base: faster but can only import C extensions which don't use implementation details.
-* Only build a C extension once and use it on multiple Python runtimes and different versions of the same runtime (stable ABI).
-* Continue to support old unmodified C extensions by continuing to provide the fully compatible "regular" CPython runtime.
+* Hide implementation details from the C API to allow implementing
+  optimizations in CPython and make PyPy more efficient.
+* Continue to support old unmodified C extensions by continuing to
+  provide the fully compatible "regular" CPython runtime.
+* Provide a new "optimized" but incompatible CPython runtime, using the
+  same CPython code base: faster but can only import C extensions which
+  don't use implementation details.
+* Only build a C extension once and use it on multiple Python runtimes
+  and different versions of the same runtime (stable ABI).
+* Better advertise alternative Python runtimes and better communicate on
+  the difference between the Python language and the Python
+  implementation (especially CPython).
+
+Note: Cython and cffi should be preferred to write new C extensions.
+This PEP is about existing C extensions which cannot be rewritten with
+Cython.
 
 
 Rationale
-========
+=========
 
 To remain competitive in term of performance with other programming
 languages like Go or Rust, Python has to become more efficient.
@@ -44,24 +33,24 @@ Make Python two times faster
 ----------------------------
 
 The C API leaks too many implementation details which prevent optimizing
-CPython. See Use Cases: CPython.
+CPython. See `Optimize CPython`_.
 
 PyPy's support for Python's C API (pycext) is slow because it has to
 emulate CPython internals like memory layout and reference counting. The
 emulation causes memory overhead, memory copies, conversions, etc. See
-"Inside cpyext: Why emulating CPython C API is so Hard" (Sept 2018) by
-Antonio Cuni:
-https://morepypy.blogspot.com/2018/09/inside-cpyext-why-emulating-cpython-c.html
+`Inside cpyext: Why emulating CPython C API is so Hard
+<https://morepypy.blogspot.com/2018/09/inside-cpyext-why-emulating-cpython-c.html>`_
+(Sept 2018) by Antonio Cuni.
 
 While this PEP may make CPython a little bit slower in the short term,
 the long-term goal is to make "Python" at least two times faster. This
-goal is not hypotetical: PyPy is already 4.2x faster than CPython and is
-fully compatible. Only C extensions are the bottleneck of PyPy. This PEP
+goal is not hypothetical: PyPy is already 4.2x faster than CPython and is
+fully compatible. C extensions are the bottleneck of PyPy. This PEP
 proposes a migration plan to move towards opaque C API which would make
-PyPy way faster.
+PyPy faster.
 
-Encourage the limited C API and the stable API (PEP 384)
---------------------------------------------------------
+Promote the limited C API and the stable API (PEP 384)
+------------------------------------------------------
 
 The limited API is not widely used (PyQt is one of the few known users).
 It is also not used by default.
@@ -99,70 +88,75 @@ Flaws of the C API
 Borrowed references
 -------------------
 
-A borrowed reference is a pointer which doesn’t “hold” a reference. If
+A borrowed reference is a pointer which doesn't “hold” a reference. If
 the object is destroyed, the borrowed reference becomes a dangling
 pointer, pointing to freed memory which might be reused by a new object.
 Borrowed references can lead to bugs and crashes when misused. An
-example of a CPython bug caused by this is bpo-25750: crash in
-type_getattro().
+example of a CPython bug caused by this is `bpo-25750: crash in
+type_getattro() <https://bugs.python.org/issue25750>`_.
 
 Borrowed references are a problem whenever there is no reference to
 borrow: they assume that a referenced object already exists (and thus
-has a positive refcount).
+has a positive reference count).
 
 Tagged pointers are an example of this problem: since there is no
-concrete PyObject* to represent the integer, it cannot easily be
+concrete ``PyObject*`` to represent the integer, it cannot easily be
 manipulated.
 
 This issue complicates optimizations like PyPy's list strategies: if a
 list contains only small integers, it is stored as a compact C array of
-longs. The equivalent of PyObject is only created when an item is
+longs. The equivalent of ``PyObject`` is only created when an item is
 accessed. (Most of the time the object is optimized away by the JIT, but
 this is another story.) This makes it hard to support the C API function
-PyList_GetItem(), which should return a reference borrowed from the
-list, but the list contains no concrete PyObject that it could lend a
+``PyList_GetItem()``, which should return a reference borrowed from the
+list, but the list contains no concrete ``PyObject`` that it could lend a
 reference to!  PyPy's current solution is very bad: the first time
-PyList_GetItem() is called, the whole list is de-optimized (converted to
-a list of PyObject*). See cpyext get_list_storage().
+``PyList_GetItem()`` is called, the whole list is de-optimized
+(converted to a list of ``PyObject*``). See ``cpyext``
+``get_list_storage()``.
 
 See also the Specialized list use case, which is the same optimization
 applied to CPython. Like in PyPy, this optimization is incompatible with
 borrowed references since the runtime cannot guess when the temporary
 object should be destroyed.
 
-If PyList_GetItem() returned a strong reference, the PyObject* could
-just be allocated on the fly and destroyed when the user decrefs it.
-Basically, by putting borrowed references in the API, we are making it
-impossible to change the underlying data structure.
+If ``PyList_GetItem()`` returned a strong reference, the ``PyObject*``
+could just be allocated on the fly and destroyed when the user
+decrements its reference count. Basically, by putting borrowed
+references in the API, we are making it impossible to change the
+underlying data structure.
 
 Functions stealing strong references
 ------------------------------------
 
 There are functions which steal strong references, for example
-PyModule_AddObject() and PySet_Discard(). Stealing presents issues
-similar to borrowed references
+``PyModule_AddObject()`` and ``PySet_Discard()``. Stealing presents
+issues similar to borrowed references
 
 PyObject**
 ----------
 
-Some functions return a pointer to an array of PyObject*:
+Some functions return a pointer to an array of ``PyObject*``:
 
-* PySequence_Fast_ITEMS()
-* PyTuple_GET_ITEM(0) is sometimes abused to get an array of all of the
-  tuple's contents
+* ``PySequence_Fast_ITEMS()``
+* ``PyTuple_GET_ITEM()`` is sometimes abused to get an array of all of
+  the tuple's contents: ``PyObject **items = &PyTuple_GET_ITEM(0);``
 
 In effect, these functions return an array of borrowed references: like
-with PyList_GetItem, all callers of PySequence_Fast_ITEMS assume the
-sequence holds references to its elements.
+with ``PyList_GetItem()``, all callers of ``PySequence_Fast_ITEMS()``
+assume the sequence holds references to its elements.
 
 Leaking structure members
 -------------------------
 
-PyObject, PyTypeObject, PyThreadState, etc. structures are currently
-public: C extensions can directly read and modify the structure members.
-For example, the Py_INCREF() macro directly increases
-PyObject.ob_refcnt, without any abstraction. Hopefully, Py_INCREF()
-implementation can be modified without affecting the API.
+``PyObject``, ``PyTypeObject``, ``PyThreadState``, etc. structures are
+currently public: C extensions can directly read and modify the
+structure members.
+
+For example, the ``Py_INCREF()`` macro directly increases
+``PyObject.ob_refcnt``, without any abstraction. Hopefully,
+``Py_INCREF()`` implementation can be modified without affecting the
+API.
 
 
 Implementation
@@ -171,27 +165,28 @@ Implementation
 Separate header files of limited and internal C API
 ---------------------------------------------------
 
-In Python 3.6, all headers (.h files) were directly in the Include/
+In Python 3.6, all headers (.h files) were directly in the ``Include/``
 directory.
 
 In Python 3.7, work started to move the internal C API into a new
-subdirectory, Include/internal/. The work continued in Python 3.8 and
-3.9. The internal C API is only partially exported: some functions are
-only declared with "extern" and so cannot be used outside CPython (with
-compilers supporting -fvisibility=hidden, see above), some functions are
-exported with PyAPI_FUNC() to make them usable in C extensions.
-Debuggers and profilers are typical users of the internal C API to
-inspect Python internals without calling functions (for example, to
-inspect a coredump).
+subdirectory, ``Include/internal/``. The work continued in Python 3.8
+and 3.9. The internal C API is only partially exported: some functions
+are only declared with ``extern`` and so cannot be used outside CPython
+(with compilers supporting ``-fvisibility=hidden``, see above), some
+functions are exported with ``PyAPI_FUNC()`` to make them usable in C
+extensions.  Debuggers and profilers are typical users of the internal C
+API to inspect Python internals without calling functions (for example,
+to inspect a coredump).
 
-Python 3.9 is now built with -fvisibility=hidden (supported by GCC and
-clang): symbols which are not declared with PyAPI_FUNC() or PyAPI_DATA()
-are no longer exported by the dynamical library (libpython).
+Python 3.9 is now built with ``-fvisibility=hidden`` (supported by GCC
+and clang): symbols which are not declared with ``PyAPI_FUNC()`` or
+``PyAPI_DATA()`` are no longer exported by the dynamical library
+(libpython).
 
 Another change is to separate the limited C API from the "CPython" C
-API: Python 3.8 has a new Include/cpython/ sub-directory. It should not
-be used directly, bit it is used automatically from the public headers
-when the Py_LIMITED_API macro is not defined.
+API: Python 3.8 has a new ``Include/cpython/`` sub-directory. It should
+not be used directly, bit it is used automatically from the public
+headers when the ``Py_LIMITED_API`` macro is not defined.
 
 **Backward compatibility:** fully backward compatible.
 
@@ -200,12 +195,17 @@ when the Py_LIMITED_API macro is not defined.
 Changes without API changes and with minor performance overhead
 ---------------------------------------------------------------
 
-* Replace macros with static inline functions. Work started in 3.8 and made good progress in Python 3.9.
+* Replace macros with static inline functions. Work started in 3.8 and
+  made good progress in Python 3.9.
 * Modify macros to avoid directly accessing structures fields.
 
 Examples:
 
-* https://github.com/python/cpython/commit/38965ec5411da60d312b59be281f3510d58e0cf1 modify Py_TRASHCAN_BEGIN_CONDITION() macro to call a new _PyTrash_begin() function rather than accessing directly PyThreadState.trash_delete_nesting field.
+* `Hide implementation detail of trashcan macros
+  <https://github.com/python/cpython/commit/38965ec5411da60d312b59be281f3510d58e0cf1>`_
+  commit modifies ``Py_TRASHCAN_BEGIN_CONDITION()`` macro to call a new
+  ``_PyTrash_begin()`` function rather than accessing directly
+  ``PyThreadState.trash_delete_nesting`` field.
 
 **Backward compatibility:** fully backward compatible.
 
@@ -214,7 +214,8 @@ Examples:
 Changes without API changes but with performance overhead
 ---------------------------------------------------------
 
-* Replace macros or inline functions with regular functions. Work started in 3.9 on a limited set of functions.
+* Replace macros or inline functions with regular functions. Work
+  started in 3.9 on a limited set of functions.
 
 Overhead: function call. No benchmark available so far.
 
@@ -228,30 +229,30 @@ API and ABI incompatible changes
 * Make structures opaque: move them to the internal C API.
 * Remove functions from the public C API which are tied to CPython
   internals. Maybe begin by marking these functions as private (rename
-  PyXXX to _PyXXX) or move them to the internal C API.
-* Ban statically allocated types (by making PyTypeObject opaque):
-  enforce usage of PyType_FromSpec().
+  ``PyXXX`` to ``_PyXXX``) or move them to the internal C API.
+* Ban statically allocated types (by making ``PyTypeObject`` opaque):
+  enforce usage of ``PyType_FromSpec()``.
 
 Examples of issues to make structures opaque:
 
-* PyGC_Head: https://bugs.python.org/issue40241
-* PyObject: https://bugs.python.org/issue39573
-* PyThreadState: https://bugs.python.org/issue39573
-* PyTypeObject: https://bugs.python.org/issue40170
+* ``PyGC_Head``: https://bugs.python.org/issue40241
+* ``PyObject``: https://bugs.python.org/issue39573
+* ``PyTypeObject``: https://bugs.python.org/issue40170
+* ``PyThreadState``: https://bugs.python.org/issue39573
 
-
-Backward compatibility: backward incompatible on purpose. Break the limited C API and the stable ABI.
+**Backward compatibility:** backward incompatible on purpose. Break the
+limited C API and the stable ABI.
 
 
 Better advertise alternative Python runtimes
 ============================================
 
 Currently, PyPy and other "alternative" Python runtimes are not well
-advertized on https://www.python.org/ website. They are only listed as
+advertised on https://www.python.org/ website. They are only listed as
 the last choice in the Download menu.
 
 Once enough C extensions will be compatible with the limited C API, PyPy
-and other Python runtimes should be better advertized on Python website
+and other Python runtimes should be better advertised on Python website
 and in the Python documentation, to no longer introduce them as
 second-class citizen, but as first-class citizen. Obviously, CPython is
 likely to remain the most feature-complete implementation in mid-term,
@@ -263,22 +264,24 @@ depending on their use cases.
 HPy project
 ===========
 
-The HPy project is a brand new C API written from scratch. It is
-designed to ease migration from the current C API and to be efficient on
-PyPy. HPy hides all implementation details: it is based on "handles" so
-objects cannot be inspected with direct memory access: only opaque
-function calls are allowed. This abstraction has many benefits:
 
-* No more PyObject emulation needed: smaller memory footprint in PyPy
-  cpyext, no more expensive conversions.
+The `HPy project <https://github.com/pyhandle/hpy>`__ is a brand new C
+API written from scratch. It is designed to ease migration from the
+current C API and to be efficient on PyPy. HPy hides all implementation
+details: it is based on "handles" so objects cannot be inspected with
+direct memory access: only opaque function calls are allowed. This
+abstraction has many benefits:
+
+* No more ``PyObject`` emulation needed: smaller memory footprint in
+  PyPy cpyext, no more expensive conversions.
 * It is possible to have multiple handles pointing to the same object.
   It helps to better track the object lifetime and makes the PyPy
-  implementation easier. PyPy doesn't use reference couting but a
+  implementation easier. PyPy doesn't use reference counting but a
   tracing garbage collector. When the PyPy GC moves objects in memory,
   handles don't change! HPy uses an array mapping handle to objects:
   only this array has to be updated. It is way more efficient.
 * The Python runtime is free to modify deep internals compared to
-  CPython. Many optimizations become possible: see "Use Cases: CPython"
+  CPython. Many optimizations become possible: see `Optimize CPython`_
   section.
 * It is easy to add a debug wrapper to add checks before and after the
   function calls. For example, ensure that that GIL is held when calling
@@ -292,8 +295,6 @@ PyPy, but run slower on CPython and PyPy.
 
 The PEP moves the C API towards HPy design and API.
 
-link: https://github.com/pyhandle/hpy
-
 
 New optimized CPython runtime
 ==============================
@@ -303,7 +304,7 @@ compatibility. To ease the migration (accelerate adoption of the new C
 API), one option is to provide not only one but two CPython runtimes:
 
 * Regular CPython: fully backward compatible, support direct access to
-  structures like PyObject, etc.
+  structures like ``PyObject``, etc.
 * New optimized CPython: incompatible, cannot import C extensions which
   don't use the limited C API, has new optimizations, limited to the C
   API.
@@ -311,8 +312,8 @@ API), one option is to provide not only one but two CPython runtimes:
 Technically, both runtimes would have the same code base, to ease
 maintenance: CPython. The new optimized CPython would be a ./configure
 flag to build a different Python. On Windows, it would be a different
-project of the Visual Studio solution reusing pythoncore but define a
-macro to build enable optimization and change the C API.
+project of the Visual Studio solution reusing pythoncore project, but
+define a macro to build enable optimization and change the C API.
 
 
 Cython and cffi
@@ -325,23 +326,24 @@ Cython may be modified to add a new build mode where only the "limited C
 API" is used.
 
 
-Use cases
+Use Cases
 =========
 
-CPython
--------
+Optimize CPython
+----------------
 
-Once all C extensions will no longer directly access implementation
-details, it will be possible to experiment with optimizations.
+The new optimized runtime can implement new optimizations since it only
+supports C extension modules which don't access Python internals.
 
 Tagged pointers
 ...............
 
-Avoid PyObject for small objects (ex: small int, short latin1 str, None
-and True/False singleons). Store content directly in the pointer, with a
-tag for the object type.
+`Tagged pointer <https://en.wikipedia.org/wiki/Tagged_pointer>`_.
 
-See: https://en.wikipedia.org/wiki/Tagged_pointer
+Avoid ``PyObject`` for small objects (ex: small integers, short Latin-1
+strings, None and True/False singletons): store the content directly in
+the pointer, with a tag for the object type.
+
 
 Tracing garbage collector
 .........................
@@ -350,20 +352,20 @@ Experiment with a tracing garbage collector inside CPython. Keep
 reference counting for the C API.
 
 One of the issue are functions of the C API which return a pointer like
-PyBytes_AsString(). Python doesn't know when the caller stops using the
-pointer, and so cannot move the object in memory (for a moving garbage
-collector). API like PyBuffer is better since it requires the caller to
-call PyBuffer_Release() when it is done.
+``PyBytes_AsString()``. Python doesn't know when the caller stops using
+the pointer, and so cannot move the object in memory (for a moving
+garbage collector). API like ``PyBuffer`` is better since it requires
+the caller to call ``PyBuffer_Release()`` when it is done.
 
 Specialized list
 ................
 
 Specialize lists of small integers: if a list only contains numbers
-which fit into a C int32_t, a Python list object could use a more
-efficient int32_t array to reduce the memory footprint (avoid PyObject
-overhead for these numbers).
+which fit into a C ``int32_t``, a Python list object could use a more
+efficient ``int32_t`` array to reduce the memory footprint (avoid
+``PyObject`` overhead for these numbers).
 
-Temporary PyObject objects would be created on demand for backward
+Temporary ``PyObject`` objects would be created on demand for backward
 compatibility.
 
 This optimization is less interesting if tagged pointers are
@@ -380,35 +382,39 @@ Currently, bytearray is used to build a bytes string, but it's usually
 converted into a bytes object to respect an API. This conversion
 requires to allocate a new memory block and copy data (O(n) complexity).
 
-It is possible to implemenet O(1) conversion if it would be possible to
+It is possible to implement O(1) conversion if it would be possible to
 pass the ownership of the bytearray object to bytes.
 
-That requires modifying the PyBytesObject structure to support multiple
-storages (support storing content into a separate memory block).
+That requires modifying the ``PyBytesObject`` structure to support
+multiple storages (support storing content into a separate memory
+block).
 
 Fork and "Copy-on-Read" problem
 ...............................
 
 Solve the "Copy on read" problem with fork: store reference counter
-outside PyObject.
+outside ``PyObject``.
 
-Currently, when a Python object is accessed, its ob_refcnt member is
+Currently, when a Python object is accessed, its ``ob_refcnt`` member is
 incremented temporarily to hold a "strong reference" to it (ensure that
 it cannot be destroyed while we use it). Many operating system implement
-fork() using copy-on-write (CoW). A memory page (ex: 4 KB) is only
+fork() using copy-on-write ("CoW"). A memory page (ex: 4 KB) is only
 copied when a process (parent or child) modifies it. After Python is
-forked, modifying ob_refcnt copies the memory page, even if the object
-is only accessed in "read only mode".
+forked, modifying ``ob_refcnt`` copies the memory page, even if the
+object is only accessed in "read only mode".
 
-link: https://engineering.instagram.com/dismissing-python-garbage-collection-at-instagram-4dca40b29172
+`Dismissing Python Garbage Collection at Instagram
+<https://engineering.instagram.com/dismissing-python-garbage-collection-at-instagram-4dca40b29172>`_
+(Jan 2017) by Instagram Engineering.
 
-Instagram contributed gc.freeze() to Python 3.7 which works around the
-issue.
+Instagram contributed `gc.freeze()
+<https://docs.python.org/dev/library/gc.html#gc.freeze>`_ to Python 3.7
+which works around the issue.
 
 One solution for that would be to store reference counters outside
-PyObject. For example, in a separated hash table (pointer to reference
-counter). Changing PyObject structures requires that C extensions don't
-access them directly.
+``PyObject``. For example, in a separated hash table (pointer to
+reference counter). Changing ``PyObject`` structures requires that C
+extensions don't access them directly.
 
 Debug runtime and remove debug checks in release mode
 .....................................................
@@ -419,65 +425,71 @@ runtime debug checks to ease debugging C extensions.
 
 If using such a debug runtime becomes harder, indirectly it means that
 runtime debug checks can be removed from the release build. CPython code
-base is still full of runtime checks calling PyErr_BadInternalCall() on
-failure. Removing such checks in release mode can make Python more
+base is still full of runtime checks calling ``PyErr_BadInternalCall()``
+on failure. Removing such checks in release mode can make Python more
 efficient.
 
 PyPy
 ----
 
 ujson is 3x faster on PyPy when using HPy instead of the Python C API.
-ref: https://morepypy.blogspot.com/2019/12/hpy-kick-off-sprint-report.html
+See `HPy kick-off sprint report
+<https://morepypy.blogspot.com/2019/12/hpy-kick-off-sprint-report.html>`_
+(December 2019).
 
 
 GraalPython
 -----------
 
-GraalPython is interested in supporting HPy.
-ref: https://morepypy.blogspot.com/2020/03/leysin-2020-sprint-report.html
-
-Links:
-
-* https://github.com/graalvm/graalpython:
-  A Python 3 implementation built on GraalVM
-* https://www.graalvm.org/:
-  GraalVM, "Universal VM for a polyglot world."
+`GraalPython <https://github.com/graalvm/graalpython>`_ is a Python 3
+implementation built on `GraalVM <https://www.graalvm.org/>`_
+("Universal VM for a polyglot world"). It is interested in supporting
+HPy.  See `Leysin 2020 Sprint Report
+<https://morepypy.blogspot.com/2020/03/leysin-2020-sprint-report.html>`_.
+It would also benefit of this PEP.
 
 
 Rust-CPython
 ------------
 
-Interested in supporting HPy.
-ref: https://morepypy.blogspot.com/2020/03/leysin-2020-sprint-report.html
+Rust-CPython is interested in supporting HPy.
+See `Leysin 2020 Sprint Report
+<https://morepypy.blogspot.com/2020/03/leysin-2020-sprint-report.html>`_.
 
 RustPython and PyO3 would also benefit of this PEP.
 
 Links:
 
-* https://github.com/PyO3/pyo3: Rust bindings for the Python (CPython) interpreter
-* https://github.com/dgrunwald/rust-cpython: Rust <-> Python (CPython) bindings
-* https://github.com/RustPython/RustPython: A Python Interpreter written in Rust
+* `PyO3 <https://github.com/PyO3/pyo3>`_:
+  Rust bindings for the Python (CPython) interpreter
+* `rust-cpython <https://github.com/dgrunwald/rust-cpython>`_:
+  Rust <-> Python (CPython) bindings
+* `RustPython <https://github.com/RustPython/RustPython>`_:
+  A Python Interpreter written in Rust
 
 
 Prior Art
 =========
 
-* Research project behind this PEP: https://pythoncapi.readthedocs.io/
-* HPy: https://github.com/pyhandle/hpy
-* July 2019: Keynote "Python Performance: Past, Present, Future":
-  https://github.com/vstinner/talks/raw/master/2019-EuroPython/python_performance.pdf
+* `pythoncapi.readthedocs.io <https://pythoncapi.readthedocs.io/>`_:
+  Research project behind this PEP
+* `HPy <https://github.com/pyhandle/hpy>`__
+* July 2019: Keynote `Python Performance: Past, Present, Future
+  <https://github.com/vstinner/talks/raw/master/2019-EuroPython/python_performance.pdf>`_
   (slides) by Victor Stinner at EuroPython 2019
-* [python-dev] Make the stable API-ABI usable:
-  https://mail.python.org/pipermail/python-dev/2017-November/150607.html
+* [python-dev] `Make the stable API-ABI usable
+  <https://mail.python.org/pipermail/python-dev/2017-November/150607.html>`_
   (November 2017) by Victor Stinner
-* [python-ideas] PEP: Hide implementation details in the C API:
-  https://mail.python.org/pipermail/python-ideas/2017-July/046399.html
+* [python-ideas] `PEP: Hide implementation details in the C API
+  <https://mail.python.org/pipermail/python-ideas/2017-July/046399.html>`_
   (July 2017) by Victor Stinner. Old PEP draft which proposed to add an
   option to build C extensions.
-* "A New C API for CPython" (Sept 2017) article by Victor Stinner:
-  https://vstinner.github.io/new-python-c-api.html
-* "Python Performance":
-  https://github.com/vstinner/conf/raw/master/2017-PyconUS/summit.pdf
-  (May 2017 at the Language Summit) by Victor Stinner: early discusssion
-  on reorganizing header files, promoting PyPy, fix the C API, etc.
-  Article "Keeping Python competitive" https://lwn.net/Articles/723949/
+* `A New C API for CPython
+  <https://vstinner.github.io/new-python-c-api.html>`_
+  (Sept 2017) article by Victor Stinner
+* `Python Performance
+  <https://github.com/vstinner/conf/raw/master/2017-PyconUS/summit.pdf>`_
+  (May 2017 at the Language Summit) by Victor Stinner:
+  early discusssions on reorganizing header files, promoting PyPy, fix
+  the C API, etc. Discussion summarized in `Keeping Python
+  competitive <https://lwn.net/Articles/723949/>`_ article.
