@@ -4,6 +4,6 @@ master: git=git@github.com:python/cpython.git
 3.7: git=git@github.com:python/cpython.git
 3.8: git=git@github.com:python/cpython.git
 buildmaster-config: git=git@github.com:python/buildmaster-config.git
-devguide: git=git@github.com:vstinner/devguide.git
+devguide: git=git@github.com:python/devguide.git
 peps: git=git@github.com:vstinner/peps.git
 pyperformance: git=git@github.com:python/pyperformance.git
