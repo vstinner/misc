@@ -130,13 +130,14 @@ Functions stealing strong references
 ------------------------------------
 
 There are functions which steal strong references, for example
-``PyModule_AddObject()`` and ``PySet_Discard()``. Stealing presents
-issues similar to borrowed references
+``PyModule_AddObject()`` and ``PySet_Discard()``. Stealing references is
+an issue similar to borrowed references.
 
 PyObject**
 ----------
 
-Some functions return a pointer to an array of ``PyObject*``:
+Some functions of the C API return a pointer to an array of
+``PyObject*``:
 
 * ``PySequence_Fast_ITEMS()``
 * ``PyTuple_GET_ITEM()`` is sometimes abused to get an array of all of
@@ -172,11 +173,11 @@ In Python 3.7, work started to move the internal C API into a new
 subdirectory, ``Include/internal/``. The work continued in Python 3.8
 and 3.9. The internal C API is only partially exported: some functions
 are only declared with ``extern`` and so cannot be used outside CPython
-(with compilers supporting ``-fvisibility=hidden``, see above), some
-functions are exported with ``PyAPI_FUNC()`` to make them usable in C
-extensions.  Debuggers and profilers are typical users of the internal C
-API to inspect Python internals without calling functions (for example,
-to inspect a coredump).
+(with compilers supporting ``-fvisibility=hidden``, see above), whereas
+some functions are exported with ``PyAPI_FUNC()`` to make them usable in
+C extensions.  Debuggers and profilers are typical users of the internal
+C API to inspect Python internals without calling functions (to inspect
+a coredump for example).
 
 Python 3.9 is now built with ``-fvisibility=hidden`` (supported by GCC
 and clang): symbols which are not declared with ``PyAPI_FUNC()`` or
@@ -185,7 +186,7 @@ and clang): symbols which are not declared with ``PyAPI_FUNC()`` or
 
 Another change is to separate the limited C API from the "CPython" C
 API: Python 3.8 has a new ``Include/cpython/`` sub-directory. It should
-not be used directly, bit it is used automatically from the public
+not be used directly, but it is used automatically from the public
 headers when the ``Py_LIMITED_API`` macro is not defined.
 
 **Backward compatibility:** fully backward compatible.
@@ -199,13 +200,11 @@ Changes without API changes and with minor performance overhead
   made good progress in Python 3.9.
 * Modify macros to avoid directly accessing structures fields.
 
-Examples:
-
-* `Hide implementation detail of trashcan macros
-  <https://github.com/python/cpython/commit/38965ec5411da60d312b59be281f3510d58e0cf1>`_
-  commit modifies ``Py_TRASHCAN_BEGIN_CONDITION()`` macro to call a new
-  ``_PyTrash_begin()`` function rather than accessing directly
-  ``PyThreadState.trash_delete_nesting`` field.
+For example, the `Hide implementation detail of trashcan macros
+<https://github.com/python/cpython/commit/38965ec5411da60d312b59be281f3510d58e0cf1>`_
+commit modifies ``Py_TRASHCAN_BEGIN_CONDITION()`` macro to call a new
+``_PyTrash_begin()`` function rather than accessing directly
+``PyThreadState.trash_delete_nesting`` field.
 
 **Backward compatibility:** fully backward compatible.
 
@@ -214,14 +213,16 @@ Examples:
 Changes without API changes but with performance overhead
 ---------------------------------------------------------
 
-* Replace macros or inline functions with regular functions. Work
-  started in 3.9 on a limited set of functions.
+Replace macros or inline functions with regular functions. Work started
+in 3.9 on a limited set of functions.
 
-Overhead: function call. No benchmark available so far.
+Converting macros to function calls can have a small overhead on
+performances.
 
 **Backward compatibility:** fully backward compatible.
 
-**Status:** overhead must be measured, this PEP should be accepted :-)
+**Status:** not started. The overhead must be measured with benchmarks
+and this PEP should be accepted.
 
 API and ABI incompatible changes
 --------------------------------
@@ -248,17 +249,18 @@ Better advertise alternative Python runtimes
 ============================================
 
 Currently, PyPy and other "alternative" Python runtimes are not well
-advertised on https://www.python.org/ website. They are only listed as
-the last choice in the Download menu.
+advertised on the `Python website <https://www.python.org/>`_. They are
+only listed as the last choice in the Download menu.
 
 Once enough C extensions will be compatible with the limited C API, PyPy
-and other Python runtimes should be better advertised on Python website
-and in the Python documentation, to no longer introduce them as
-second-class citizen, but as first-class citizen. Obviously, CPython is
-likely to remain the most feature-complete implementation in mid-term,
-since new PEPs are first implemented in CPython. Limitations can be
-simply documented, and users should be free to make their own choice,
-depending on their use cases.
+and other Python runtimes should be better advertised on the Python
+website and in the Python documentation, to no longer introduce them as
+as first-class citizen.
+
+Obviously, CPython is likely to remain the most feature-complete
+implementation in mid-term, since new PEPs are first implemented in
+CPython. Limitations can be simply documented, and users should be free
+to make their own choice, depending on their use cases.
 
 
 HPy project
@@ -300,7 +302,7 @@ New optimized CPython runtime
 ==============================
 
 Backward incompatible changes is such a pain for the whole Python
-compatibility. To ease the migration (accelerate adoption of the new C
+community. To ease the migration (accelerate adoption of the new C
 API), one option is to provide not only one but two CPython runtimes:
 
 * Regular CPython: fully backward compatible, support direct access to
@@ -473,7 +475,6 @@ Prior Art
 
 * `pythoncapi.readthedocs.io <https://pythoncapi.readthedocs.io/>`_:
   Research project behind this PEP
-* `HPy <https://github.com/pyhandle/hpy>`__
 * July 2019: Keynote `Python Performance: Past, Present, Future
   <https://github.com/vstinner/talks/raw/master/2019-EuroPython/python_performance.pdf>`_
   (slides) by Victor Stinner at EuroPython 2019
