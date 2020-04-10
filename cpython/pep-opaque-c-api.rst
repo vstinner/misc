@@ -243,6 +243,10 @@ in 3.9 on a limited set of functions.
 Converting macros to function calls can have a small overhead on
 performances.
 
+For example, ``Py_INCREF()`` macro modifies directly
+``PyObject.ob_refcnt``: this macro would become an alias to the opaque
+``Py_IncRef()`` function.
+
 **Backward compatibility:** fully backward compatible.
 
 **Status:** not started. The performance overhead must be measured with
@@ -264,6 +268,13 @@ Examples of issues to make structures opaque:
 * ``PyObject``: https://bugs.python.org/issue39573
 * ``PyTypeObject``: https://bugs.python.org/issue40170
 * ``PyThreadState``: https://bugs.python.org/issue39573
+
+Another example are ``Py_REFCNT()`` and ``Py_TYPE()`` macros which can
+currently be used l-value to modify an object reference count or type.
+Python 3.9 has new ``Py_SET_REFCNT()`` and ``Py_SET_TYPE()`` macros
+which should be used instead. ``Py_REFCNT()`` and ``Py_TYPE()`` macros
+should be converted to static inline functions to prevent their usage as
+l-value.
 
 **Backward compatibility:** backward incompatible on purpose. Break the
 limited C API and the stable ABI, with the assumption that `Most C
