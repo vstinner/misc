@@ -292,8 +292,9 @@ abstraction has many benefits:
 HPy is developed outside CPython, is implemented on top of the existing
 Python C API, and so can support old Python versions.
 
-Binaries compiled in "universal" HPy mode can be used on CPython and
-PyPy, but run slower on CPython and PyPy.
+By default, binaries compiled in "universal" HPy ABI mode can be used on
+CPython and PyPy. HPy can also target CPython ABI which has the same
+performance than native C extensions.
 
 The PEP moves the C API towards HPy design and API.
 
