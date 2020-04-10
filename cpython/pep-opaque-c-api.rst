@@ -18,6 +18,9 @@ Abstract
   the difference between the Python language and the Python
   implementation (especially CPython).
 
+The PEP makes the C API backward incompatible but proposes a migration
+plan to continue to support old unmodified C extensions.
+
 Note: Cython and cffi should be preferred to write new C extensions.
 This PEP is about existing C extensions which cannot be rewritten with
 Cython.
