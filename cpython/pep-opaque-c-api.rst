@@ -187,6 +187,10 @@ API.
 Change the C API
 ================
 
+This PEP doesn't define an exhaustive list of all C API changes, but
+define some guidelines of bad patterns which should be avoided in the C
+API to prevent leaking implementation details.
+
 Separate header files of limited and internal C API
 ---------------------------------------------------
 
@@ -246,6 +250,12 @@ performances.
 For example, ``Py_INCREF()`` macro modifies directly
 ``PyObject.ob_refcnt``: this macro would become an alias to the opaque
 ``Py_IncRef()`` function.
+
+It is possible that the regular CPython runtime keeps the
+``Py_INCREF()`` macro which modifies directly ``PyObject.ob_refcnt`` to
+avoid any performance overhead. A tradeoff should be defined to limit
+differences between the regular and the new optimized CPython runtimes,
+without hurting too much performances of the regular CPython runtime.
 
 **Backward compatibility:** fully backward compatible.
 
@@ -467,6 +477,14 @@ flag to build a different Python. On Windows, it would be a different
 project of the Visual Studio solution reusing pythoncore project, but
 define a macro to build enable optimization and change the C API.
 
+The new optimized CPython runtime remains compatible with CPython 3.8
+`stable ABI`_.
+
+CPython code base remains 30 years old. Many technical choices made 30
+years ago are no longer relevant today. This PEP should ease the
+development of new Python implementation which would be even more
+efficient, like PyPy!
+
 
 Cython and cffi
 ===============
@@ -502,6 +520,10 @@ Tracing garbage collector
 
 Experiment with a tracing garbage collector inside CPython. Keep
 reference counting for the C API.
+
+Rewriting CPython with a tracing garbage collector is large project
+which is out of the scope of this PEP. This PEP fix some blockers issues
+which prevent to start such project today.
 
 One of the issue are functions of the C API which return a pointer like
 ``PyBytes_AsString()``. Python doesn't know when the caller stops using
@@ -625,6 +647,21 @@ Links:
 
 Rejected Ideas
 ==============
+
+Drop the C API
+--------------
+
+One proposed alternative to a new better C API is to drop the C API at
+all. The reasoning is that since existing solutions are already
+available, complete and reliable, like Cython and cffi.
+
+What about the long tail of C extensions on PyPI which still use the C
+API? Would a Python without these C extensions would remain relevant?
+
+Lots of project do not use those solution, and the C API is part of
+Python success. For example, there would be no numpy without the C API.
+
+It doesn't sound like a workable solution.
 
 Bet on HPy, leave the C API unchanged
 -------------------------------------
