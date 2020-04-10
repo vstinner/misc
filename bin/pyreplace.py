@@ -28,7 +28,7 @@ Examples:
   Replace 'x = y + y' with 'x = y * 2'
 * pyreplace.py
       'PyObject_CallFunctionObjArgs(<expr>, <expr>, NULL)'
-      'PyObject_CallFunctionObjArgs(\1, &\2)'
+      'PyObject_CallFunctionObjArgs(<1>, &<2>)'
       Objects/listobject.c
 
 """
