@@ -5,21 +5,24 @@ PEP xxx: Modify the C API to hide implementation details
 Abstract
 ========
 
+The PEP introduces a few backward incompatible changes in the C API by
+making the assumption that `Most C extensions don't rely directly on
+CPython internals`_, and proposes a migration plan to continue to
+support old unmodified C extensions
+
 * Hide implementation details from the C API to allow implementing
   optimizations in CPython and make PyPy more efficient.
 * Continue to support old unmodified C extensions by continuing to
   provide the fully compatible "regular" CPython runtime.
 * Provide a new "optimized" but incompatible CPython runtime, using the
   same CPython code base: faster but can only import C extensions which
-  don't use implementation details.
+  don't use implementation details. Features implemented in CPython
+  will be available in the regular and in the new runtimes.
 * Only build a C extension once and use it on multiple Python runtimes
   and different versions of the same runtime (stable ABI).
 * Better advertise alternative Python runtimes and better communicate on
   the difference between the Python language and the Python
   implementation (especially CPython).
-
-The PEP makes the C API backward incompatible but proposes a migration
-plan to continue to support old unmodified C extensions.
 
 Note: Cython and cffi should be preferred to write new C extensions.
 This PEP is about existing C extensions which cannot be rewritten with
@@ -62,8 +65,8 @@ The goal of this PEP is to move the default C API towards the limited C
 API. The long term goal is that the default C API becomes the limited C
 API.
 
-Separated Python languages and CPython runtime (promote alternative runtimes)
------------------------------------------------------------------------------
+Separated the Python language and the CPython runtime (promote alternative runtimes)
+------------------------------------------------------------------------------------
 
 The Python language should be better separated from its runtime. It's
 common to say "Python" when referring to "CPython". Even in this PEP :-)
@@ -83,6 +86,21 @@ ease debugging issues in C extensions, RustPython, etc.
 To make alternative runtimes viable, they should be competitive in term
 of features and performance. Currently, C extension modules remain the
 bottleneck for PyPy.
+
+Most C extensions don't rely directly on CPython internals
+----------------------------------------------------------
+
+While the C API is still tidely coupled to CPython internals, in
+practical, most C extensions don't rely directly on CPython internals.
+
+The expectation is that these C extensions will remain compatible with
+an "opaque" C API and only a minority of C extensions will have to be
+modified.
+
+Moreover, more and more C extensions are implemented in Cython or cffi.
+Updating Cython and cffi to be compatible with the opaque C API will
+make all these C extensions without having to modify the source code of
+each extension.
 
 
 Flaws of the C API
@@ -586,6 +604,30 @@ Links:
   A Python Interpreter written in Rust
 
 
+Rejected Ideas
+==============
+
+Bet on HPy, leave the C API unchanged
+-------------------------------------
+
+The HPy project is developed outside CPython and so doesn't cause any
+backward incompatibility in CPython. HPy API was designed with
+efficiency in mind.
+
+The problem is the long tail of C extensions on PyPI which are written
+with the C API and will not be converted soon or will never be converted
+to HPy. The transition from Python 2 to Python 3 showed that migrations
+are very slow and never fully complete.
+
+The PEP also rely on the assumption that `Most C extensions don't rely
+directly on CPython internals`_.
+
+The concept of HPy is not new: CPython has a limited C API which
+provides a stable ABI since Python 3.4, see `PEP 384: Defining a Stable
+ABI <https://www.python.org/dev/peps/pep-0384/>`_. Since it is an opt-in
+option, most users simply use the **default** C API.
+
+
 Prior Art
 =========
 
@@ -610,3 +652,10 @@ Prior Art
   early discusssions on reorganizing header files, promoting PyPy, fix
   the C API, etc. Discussion summarized in `Keeping Python
   competitive <https://lwn.net/Articles/723949/>`_ article.
+
+
+Copyright
+=========
+
+This document is placed in the public domain or under the
+CC0-1.0-Universal license, whichever is more permissive.
