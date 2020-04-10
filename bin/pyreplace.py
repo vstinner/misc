@@ -115,7 +115,7 @@ def create_regexs(pattern, replace):
         group_id += 1
         return '(?P<group%s>%s)' % (group_id, EXPR_REGEX)
 
-    pattern = re.sub(r'\\<expr\\>', replace_group, pattern)
+    pattern = re.sub(r'\<expr\>', replace_group, pattern)
 
     # reference <1>
     pattern = re.sub(r'\\<([0-9]+)\\>', _regex_pattern_ref, pattern)
@@ -234,7 +234,10 @@ class PyReplace:
 
     def main(self):
         for filename in self.walk(self.paths):
-            self.replace_file(filename)
+            try:
+                self.replace_file(filename)
+            except SyntaxError as exc:
+                print("ignore %s: %s" % (filename, exc))
 
 
 if __name__ == "__main__":
