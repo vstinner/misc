@@ -5,23 +5,21 @@ PEP xxx: Modify the C API to hide implementation details
 Abstract
 ========
 
-The PEP introduces a few backward incompatible changes in the C API by
-making the assumption that `Most C extensions don't rely directly on
-CPython internals`_, and proposes a migration plan to continue to
-support old unmodified C extensions
-
-* Hide implementation details from the C API to allow implementing
-  optimizations in CPython and make PyPy more efficient.
+* Hide implementation details from the C API to be able to `optimize
+  CPython`_ and make PyPy more efficient.
+* The expectation is that `most C extensions don't rely directly on
+  CPython internals`_ and so will remain compatible.
 * Continue to support old unmodified C extensions by continuing to
   provide the fully compatible "regular" CPython runtime.
-* Provide a new "optimized" but incompatible CPython runtime, using the
-  same CPython code base: faster but can only import C extensions which
-  don't use implementation details. Features implemented in CPython
-  will be available in the regular and in the new runtimes.
-* Only build a C extension once and use it on multiple Python runtimes
-  and different versions of the same runtime (stable ABI).
+* Provide a `new optimized CPython runtime`_ using the same CPython code
+  base: faster but can only import C extensions which don't use
+  implementation details. Since both CPython runtimes share the same
+  code base, features implemented in CPython will be available in both
+  runtimes.
+* `Stable ABI`_: Only build a C extension once and use it on multiple
+  Python runtimes and different versions of the same runtime.
 * Better advertise alternative Python runtimes and better communicate on
-  the difference between the Python language and the Python
+  the differences between the Python language and the Python
   implementation (especially CPython).
 
 Note: Cython and cffi should be preferred to write new C extensions.
@@ -35,8 +33,8 @@ Rationale
 To remain competitive in term of performance with other programming
 languages like Go or Rust, Python has to become more efficient.
 
-Make Python two times faster
-----------------------------
+Make Python (at least) two times faster
+---------------------------------------
 
 The C API leaks too many implementation details which prevent optimizing
 CPython. See `Optimize CPython`_.
@@ -54,16 +52,6 @@ goal is not hypothetical: PyPy is already 4.2x faster than CPython and is
 fully compatible. C extensions are the bottleneck of PyPy. This PEP
 proposes a migration plan to move towards opaque C API which would make
 PyPy faster.
-
-Promote the limited C API and the stable API (PEP 384)
-------------------------------------------------------
-
-The limited API is not widely used (PyQt is one of the few known users).
-It is also not used by default.
-
-The goal of this PEP is to move the default C API towards the limited C
-API. The long term goal is that the default C API becomes the limited C
-API.
 
 Separated the Python language and the CPython runtime (promote alternative runtimes)
 ------------------------------------------------------------------------------------
@@ -101,6 +89,21 @@ Moreover, more and more C extensions are implemented in Cython or cffi.
 Updating Cython and cffi to be compatible with the opaque C API will
 make all these C extensions without having to modify the source code of
 each extension.
+
+Stable ABI
+----------
+
+The idea is to build a C extension only once: the built binary will be
+usable on multiple Python runtimes and different versions of the same
+runtime (stable ABI).
+
+The idea is not new but is an extension of the `PEP 384: Defining a
+Stable ABI <https://www.python.org/dev/peps/pep-0384/>`__ implemented in
+CPython 3.4 with its "limited C API". The limited API is not used by
+default and is not widely used: PyQt is one of the only few known users.
+
+The idea here is that the default C API becomes the limited C API and so
+all C extensions will benefit of advantages of a stable ABI.
 
 
 Flaws of the C API
@@ -242,8 +245,8 @@ performances.
 
 **Backward compatibility:** fully backward compatible.
 
-**Status:** not started. The overhead must be measured with benchmarks
-and this PEP should be accepted.
+**Status:** not started. The performance overhead must be measured with
+benchmarks and this PEP should be accepted.
 
 API and ABI incompatible changes
 --------------------------------
@@ -263,7 +266,9 @@ Examples of issues to make structures opaque:
 * ``PyThreadState``: https://bugs.python.org/issue39573
 
 **Backward compatibility:** backward incompatible on purpose. Break the
-limited C API and the stable ABI.
+limited C API and the stable ABI, with the assumption that `Most C
+extensions don't rely directly on CPython internals`_ and so will remain
+compatible.
 
 
 CPython specific behavior
@@ -573,6 +578,9 @@ See `HPy kick-off sprint report
 <https://morepypy.blogspot.com/2019/12/hpy-kick-off-sprint-report.html>`_
 (December 2019).
 
+This PEP should help to make PyPy cpyext more efficient, or at least
+ease the migration of C extensions to HPy.
+
 
 GraalPython
 -----------
@@ -585,8 +593,8 @@ HPy.  See `Leysin 2020 Sprint Report
 It would also benefit of this PEP.
 
 
-Rust-CPython
-------------
+RustPython, Rust-CPython and PyO3
+---------------------------------
 
 Rust-CPython is interested in supporting HPy.
 See `Leysin 2020 Sprint Report
@@ -620,7 +628,8 @@ to HPy. The transition from Python 2 to Python 3 showed that migrations
 are very slow and never fully complete.
 
 The PEP also rely on the assumption that `Most C extensions don't rely
-directly on CPython internals`_.
+directly on CPython internals`_ and so will remain compatible with the
+new opaque C API.
 
 The concept of HPy is not new: CPython has a limited C API which
 provides a stable ABI since Python 3.4, see `PEP 384: Defining a Stable
