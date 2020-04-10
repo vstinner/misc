@@ -160,8 +160,8 @@ For example, the ``Py_INCREF()`` macro directly increases
 API.
 
 
-Implementation
-==============
+Change the C API
+================
 
 Separate header files of limited and internal C API
 ---------------------------------------------------
@@ -245,6 +245,116 @@ Examples of issues to make structures opaque:
 limited C API and the stable ABI.
 
 
+CPython specific behavior
+=========================
+
+Some C functions and some Python functions have a behavior which is
+closely tied to the current CPython implementation.
+
+is operator
+-----------
+
+The "x is y" operator is closed tied to how CPython allocates objects
+and to ``PyObject*``.
+
+For example, CPython uses singletons for numbers in [-5; 256] range::
+
+    >>> x=1; (x + 1) is 2
+    True
+    >>> x=1000; (x + 1) is 1001
+    False
+
+Python 3.8 compiler now emits a ``SyntaxWarning`` when the right operand
+of the ``is`` and ``is not`` operators is a literal (ex: integer or
+string), but don't warn if it is ``None``, ``True``, ``False`` or
+``Ellipsis`` singleton (`bpo-34850
+<https://bugs.python.org/issue34850>`_). Example::
+
+    >>> x=1
+    >>> x is 1
+    <stdin>:1: SyntaxWarning: "is" with a literal. Did you mean "=="?
+    True
+
+CPython PyObject_RichCompareBool
+--------------------------------
+
+CPython considers that two objects are identical if their memory address
+are equal: ``x is y`` in Python (``IS_OP`` opcode) is implemented
+internally in C as ``left == right`` where ``left`` and ``right`` are
+``PyObject *`` pointers.
+
+The main function to implement comparison in CPython is
+``PyObject_RichCompareBool()``. This function considers that two objects
+are equal if the two ``PyObject*`` pointers are equal (if the two
+objects are "identical"). For example,
+``PyObject_RichCompareBool(obj1, obj2, Py_EQ)`` doesn't call
+``obj1.__eq__(obj2)`` if ``obj1 == obj2`` where ``obj1`` and ``obj2``
+are ``PyObject*`` pointers.
+
+This behavior is an optimization to make Python more efficient.
+
+For example, the ``dict`` lookup avoids ``__eq__()`` if two pointers are
+equal.
+
+Another example are Not-a-Number (NaN) floating pointer numbers which
+are not equal to themselves::
+
+    >>> nan = float("nan")
+    >>> nan is nan
+    True
+    >>> nan == nan
+    False
+
+The ``list.__contains__(obj)`` and ``list.index(obj)`` methods are
+implemented with ``PyObject_RichCompareBool()`` and so rely on objects
+identity::
+
+    >>> lst = [9, 7, nan]
+    >>> nan in lst
+    True
+    >>> lst.index(nan)
+    2
+    >>> lst[2] == nan
+    False
+
+In CPython, ``x == y`` is implemented with ``PyObject_RichCompare()``
+which don't make the assumption that identical objects are equal.
+That's why ``nan == nan`` or ``lst[2] == nan`` return ``False``.
+
+
+Issues for other Python implementations
+---------------------------------------
+
+The Python language doesn't require to be implemented with ``PyObject``
+structure and use ``PyObject*`` pointers. PyPy doesn't use ``PyObject``
+nor ``PyObject*``. If CPython is modified to use `Tagged Pointers`_,
+CPython would have the same issue.
+
+Alternative Python implementations have to mimick CPython to reduce
+incompatibilities.
+
+For example, PyPy mimicks CPython behavior for the ``is`` operator with
+CPython small integer singletons::
+
+    >>>> x=1; (x + 1) is 2
+    True
+
+It also mimicks CPython ``PyObject_RichCompareBool()``. Example with the
+Not-a-Number (NaN) float::
+
+    >>>> nan=float("nan")
+    >>>> nan == nan
+    False
+    >>>> lst = [9, 7, nan]
+    >>>> nan in lst
+    True
+    >>>> lst.index(nan)
+    2
+    >>>> lst[2] == nan
+    False
+
+
+
 Better advertise alternative Python runtimes
 ============================================
 
@@ -294,7 +404,9 @@ Python C API, and so can support old Python versions.
 
 By default, binaries compiled in "universal" HPy ABI mode can be used on
 CPython and PyPy. HPy can also target CPython ABI which has the same
-performance than native C extensions.
+performance than native C extensions. See HPy documentation of `Target
+ABIs documentation
+<https://github.com/pyhandle/hpy/blob/feature/improve-docs/docs/overview.rst#target-abis>`_.
 
 The PEP moves the C API towards HPy design and API.
 
