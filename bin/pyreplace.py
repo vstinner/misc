@@ -50,9 +50,9 @@ CALL_REGEX = r'\([^()]*\)'
 SUFFIX_REGEX = r'(?:%s|%s)' % (GETITEM_REGEX, CALL_REGEX)
 # 'var' or 'var[0]' or 'func()' or 'func()[0]'
 SUBEXPR_REGEX = r'%s(?:%s)*' % (IDENTIFIER_REGEX, SUFFIX_REGEX)
-# '"hello"', "'hello'"
-_QUOTE1_STRING_REGEX = r'"(?:[^"\\]|\\[tn"])*"'
-_QUOTE2_STRING_REGEX = r"'(?:[^'\\]|\\[tn'])*'"
+# '"hello"', "'hello'", "\\", "\n", "\t", "string=\"quote\"."
+_QUOTE1_STRING_REGEX = r'"(?:[^"\\]|\\[tn"\\])*"'
+_QUOTE2_STRING_REGEX = r"'(?:[^'\\]|\\[tn'\\])*'"
 STRING_REGEX = r'(?:%s|%s)' % (_QUOTE1_STRING_REGEX, _QUOTE2_STRING_REGEX)
 INT_REGX = '(?:[1-9][0-9]*|0)'
 # 'inst', 'self.attr', 'self.attr[0]', '"str"', '123'
