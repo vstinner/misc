@@ -78,8 +78,8 @@ bottleneck for PyPy.
 Most C extensions don't rely directly on CPython internals
 ----------------------------------------------------------
 
-While the C API is still tidely coupled to CPython internals, in
-practical, most C extensions don't rely directly on CPython internals.
+While the C API is still tightly coupled to CPython internals, in
+practice most C extensions don't rely directly on CPython internals.
 
 The expectation is that these C extensions will remain compatible with
 an "opaque" C API and only a minority of C extensions will have to be
@@ -194,7 +194,7 @@ API to prevent leaking implementation details.
 Separate header files of limited and internal C API
 ---------------------------------------------------
 
-In Python 3.6, all headers (.h files) were directly in the ``Include/``
+In Python 3.6, all headers (``.h`` files) were directly in the ``Include/``
 directory.
 
 In Python 3.7, work started to move the internal C API into a new
@@ -209,7 +209,7 @@ a coredump for example).
 
 Python 3.9 is now built with ``-fvisibility=hidden`` (supported by GCC
 and clang): symbols which are not declared with ``PyAPI_FUNC()`` or
-``PyAPI_DATA()`` are no longer exported by the dynamical library
+``PyAPI_DATA()`` are no longer exported by the dynamic library
 (libpython).
 
 Another change is to separate the limited C API from the "CPython" C
@@ -292,16 +292,16 @@ extensions don't rely directly on CPython internals`_ and so will remain
 compatible.
 
 
-CPython specific behavior
+CPython-specific behavior
 =========================
 
 Some C functions and some Python functions have a behavior which is
 closely tied to the current CPython implementation.
 
-is operator
------------
+``is`` operator
+---------------
 
-The "x is y" operator is closed tied to how CPython allocates objects
+The ``x is y`` operator is closed tied to how CPython allocates objects
 and to ``PyObject*``.
 
 For example, CPython uses singletons for numbers in [-5; 256] range::
@@ -322,8 +322,8 @@ string), but don't warn if it is ``None``, ``True``, ``False`` or
     <stdin>:1: SyntaxWarning: "is" with a literal. Did you mean "=="?
     True
 
-CPython PyObject_RichCompareBool
---------------------------------
+CPython ``PyObject_RichCompareBool``
+------------------------------------
 
 CPython considers that two objects are identical if their memory address
 are equal: ``x is y`` in Python (``IS_OP`` opcode) is implemented
@@ -377,16 +377,16 @@ structure and use ``PyObject*`` pointers. PyPy doesn't use ``PyObject``
 nor ``PyObject*``. If CPython is modified to use `Tagged Pointers`_,
 CPython would have the same issue.
 
-Alternative Python implementations have to mimick CPython to reduce
+Alternative Python implementations have to mimic CPython to reduce
 incompatibilities.
 
-For example, PyPy mimicks CPython behavior for the ``is`` operator with
+For example, PyPy mimics CPython behavior for the ``is`` operator with
 CPython small integer singletons::
 
     >>>> x=1; (x + 1) is 2
     True
 
-It also mimicks CPython ``PyObject_RichCompareBool()``. Example with the
+It also mimics CPython ``PyObject_RichCompareBool()``. Example with the
 Not-a-Number (NaN) float::
 
     >>>> nan=float("nan")
