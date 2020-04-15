@@ -53,8 +53,8 @@ fully compatible. C extensions are the bottleneck of PyPy. This PEP
 proposes a migration plan to move towards opaque C API which would make
 PyPy faster.
 
-Separated the Python language and the CPython runtime (promote alternative runtimes)
-------------------------------------------------------------------------------------
+Separate the Python language and the CPython runtime (promote alternative runtimes)
+-----------------------------------------------------------------------------------
 
 The Python language should be better separated from its runtime. It's
 common to say "Python" when referring to "CPython". Even in this PEP :-)
@@ -412,7 +412,7 @@ only listed as the last choice in the Download menu.
 Once enough C extensions will be compatible with the limited C API, PyPy
 and other Python runtimes should be better advertised on the Python
 website and in the Python documentation, to no longer introduce them as
-as first-class citizen.
+as second-class citizen.
 
 Obviously, CPython is likely to remain the most feature-complete
 implementation in mid-term, since new PEPs are first implemented in
@@ -425,7 +425,7 @@ HPy project
 
 
 The `HPy project <https://github.com/pyhandle/hpy>`__ is a brand new C
-API written from scratch. It is designed to ease migration from the
+API. It is designed to ease migration from the
 current C API and to be efficient on PyPy. HPy hides all implementation
 details: it is based on "handles" so objects cannot be inspected with
 direct memory access: only opaque function calls are allowed. This
@@ -435,11 +435,11 @@ abstraction has many benefits:
   PyPy cpyext, no more expensive conversions.
 * It is possible to have multiple handles pointing to the same object.
   It helps to better track the object lifetime and makes the PyPy
-  implementation easier. PyPy doesn't use reference counting but a
+  implementation simpler. PyPy doesn't use reference counting but a
   tracing garbage collector. When the PyPy GC moves objects in memory,
   handles don't change! HPy uses an array mapping handle to objects:
   only this array has to be updated. It is way more efficient.
-* The Python runtime is free to modify deep internals compared to
+* The Python runtime is free to modify deeply internals compared to
   CPython. Many optimizations become possible: see `Optimize CPython`_
   section.
 * It is easy to add a debug wrapper to add checks before and after the
@@ -510,19 +510,30 @@ Tagged pointers
 
 `Tagged pointer <https://en.wikipedia.org/wiki/Tagged_pointer>`_.
 
-Avoid ``PyObject`` for small objects (ex: small integers, short Latin-1
-strings, None and True/False singletons): store the content directly in
-the pointer, with a tag for the object type.
+Avoid ``PyObject`` for small objects
+
+* small integers,
+* short Latin-1 strings,
+* None and True/False singletons,
+* etc.
+
+The content is stored directly in the pointer with a tag for the object
+type.
+
+CPython memory allocator and libm malloc() use an alignment of at least
+8 bytes which leaves the lower 3 bits of a pointer free to store 8
+different tag values.
 
 
 Tracing garbage collector
 .........................
 
 Experiment with a tracing garbage collector inside CPython. Keep
-reference counting for the C API.
+reference counting for the C API using a mapping: object => reference
+counter.
 
-Rewriting CPython with a tracing garbage collector is large project
-which is out of the scope of this PEP. This PEP fix some blockers issues
+Rewriting CPython with a tracing garbage collector is large project.
+It is out of the scope of this PEP. This PEP fix some blockers issues
 which prevent to start such project today.
 
 One of the issue are functions of the C API which return a pointer like
