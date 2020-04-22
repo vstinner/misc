@@ -278,6 +278,8 @@ Examples of issues to make structures opaque:
 * ``PyObject``: https://bugs.python.org/issue39573
 * ``PyTypeObject``: https://bugs.python.org/issue40170
 * ``PyThreadState``: https://bugs.python.org/issue39573
+* ``PyInterpreterState``: https://bugs.python.org/issue35886
+  (done in Python 3.8)
 
 Another example are ``Py_REFCNT()`` and ``Py_TYPE()`` macros which can
 currently be used l-value to modify an object reference count or type.
