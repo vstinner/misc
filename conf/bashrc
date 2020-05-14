@@ -63,7 +63,7 @@ stty -ixon
 # - use -C to use a config.cache in the current directory
 # - force -O0 (instead of -Og) for best debug experience (in gdb)
 # - use --with-pydebug to compile python in debug mode.
-alias pyconfigure_debug="./configure --cache-file=../python-config.cache --with-pydebug CFLAGS=-O0"
+alias pyconfigure_debug="./configure --cache-file=../python-config.cache --with-pydebug CFLAGS=-O0 --prefix=/usr --with-system-expat --with-system-ffi"
 
 HOSTNAME=$(hostname)
 if [ "$HOSTNAME" = "selma" -o "$HOSTNAME" = "apu" ]; then
