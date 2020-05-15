@@ -544,6 +544,9 @@ the pointer, and so cannot move the object in memory (for a moving
 garbage collector). API like ``PyBuffer`` is better since it requires
 the caller to call ``PyBuffer_Release()`` when it is done.
 
+See: Thomas Woulters's experiment: `Switching from refcounting to libgc
+<https://discuss.python.org/t/switching-from-refcounting-to-libgc/1641>`_.
+
 Specialized list
 ................
 
