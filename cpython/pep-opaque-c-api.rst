@@ -278,7 +278,7 @@ Examples of issues to make structures opaque:
   (done in Python 3.9)
 * ``PyObject``: https://bugs.python.org/issue39573
 * ``PyTypeObject``: https://bugs.python.org/issue40170
-* ``PyThreadState``: https://bugs.python.org/issue39573
+* ``PyThreadState``: https://bugs.python.org/issue39947
 * ``PyInterpreterState``: https://bugs.python.org/issue35886
   (done in Python 3.8)
 
