@@ -275,6 +275,7 @@ API and ABI incompatible changes
 Examples of issues to make structures opaque:
 
 * ``PyGC_Head``: https://bugs.python.org/issue40241
+  (done in Python 3.9)
 * ``PyObject``: https://bugs.python.org/issue39573
 * ``PyTypeObject``: https://bugs.python.org/issue40170
 * ``PyThreadState``: https://bugs.python.org/issue39573
