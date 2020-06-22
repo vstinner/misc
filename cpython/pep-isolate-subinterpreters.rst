@@ -52,6 +52,14 @@ interpreter must not affect the others.
 The first rule is to ensure that no Python object is shared: a Python
 object created in an interpreter must only be used in this interperter.
 
+PEP 489: Multi-phase extension module initialization
+----------------------------------------------------
+
+XXX
+
+Combined with `PEP 573 -- Module State Access from C Extension Methods
+<https://www.python.org/dev/peps/pep-0573/>`_ (Python 3.9).
+
 Static type limitations
 -----------------------
 
@@ -92,6 +100,55 @@ XXX
 
 Specification
 =============
+
+Pass tstate explicitly to internal C functions
+----------------------------------------------
+
+XXX
+
+* https://bugs.python.org/issue36710
+* https://bugs.python.org/issue38644
+
+Misc
+----
+
+* Fix the signal handler: always use the main interpreter.
+* Pending calls: bpo-39984
+
+Daemon threads
+--------------
+
+XXX
+
+Move shared states per-interpreter
+----------------------------------
+
+The ``PyInterpreterState`` structure was made opaque in Python 3.8.
+
+* GC state (``PyInterpreterState.gc``): completed in https://bugs.python.org/issue36854#msg357150
+* parser state (``PyInterpreterState.parser``): completed in https://bugs.python.org/issue36876
+* warnings state (``PyInterpreterState.warnings``):  completed in https://bugs.python.org/issue36737
+
+Free lists:
+
+* XXX
+* XXX
+* XXX
+
+Misc:
+
+* small int singletons: https://github.com/python/cpython/commit/ef5aa9af7c7e493402ac62009e4400aed7c3d54e
+* empty tuple singleton
+* None, True, False, Ellipsis singletons: https://bugs.python.org/issue39511
+
+
+Per-interpreter GIL
+-------------------
+
+XXX
+
+Tracked by `bpo-40512 <https://bugs.python.org/issue40512>`_:
+Meta issue: per-interpreter GIL.
 
 Clear modules at Python exit
 ----------------------------
