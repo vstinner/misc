@@ -235,6 +235,13 @@ In Python 3.8, multiprocessing supports shared memory and pickle
 protocol 5 supports out-of-band buffers.
 
 
+Discussions
+===========
+
+* PoC: Subinterpreters 4x faster than sequential execution or threads on CPU-bound workaround
+  https://mail.python.org/archives/list/python-dev@python.org/thread/S5GZZCEREZLA2PEMTVFBCDM52H4JSENR/#RIK75U3ROEHWZL4VENQSQECB4F4GDELV
+* Tons of threads about PEP 554
+
 Copyright
 =========
 
