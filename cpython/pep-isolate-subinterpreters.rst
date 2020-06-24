@@ -95,7 +95,30 @@ the end for type members defined by ``PyTypeObject.tp_members`` (see
 Rationale
 =========
 
-XXX
+What if subinterpreters are not faster?
+---------------------------------------
+
+The work required to better isolate subinterpreters will benefit to
+CPython design even if subinterpreters are not used. Most of the work
+benefit to the "embed Python in an application" use case:
+
+* Creation and destruction of Python object is better controlled.
+* In the long term, all Python objects and all memory will be released
+  by Py_Finalize().
+* Python will stop to rely on global variables and have a better defined
+  "state".
+
+Spawning child processes is not always an option
+------------------------------------------------
+
+When Python is embedded in an application, it is not convenient to spawn
+child processes to workaround the GIL performance limitation.
+
+Windows doesn't support forking a process and spawning a child process
+is more expensive than spawning a thread.
+
+On macOS, running arbitrary code fork() is no longer safe: only
+fork()+exec() or posix_spawn() are safe.
 
 
 Specification
@@ -166,6 +189,50 @@ Replace definiton of static types with heap types created by
 
 Tracked by `bpo-40077 <https://bugs.python.org/issue40077>`_: Convert
 static types to PyType_FromSpec().
+
+
+Subinterpreter Limitations
+==========================
+
+Crash
+-----
+
+If an extension module does crash, the whole process is killed: all
+interpreters are killed immediately. Multiprocessing limits code
+impacted by crashes.
+
+Multithreaded applications have the same limitation: a crash in a thread
+kills immediately all threads.
+
+Need to update extension modules
+--------------------------------
+
+Extension modules should be updated to use PEP 489 "Multiphase
+Initialization Module" and replace static types with heap allocated
+types (use ``PyType_FromSpec()``). Also, global variables have be moved
+to a "module state" and module functions have to be modified to retrieve
+this module state.
+
+PEP 554
+-------
+
+In its current shape, the PEP 554 is quite limited and doesn't offer an
+helper to easily share "objects" between interpreters. A Python object
+must only be used in the interpreter where it was created.
+
+It may be possible to share data and create thin proxies as Python
+objects to access these data from multiple interpreters. So far, no
+standard synchronization primitive is available.
+
+Subinterpreters may be as fast or slower than multiprocessing
+-------------------------------------------------------------
+
+It is possible to share data between processes as it is possible
+beetween threads. So far, nothing proves that subinterpreters will be
+faster than multiprocessing.
+
+In Python 3.8, multiprocessing supports shared memory and pickle
+protocol 5 supports out-of-band buffers.
 
 
 Copyright
