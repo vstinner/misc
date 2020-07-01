@@ -10,6 +10,7 @@ pymicrobench: git=git@github.com:vstinner/pymicrobench.git
 pyperf: git=git@github.com:psf/pyperf.git
 pythonci: git=git@github.com:vstinner/pythonci.git
 python-security: git=git@github.com:vstinner/python-security.git
+check-python-vuln: git=git@github.com:vstinner/check-python-vuln.git
 pythoncapi: git=git@github.com:pythoncapi/pythoncapi.git
 pythondev: git=git@github.com:vstinner/pythondev.git
 talks: git=git@github.com:vstinner/talks.git
