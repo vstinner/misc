@@ -47,29 +47,15 @@ See also:
 - http://myrepos.branchable.com/
 - https://streakycobra.github.io/gws/
 """
-from __future__ import with_statement, print_function
+import configparser
 import contextlib
+import io
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
-from shutil import rmtree
-
-try:
-    # Python 3
-    from configparser import RawConfigParser, NoSectionError
-    from io import StringIO
-    raw_input = input
-except ImportError:
-    # Python 2
-    from ConfigParser import RawConfigParser, NoSectionError
-    try:
-        from cStringIO import StringIO
-    except ImportError:
-        from StringIO import StringIO
-if sys.hexversion >= 0x03030000:  # Python 3.3 or later
-    import shlex
 
 CLEAN_SUFFIXES = ('.orig', '.rej', '.bak', '.pyc', '.pyo')
 
@@ -192,7 +178,7 @@ def split_ansi_colors(text):
 
 def ask_confirmation(prompt):
     try:
-        answer = raw_input(prompt)
+        answer = input(prompt)
     except EOFError:
         print("no")
         answer = ''
@@ -867,7 +853,7 @@ class Repository:
             if '__pycache__' in dirnames:
                 fullpath = os.path.join(dirpath, '__pycache__')
                 print("Remove directory: %s" % os.path.relpath(fullpath, self.application.start_directory))
-                rmtree(fullpath)
+                shutil.rmtree(fullpath)
         self._clean()
 
     def distclean(self, remove):
@@ -1149,11 +1135,11 @@ class RepositoryHG(Repository):
 
     def _get_url(self):
         hgrc = os.path.join(self.root, '.hg', 'hgrc')
-        parser = RawConfigParser()
+        parser = configparser.RawConfigParser()
         try:
             parser.read(hgrc)
             return parser.get('paths', 'default')
-        except NoSectionError:
+        except configparser.NoSectionError:
             return None
         except Exception as err:
             print("WARNING: Fail to parse %s: %s" % (hgrc, err),
@@ -1223,7 +1209,7 @@ class RepositoryHG(Repository):
         strip_backup = os.path.join(self.root, '.hg', 'strip-backup')
         if os.path.exists(strip_backup):
             print("Remove directory %s" % os.path.relpath(strip_backup, self.application.start_directory))
-            rmtree(strip_backup)
+            shutil.rmtree(strip_backup)
 
     def stash(self, verbose=True):
         dest = self.stash_file
@@ -1384,10 +1370,13 @@ class RepositoryGIT(Repository):
             lines = [line.strip() for line in fp]
 
         try:
-            content = StringIO('\n'.join(lines))
-            parser = RawConfigParser()
+            content = io.StringIO('\n'.join(lines))
+            parser = configparser.RawConfigParser()
             parser.read_file(content)
-            return parser.get('remote "origin"', 'url')
+            try:
+                return parser.get('remote "origin"', 'url')
+            except configparser.NoSectionError:
+                return None
         except Exception as err:
             print("WARNING: Fail to parse %s: %s" % (gitconfig, err),
                   file=sys.stderr)
