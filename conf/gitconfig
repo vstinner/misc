@@ -14,6 +14,7 @@ b = branch
 ci = commit -v --untracked-files=no
 co = checkout
 st = status
+s = switch
 rebasei = rebase -i remotes/origin/master
 pr = !sh -c \"git fetch upstream pull/${1}/head:pr/${1} && git checkout pr/${1} && git branch --set-upstream-to=master\" -
 
