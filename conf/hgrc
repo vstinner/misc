@@ -9,6 +9,8 @@ verbose = True
 showfunc = on
 
 [extensions]
+evolve=
+topic=
 color=
 # enable hg glog
 graphlog=
