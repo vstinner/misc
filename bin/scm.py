@@ -1285,7 +1285,7 @@ class RepositoryHG(Repository):
 
     def clone(self):
         parent = os.path.dirname(self.root)
-        url = self.url
+        url = self._url
         if url is None:
             print("Don't know the URL of the repository %s" % self)
             sys.exit(1)
@@ -1297,7 +1297,11 @@ class RepositoryHG(Repository):
         pull = HG_PULL
         if self.application.verbose:
             pull += ('--verbose',)
-        self.run(pull, suffix=" # %s" % self.url, verbose=False)
+        if self._url:
+            suffix = " # %s" % self._url
+        else:
+            suffix = None
+        self.run(pull, suffix=suffix, verbose=False)
 
     def pull(self):
         self.print_text('Pull')
