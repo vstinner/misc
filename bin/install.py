@@ -15,7 +15,6 @@ FILES = (
     'btrfs_backup.sh',
     'couleur3.ch',
     'dedup.py',
-    'detect_encoding.py',
     'gh_pr.sh',
     'nova.sh',
     'pyreplace.py',
