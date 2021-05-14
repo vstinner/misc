@@ -34,3 +34,5 @@ renameLimit = 0
 [gitreview]
 # my review.openstack.org username is haypo
 username = haypo
+[init]
+	defaultBranch = main
