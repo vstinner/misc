@@ -8,14 +8,14 @@ local_branch=$(git name-rev --name-only HEAD)
 
 organization=python
 project="$(basename $PWD)"
-ref_branch=master
+ref_branch=main
 
 case "$project" in
     [23].[0-9])
         ref_branch=$project
         project=cpython
         ;;
-    master)
+    main)
         ref_branch=$project
         project=cpython
         ;;
