@@ -1,4 +1,4 @@
-master: git=git@github.com:python/cpython.git
+main: git=git@github.com:python/cpython.git
 3.8: git=git@github.com:python/cpython.git
 3.9: git=git@github.com:python/cpython.git
 3.10: git=git@github.com:python/cpython.git
