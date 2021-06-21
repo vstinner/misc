@@ -15,6 +15,10 @@ case "$project" in
         ref_branch=$project
         project=cpython
         ;;
+    3.1[0-9])
+        ref_branch=$project
+        project=cpython
+        ;;
     main)
         ref_branch=$project
         project=cpython
