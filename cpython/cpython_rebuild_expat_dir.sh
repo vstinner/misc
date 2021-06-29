@@ -1,7 +1,10 @@
-TAG=R_2_2_8
+set -x -e
+
+TAG=R_2_4_1
 ROOT=$PWD
 # Checkout of the https://github.com/libexpat/libexpat/ project
-LIBEXPAT=/home/vstinner/dev/libexpat/
+LIBEXPAT=$PWD/libexpat/
+SRC=$LIBEXPAT/expat/
 DST=$PWD/Modules/expat
 
 set -e -x
@@ -11,11 +14,14 @@ if [ ! -d "$DST" ]; then
     exit 1
 fi
 
+if [ ! -d "$LIBEXPAT" ]; then
+    git clone https://github.com/libexpat/libexpat/
+fi
+
 cd $LIBEXPAT
 git reset --hard
 git clean -fdx
 git checkout $TAG
-SRC=$PWD/expat/
 
 cd $ROOT
 
