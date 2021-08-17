@@ -1,5 +1,4 @@
 # Format: "directory: scm=url"
-bytecode: git=git@github.com:vstinner/bytecode.git
 cpython_core_tutorial: git=git@github.com:vstinner/cpython_core_tutorial.git
 github.io: git=git@github.com:vstinner/vstinner.github.io.git
 hachoir: git=git@github.com:vstinner/hachoir.git
