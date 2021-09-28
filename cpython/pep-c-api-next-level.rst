@@ -19,7 +19,7 @@ subtle and complex issues. There are different ways to use the C API,
 each usage has its own constraints, and some constraints are exclusive.
 This document lists constraints but doesn't propose changes, it only
 gives vague ideas how to solve some issues. More concrete C API changes
-require writing separated PEPs.
+willl require writing separated PEPs.
 
 C extensions are a key component of the Python popularity
 =========================================================
