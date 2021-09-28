@@ -20,33 +20,33 @@ This document lists constraints but doesn't propose changes, it only
 gives vague ideas how to solve some issues. More concrete C API changes
 willl require writing separated PEPs.
 
-C extensions are a key component of the Python popularity
-=========================================================
+C extensions are a key component of Python's popularity
+=======================================================
 
-The Python popularity comes from its great programming language and from
+Python's popularity comes from its great programming language and from
 its wide collection of modules freely available on PyPI. Many of the
 most popular Python modules rely directly or indirectly on C extensions
-written with the C API. The Python C API is a key component of the
-Python popularity.
+written with the C API. The Python C API is a key component of
+Python's popularity.
 
-For example, the numpy project is now a common dependency on many
+For example, the NumPy project is now a common dependency for many
 scientific projects and a large part of the project is written by hand
 with the C API.
 
-**Abandoning or removing the C API** is out of question. Years ago, the
-incomplete C API support was the main drawback of PyPy, since PyPy only
-supported a minority of C extensions.
+**Abandoning or removing the C API** is out of the question. Years ago,
+the incomplete C API support was the main drawback of PyPy, since PyPy
+only supported a minority of C extensions.
 
-Today, CPython still have a similar issue. **When Cython or numpy don't
+Today, Cython has a similar issue. **When Cython or NumPy don't
 support a new Python version** (because of incompatible C API changes),
-many Python projects depending on them are cannot be installed,
+many Python projects depending on them cannot be installed,
 especially during the development phase of the next Python version.
 
 
 Backward compatibility and unmaintained C extensions
 ====================================================
 
-One important property of the C API is the backward compatibility.
+One important property of the C API is backward compatibility.
 Developers expect that if their C extension works on Python 3.10, it
 will work unmodified in Python 3.11: building the C extension with
 Python 3.11 should be enough.
@@ -54,15 +54,15 @@ Python 3.11 should be enough.
 This property is even more important for unmaintained C extensions.
 Sometimes, unmaintained just means that the only maintainer is busy or
 overwhelmed for a few months. Sometimes, the project has no activity for
-longer than 5 years.
+more than 5 years.
 
 When an incompatible change is introduced in the C API, like removing a
-function or changing a function behavior, there is a **risk of breaking
-an unknown number of C extensions**.
+function or changing a function's behavior, there is a **risk of
+breaking an unknown number of C extensions**.
 
-One option can be to update old C extensions when they are built on
+One option could be to update old C extensions when they are built on
 recent Python versions, to adapt them to incompatible changes. This
-conversion is non trivial and cannot handle all kinds of incompatible
+conversion is non-trivial and cannot handle all kinds of incompatible
 changes.
 
 
@@ -70,12 +70,12 @@ Migration plan for incompatible changes
 =======================================
 
 There should be a **sensible migration path** for large C extensions
-(e.g.  numpy) when incompatible changes are introduced. Whenever
+(e.g.  NumPy) when incompatible changes are introduced. Whenever
 possible, it should be possible to write a **single code base** compatible
 with old and new Python versions.
 
 A **compatibility layer** can be maintained externally.  Cython and
-numpy have their own internal compatibility layer.
+NumPy have their own internal compatibility layer.
 
 There should be a way to easily pick up common errors introduced by
 migrating.
@@ -94,17 +94,17 @@ Obtain the best possible performance
 There are two main reasons for writing a C extension: implement a
 function which cannot be written in pure Python, or write a **C
 accelerator**: rewrite the 10% of an application in C where 90% of the
-CPU time is spent. About the former use case, the intent is to obtain
+CPU time is spent. For the former use case, the intent is to obtain
 the best possible performance. Tradeoffs are made with portability: it
 is acceptable to only support a limited number of Python versions and to
 only support a limited number of Python implementations (usually only
 CPython).
 
-Cython is a good example of accelerator. It is able to support a large
-number of Python versions and multiple Python implementation with
-compatibility layers and ``#ifdef``. The main drawback is that it is
-common that Cython is **broken by incompatible changes made at each
-Python release**. It happens because Cython relies on many
+Cython is a good example of an accelerator. It is able to support a
+large number of Python versions and multiple Python implementations
+with compatibility layers and ``#ifdef`` usage. The main drawback is
+that it is common that Cython is **broken by incompatible changes made
+at each Python release**. It happens because Cython relies on many
 implementation details.
 
 On the other side, the **limited C API** is a small as possible,
@@ -122,12 +122,12 @@ different than CPython: no reference counting, moving garbage collector,
 JIT compiler, etc.
 
 To support C extensions, PyPy emulates the Python C API in its cpyext
-module. When the C API access an object, cpyext has to convert the PyPy
-object to a CPython object (``PyObject``). CPython objects are less
-efficient than PyPy objects with the PyPy JIT compiler and conversions
-from PyPy objects to CPython objects are also inefficient. PyPy has to
-reimplement every single detail of the CPython implementation to be as
-much compatible as possible.
+module. When the C API accesses an object, cpyext has to convert the
+PyPy object to a CPython object (``PyObject``). CPython objects are
+less efficient than PyPy objects with the PyPy JIT compiler and
+conversions from PyPy objects to CPython objects are also inefficient.
+PyPy has to reimplement every single detail of the CPython
+implementation to be as compatible as possible.
 
 The C API exposes multiple implementation details:
 
