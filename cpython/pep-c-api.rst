@@ -6,7 +6,8 @@ Taking the Python C API to the Next Level
 
     PEP: xxx
     Title: Taking the Python C API to the Next Level
-    Author: Victor Stinner <vstinner@python.org>
+    Author: Simon Cross <hodgestar@gmail.com>,
+            Victor Stinner <vstinner@python.org>
     Status: Draft
     Type: Informational
     Content-Type: text/x-rst
