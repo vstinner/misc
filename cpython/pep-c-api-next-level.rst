@@ -37,7 +37,7 @@ with the C API.
 the incomplete C API support was the main drawback of PyPy, since PyPy
 only supported a minority of C extensions.
 
-Today, Cython has a similar issue. **When Cython or NumPy don't
+Today, CPython has a similar issue. **When Cython or NumPy don't
 support a new Python version** (because of incompatible C API changes),
 many Python projects depending on them cannot be installed,
 especially during the development phase of the next Python version.
