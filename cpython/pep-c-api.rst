@@ -17,7 +17,8 @@ While the C API is a key of the Python popularity, it causes multiple
 subtle and complex issues. There are different ways to use the C API,
 each usage has its own constraints, and some constraints are exclusive.
 This document lists constraints but doesn't propose changes, it only
-gives ideas to solve some issues.
+gives vague ideas how to solve some issues. More concrete C API changes
+require writing separated PEPs.
 
 C extensions are a key component of the Python popularity
 =========================================================
@@ -68,10 +69,10 @@ changes.
 Migration plan for incompatible changes
 =======================================
 
-There should be a **sensible migration path for large C extensions**
+There should be a **sensible migration path** for large C extensions
 (e.g.  numpy) when incompatible changes are introduced. Whenever
-possible, it should be possible to write a **single code base compatible
-with old and new Python versions**.
+possible, it should be possible to write a **single code base** compatible
+with old and new Python versions.
 
 A **compatibility layer** can be maintained externally.  Cython and
 numpy have their own internal compatibility layer.
@@ -147,7 +148,8 @@ significant amount of work.
 implementations to catch up with the latest Python version, but it
 doesn't solve the efficiency problem. Moreover, it is common that adding
 a new feature to Python requires to change the C API, even if it is just
-to add new functions.
+to add new functions. Not adding new features to Python for a few Python
+releases is out of question.
 
 
 The C API prevents optimizing CPython
