@@ -93,7 +93,7 @@ Obtain the best possible performance
 
 There are two main reasons for writing a C extension: implement a
 function which cannot be written in pure Python, or write a **C
-accelerator**: rewrite the 10% of an application in C where 90% of the
+accelerator**: rewrite in C the 10% of an application where 90% of the
 CPU time is spent. For the former use case, the intent is to obtain
 the best possible performance. Tradeoffs are made with portability: it
 is acceptable to only support a limited number of Python versions and to
@@ -118,8 +118,8 @@ Emulating the current C API is inefficient
 
 The PyPy project is a Python implementation written from scratch, it was
 not created as a CPython fork. It made many implementation choices
-different than CPython: no reference counting, moving garbage collector,
-JIT compiler, etc.
+different than CPython: no reference counting, more efficient structures
+(different memory layout), moving garbage collector, JIT compiler, etc.
 
 To support C extensions, PyPy emulates the Python C API in its cpyext
 module. When the C API accesses an object, cpyext has to convert the
