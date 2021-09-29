@@ -13,12 +13,13 @@ Taking the Python C API to the Next Level
     Created: 28-Sep-2021
     Python-Version: 3.11
 
-While the C API is a key of the Python popularity, it causes multiple
-subtle and complex issues. There are different ways to use the C API,
-each usage has its own constraints, and some constraints are exclusive.
-This document lists constraints but doesn't propose changes, it only
-gives vague ideas how to solve some issues. More concrete C API changes
-willl require writing separated PEPs.
+The C API is a key of the Python popularity and it prevents to optimize
+CPython. Changing the C API is causing non-trivial practical issues with
+the backward compatibility.
+
+This PEP doesn't propose any C API change, separated PEPs should be
+written for that, but explains that the C API has flaws and there are
+good reasons why there are not fixed yet.
 
 C extensions are a key component of Python's popularity
 =======================================================
