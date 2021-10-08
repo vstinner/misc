@@ -1,5 +1,15 @@
 #!/usr/bin/python3
 # Source: https://github.com/methane/notes/blob/master/2020/wchar-cache/download_sdist.py
+# Source: https://github.com/methane/notes/tree/master/2020/wchar-cache
+#
+# Shell script:
+# ---
+# if [ -z "$1" ]; then
+#     echo "usage: $0 pattern"
+#     exit 1
+# fi
+# rg -zl "$1" pypi-top-5000_2021-08-17/*.{zip,gz,bz2,tgz}
+# ---
 #
 # Download JSON from:
 # https://hugovk.github.io/top-pypi-packages/
