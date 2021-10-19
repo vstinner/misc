@@ -20,9 +20,9 @@ arguments to continue accepting "any type" as ``PyObject*``.
 
 Example of the ``Py_REFCNT()`` macro which casts to ``PyObject*``::
 
-    #define Py_REFCNT(ob)           (((PyObject*)(ob))->ob_refcnt)
+    #define Py_REFCNT(ob) (((PyObject*)(ob))->ob_refcnt)
 
-Inline the ``_Py_REFCNT()`` static inline function, there is no more need to
+Inside the ``_Py_REFCNT()`` static inline function, there is no more need to
 cast the argument::
 
     #define _PyObject_CAST_CONST(op) ((const PyObject*)(op))
