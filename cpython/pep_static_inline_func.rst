@@ -60,8 +60,8 @@ Advantages of Static Inline Functions Versus Macros
 ===================================================
 
 
-Specify argument types and result type in the C API
----------------------------------------------------
+Static typing
+-------------
 
 In a static inline function, there is no need to cast arguments to a type,
 since the arguments have a well defined type. Also, the return type is well
@@ -90,8 +90,8 @@ cast the argument::
 The ``Py_REFCNT()`` macro does the cast for backward compatibility.
 
 
-More readable code
-------------------
+Readability
+-----------
 
 Macros are usually hard to read. For example, to execute multiple instructions
 but return an expression, the ``expr1, expr2`` syntax must be used.
@@ -135,8 +135,8 @@ needed. It is just plain regular C code. For example, the extra parentheses are
 gone.
 
 
-Easy usage of macros
---------------------
+Decluttering code
+-----------------
 
 Using ``#ifdef`` inside a macro requires complicated code. Example with the
 ``_Py_NewReference()`` macro which required a ``_Py_COUNT_ALLOCS_COMMA`` macro
@@ -167,8 +167,8 @@ Python has many ``#ifdef`` options to support various build modes, especially
 for debugging.
 
 
-Variable scope
---------------
+Improved scoping
+----------------
 
 Variables declared in a static inline functions have a well defined scope, the
 function, whereas variables declared in macros inherit the scope of the
@@ -195,10 +195,10 @@ Moreover, it possible possible to put breakpoints on static inline functions
 even if they are inlined.
 
 
-No side effect issue on macro arguments
----------------------------------------
+No duplication of side effects
+------------------------------
 
-Macros have an infamous issue with side effects on their arguments. Example::
+Macros have an infamous issue with duplication of side effects. Example::
 
     #define DOUBLE(x) ((x) + (x))
     int x = 1;
@@ -219,8 +219,8 @@ have this issue::
     // x = 2 and y = 4: there is no undefined behavior
 
 
-Unintended expression value in macros
--------------------------------------
+Unintended expression value
+---------------------------
 
 When writing a macro, it is easy to miss that an expression has a value which
 can be used::
