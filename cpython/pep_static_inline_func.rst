@@ -16,11 +16,11 @@ Convert macros to static inline functions
 Abstract
 ========
 
-Convert macros to static inline funtions and regular functions to:
+Convert macros to static inline funtions or regular functions to:
 
 * Specify argument types and result type in the C API.
-* Prevent using macro as l-value to prepare making structures opaque.
-* Give acess to these functions to projects embedding Python but cannot use
+* Prevent using macros as l-value to prepare making structures opaque.
+* Give access to regular functions to projects embedding Python but cannot use
   macros or static inline functions.
 
 
