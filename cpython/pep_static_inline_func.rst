@@ -13,10 +13,11 @@ Convert macros to static inline functions
     Created: 19-Oct-2021
     Python-Version: 3.11
 
+
 Abstract
 ========
 
-Convert macros to static inline funtions or regular functions to:
+Convert macros to static inline functions or regular functions:
 
 * Specify argument types and result type in the C API.
 * Give access to regular functions to projects embedding Python which cannot
@@ -26,25 +27,26 @@ Convert macros to static inline funtions or regular functions to:
 Rationale
 =========
 
-Developers must be extra careful to avoid every single macro pitfal. Even most
-experienced C developers easily fall into these traps. Some issues are known
-for years, while others have been discovered in the last years.
+Developers must be extra careful to avoid every single macro pitfal. Even the
+most experienced C developers easily fall into these traps. Some issues are
+known for years, while others have been discovered in the last years.
 
 Converting macros to static inline functions and regular functions have many
 advantages. The only concern is performance which is elaborated below.
+
 
 Specify argument types and result type in the C API
 ---------------------------------------------------
 
 In a static inline function, there is no need to cast arguments to a type,
 since the arguments have a well defined type. Also, the return type is well
-defined. There is no need to infer the result type by reading carefully the
-macro code.
+defined. There is no need to infer the result type by reading the macro code
+carefully.
 
 For backward compatibility, a macro is used to cast static inline function
-arguments as ``PyObject*``, so the functions still accepts "any type".
+arguments as ``PyObject *``, so the functions still accepts "any type".
 
-Example of the ``Py_REFCNT()`` macro which casts to ``PyObject*``::
+Example of the ``Py_REFCNT()`` macro which casts to ``PyObject *``::
 
     #define Py_REFCNT(ob) (((PyObject*)(ob))->ob_refcnt)
 
@@ -60,6 +62,7 @@ cast the argument::
 
 The ``Py_REFCNT()`` macro does the cast for backward compatibility.
 
+
 More readable code
 ------------------
 
@@ -67,7 +70,7 @@ Macros are usually hard to read. For example, to execute multiple instructions
 but return an expression, the ``expr1, expr2`` syntax must be used.
 
 To respect operator precedence, macro arguments must be written between
-parenthesis. It is common to have 3 levels of nested parenthesis, if not more.
+parenthesis. It is common to have 3 levels of nested parentheses, if not more.
 Example with ``(((``::
 
     #define DK_SIZE(dk) (((int64_t)1) << DK_LOG_SIZE(dk))
@@ -101,8 +104,9 @@ Converted to a static inline function (simplified code)::
     }
 
 In a static inline function, the ``\\`` continuation character is no longer
-needed. It is just plain regular C code. For example, extra parenthesis are
+needed. It is just plain regular C code. For example, the extra parentheses are
 gone.
+
 
 Easy usage of macros
 --------------------
@@ -135,6 +139,7 @@ Converting the macro to a static inline function made the code more readable,
 Python has many ``#ifdef`` options to support various build modes, especially
 for debugging.
 
+
 Variable scope
 --------------
 
@@ -151,6 +156,7 @@ Example with the ``Py_SETREF()`` macro (simplified code)::
             ...                                     \
         } while (0)
 
+
 Debugging and profiling
 -----------------------
 
@@ -160,6 +166,7 @@ complicated to analyze a long function which inlines many sub-functions.
 
 Moreover, it possible possible to put breakpoints on static inline functions
 even if they are inlined.
+
 
 No side effect issue on macro arguments
 ---------------------------------------
@@ -184,6 +191,7 @@ have this issue::
     int y = DOUBLE(++x);
     // x = 2 and y = 4: there is no undefined behavior
 
+
 Unintended expression value in macros
 -------------------------------------
 
@@ -204,8 +212,8 @@ error with C compilers::
 
     #define PyList_SET_ITEM(op, i, v) ((void)(_PyList_CAST(op)->ob_item[i] = (v)))
 
-The result type of a static inline functions is well defined, such API isuee is
-easier to catch.
+The result type of a static inline functions is well defined, such API issues
+are easier to catch.
 
 
 Performance and inlining
@@ -215,10 +223,10 @@ Static inline functions is a feature added to C99. In 2021, C compilers can
 inline them and have efficient heuristics to decide if a function should be
 inlined or not.
 
-When a C compiler decides to not inline, there is likely a good reason for
-example. For example, inlining would reuse registers which require to
-save/restore register values in the stack and so increase the stack memory
-usage.
+When a C compiler decides to not inline, there is likely a good reason. For
+example, inlining would reuse registers which require to save/restore register
+values in the stack and so increase the stack memory usage.
+
 
 Debug mode
 ----------
@@ -226,8 +234,9 @@ Debug mode
 When Python is built in debug mode, most compiler optimizations are disabled.
 For example, Visual Studio disables inlining. Benchmarks must not be run on a
 Python debug build, only on release build: using LTO and PGO is recommended for
-reliable benchmarks. LTO and PGO helps a lot compilers to take better decisions
-to inline functions or not.
+reliable benchmarks. LTO and PGO helps a lot of compilers to take better
+decisions to inline functions or not.
+
 
 Force inlining
 --------------
@@ -235,31 +244,32 @@ Force inlining
 If a developer is convinced to know better machine code than C compiler, which
 is very unlikely, it is still possible to mark the function with the
 ``Py_ALWAYS_INLINE`` macro. This macro uses ``__attribute__((always_inline))``
-with GCC and clang, and ``__forceinline`` with MSC.
+with GCC and Clang, and ``__forceinline`` with MSC.
 
 So far, previous attempts to use ``Py_ALWAYS_INLINE`` didn't show any benefit
-and were abandonned. See for example: `bpo-45094
+and were abandoned. See for example: `bpo-45094
 <https://bugs.python.org/issue45094>`_: "Consider using ``__forceinline`` and
 ``__attribute__((always_inline))`` on static inline functions (``Py_INCREF``,
 ``Py_TYPE``) for debug builds".
 
 When the ``Py_INCREF()`` macro was converted to a static inline functions in 2018
 (`commit <https://github.com/python/cpython/commit/2aaf0c12041bcaadd7f2cc5a54450eefd7a6ff12>`__),
-it was decided to not force inlining. The machine code was analyzed with
+it was decided not to force inlining. The machine code was analyzed with
 multiple C compilers and compiler options: ``Py_INCREF()`` was always inlined
 without having to force inlining. The only case where it was not inlined was
 debug builds, but this is acceptable for a debug build. See discussion in the
 `bpo-35059 <https://bugs.python.org/issue35059>`_: "Convert Py_INCREF() and
 PyObject_INIT() to inlined functions".
 
+
 Prevent inlining
 ----------------
 
 On the other side, the ``Py_NO_INLINE`` macro can be used to prevent inlining.
 It is useful to reduce the stack memory usage, it is especially useful on
-LTO+PGO builds which heavily inline code: see `bpo-33720
+LTO+PGO builds which heavily inlines code: see `bpo-33720
 <https://bugs.python.org/issue33720>`_. This macro uses ``__attribute__
-((noinline))`` with GCC and clang, and ``__declspec(noinline)`` with MSC.
+((noinline))`` with GCC and Clang, and ``__declspec(noinline)`` with MSC.
 
 
 Convert macros and static inline functions to regular functions
@@ -268,7 +278,8 @@ Convert macros and static inline functions to regular functions
 There are projects embedding Python or using Python which cannot use macros and
 static inline functions. For example, projects using programming languages
 other than C and C++. There are also projects written in C which make the
-deliberate choice of only getting libpython symbols (functions and variables).
+deliberate choice of only getting ``libpython`` symbols (functions and
+variables).
 
 Converting macros and static inline functions to regular functions make these
 functions accessible to these projects.
@@ -276,6 +287,7 @@ functions accessible to these projects.
 
 Specification
 =============
+
 
 Convert macros to static inline functions
 -----------------------------------------
@@ -285,11 +297,12 @@ pitfalls listed in the Rationale section.
 
 Macros which can remain macros:
 
-* Macro with no value. Example:: `#define Py_HAVE_CONDVAR``
-* Macro defining a number. Example:: ``#define METH_VARARGS 0x0001``
+* Macros with no value. Example:: `#define Py_HAVE_CONDVAR``
+* Macros defining a number. Example:: ``#define METH_VARARGS 0x0001``
 * Compatibility layer for different C compilers, C extensions, or recent C
   features.
   Example:: ``#define Py_ALWAYS_INLINE __attribute__((always_inline))``.
+
 
 Convert static inline functions to regular functions
 ----------------------------------------------------
@@ -299,7 +312,7 @@ functions for projects which cannot use macros and static inline functions.
 
 The performance impact of such conversion should be measured with benchmarks.
 If there is a significant slowdown, there should be a good reason to do the
-conversion. A reason can be to hide implementation details.
+conversion. One reason can be to hide implementation details.
 
 Performance and C compiler optimizations is a complex topic. Sometimes
 converting static inline functions to regular functions can make these
