@@ -2,8 +2,32 @@
 Convert macros to static inline functions
 +++++++++++++++++++++++++++++++++++++++++
 
-Advantages of static inline functions
-=====================================
+::
+
+    PEP: xxx
+    Title: Convert macros to static inline functions
+    Author: Victor Stinner <vstinner@python.org>
+    Status: Draft
+    Type: Standards Track
+    Content-Type: text/x-rst
+    Created: 19-Oct-2021
+    Python-Version: 3.11
+
+Abstract
+========
+
+Fix functions to have a stricter C API to catch bugs and to ease the
+reimplementation of the C API on Python implementations other than CPython.
+
+Converting macros to static inline functions avoid macro pitfalls described in
+the Rationale section and provide a better defined API. It also prepares the
+API to later convert these static inline functions to regular functions to make
+them available to projects embeding Python but cannot use macros and static
+inline functions.
+
+
+Rationale
+=========
 
 Developers must be extra careful to avoid every single macro pitfal. Even most
 experienced C developers easily fall into these traps.
@@ -261,6 +285,66 @@ functions can make these functions faster (see `PR #28893
 <https://github.com/python/cpython/pull/28893>`_).
 
 
+Specification
+=============
+
+Convert macros to static inline functions
+-----------------------------------------
+
+Most macros should be converted to static inline functions to prevent macro
+pitfalls listed in the Rationale section.
+
+Macros which can remain macros:
+
+* Macro with no value. Example:: `#define Py_HAVE_CONDVAR``
+* Macro defining a number. Example:: ``#define METH_VARARGS 0x0001``
+* Compatibility layer for C extensions or recent C features.
+  Example:: ``#define Py_ALWAYS_INLINE __attribute__((always_inline))``.
+
+Incompatible API changes
+------------------------
+
+Macros which can currently be used as l-value are converted to static inline
+functions which can only be used as r-value on purpose. It avoids giving a
+direct access into structures which is not possible on Python implementations
+other than CPython.
+
+Examples of converted macros:
+
+* ``Py_REFCNT()``: already converted in Python 3.10, ``Py_SET_REFCNT()`` must be used.
+* ``Py_TYPE()`` and ``Py_SIZE()``: Python 3.11, ``Py_SET_TYPE()`` and
+  ``Py_SET_SIZE()`` must be used.
+
+Macros like ``PyFloat_AS_DOUBLE()`` are not intended to be used as l-value and
+so converting it to a static inline function is considered as acceptable, even
+if it is technically a backward incompatible API change.
+
+
+Convert static inline functions to regular functions
+----------------------------------------------------
+
+Converting static inline functions to regular functions give access to these
+functions for projects which cannot use macros and static inline functions.
+
+The performance impact of such conversion should be measure. If there is a
+significant slowdown, there should be a good reason to do the conversion. A
+reason can be to hide implementation details. For example, avoid accessing
+structure members to prepare the C API to make such structure opaque.
+
+The internal C API exposes implemenation details by design, and so using static
+inline functions in the internal C API is reasonable.
+
+
+Backwards Compatibility
+=======================
+
+Converting a macro implemented as an expression prevents to use it as an
+l-value. These changes break the backward compatibility on purpose.
+
+For example, ``Py_TYPE(obj) = new_type;`` now fails with a compiler error and
+``Py_SET_TYPE(obj, new_type);`` must be used instead.
+
+
 Discussions
 ===========
 
@@ -269,3 +353,10 @@ Discussions
   (March 2021)
 * `[C-API] Convert obvious unsafe macros to static inline functions
   <https://bugs.python.org/issue43502>`_ (March 2021)
+
+
+Copyright
+=========
+
+This document is placed in the public domain or under the
+CC0-1.0-Universal license, whichever is more permissive.
