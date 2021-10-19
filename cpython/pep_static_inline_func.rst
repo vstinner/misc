@@ -18,10 +18,10 @@ Abstract
 
 Convert macros to static inline funtions and regular functions to:
 
-* Fix the C API.
-* Hide implementation details.
-* Give access to the C API to projects embedding Python but cannot use macros
-  or static inline functions.
+* Specify argument types and result type in the C API.
+* Prevent using macro as l-value to prepare making structures opaque.
+* Give acess to these functions to projects embedding Python but cannot use
+  macros or static inline functions.
 
 
 Rationale
