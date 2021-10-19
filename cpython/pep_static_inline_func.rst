@@ -27,12 +27,31 @@ Convert macros to static inline functions or regular functions:
 Rationale
 =========
 
-Developers must be extra careful to avoid every single macro pitfal. Even the
-most experienced C developers easily fall into these traps. Some issues are
-known for years, while others have been discovered in the last years.
+The use of macros may have unintended adverse effects that are hard to avoid,
+even for the most experienced C developers. Some issues have been known for
+years, while others have been discovered recently.
 
-Converting macros to static inline functions and regular functions have many
-advantages. The only concern is performance which is elaborated below.
+Converting macros to static inline functions and regular functions has many
+advantages. A possible concern may be performance. This is elaborated in
+sections below.
+
+
+Common macro pitfalls
+---------------------
+
+[1]_ The GCC documentation lists several common macro pitfalls:
+
+- Misnesting
+- Operator precedence problems
+- Swallowing the semicolon
+- Duplication of side effects
+- Self-referential macros
+- Argument prescan
+- Newlines in arguments
+
+
+Advantages of Static Inline Functions Versus Macros
+===================================================
 
 
 Specify argument types and result type in the C API
@@ -339,6 +358,12 @@ Discussions
   (March 2021)
 * `[C-API] Convert obvious unsafe macros to static inline functions
   <https://bugs.python.org/issue43502>`_ (March 2021)
+
+
+References
+==========
+
+.. [1] https://gcc.gnu.org/onlinedocs/cpp/Macro-Pitfalls.html
 
 
 Copyright
