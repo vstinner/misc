@@ -16,14 +16,12 @@ Convert macros to static inline functions
 Abstract
 ========
 
-Fix functions to have a stricter C API to catch bugs and to ease the
-reimplementation of the C API on Python implementations other than CPython.
+Convert macros to static inline funtions and regular functions to:
 
-Converting macros to static inline functions avoid macro pitfalls described in
-the Rationale section and provide a better defined API. It also prepares the
-API to later convert these static inline functions to regular functions to make
-them available to projects embeding Python but cannot use macros and static
-inline functions.
+* Fix the C API.
+* Hide implementation details.
+* Give access to the C API to projects embedding Python but cannot use macros
+  or static inline functions.
 
 
 Rationale
