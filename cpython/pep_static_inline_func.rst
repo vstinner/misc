@@ -113,7 +113,7 @@ Variables declared in a static inline functions have a well defined scope: the
 function, whereas variables declared in macros have the scope of the function
 where the macro is used. Macros usually have to declare a local scope, like::
 
-    ``#define MACRO() do { int local_variable = 1; ... } while (0)```.
+    #define MACRO() do { int local_variable = 1; ... } while (0)
 
 Debugging and profiling
 -----------------------
