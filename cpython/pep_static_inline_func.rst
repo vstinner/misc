@@ -23,6 +23,15 @@ Convert macros to static inline functions or regular functions:
 * Give access to regular functions to projects embedding Python which cannot
   use macros or static inline functions.
 
+Macros implemented as an expression and having a value, whereas they should
+not, are converted to functions which have no return value (``void``) to
+prevent misusing the C API and to detect bugs in C extensions.
+
+To prevent emitting new compiler warnings, some function arguments are still
+casted to ``PyObject*``. For example, ``Py_TYPE(obj)`` casts ``obj`` to
+``PyObject*`` to accept pointer to other structures which inherit from
+``PyObject`` (ex: ``PyTupleObject``).
+
 
 Rationale
 =========
@@ -31,15 +40,8 @@ The use of macros may have unintended adverse effects that are hard to avoid,
 even for the most experienced C developers. Some issues have been known for
 years, while others have been discovered recently.
 
-Converting macros to static inline functions and regular functions has many
-advantages. A possible concern may be performance. This is elaborated in
-sections below.
-
-
-Common macro pitfalls
----------------------
-
-[1]_ The GCC documentation lists several common macro pitfalls:
+The GCC documentation lists several common `macro pitfalls
+<https://gcc.gnu.org/onlinedocs/cpp/Macro-Pitfalls.html>`_:
 
 - Misnesting
 - Operator precedence problems
@@ -48,6 +50,10 @@ Common macro pitfalls
 - Self-referential macros
 - Argument prescan
 - Newlines in arguments
+
+Converting macros to static inline functions and regular functions has many
+advantages. A possible concern may be performance. This is elaborated in
+sections below.
 
 
 Advantages of Static Inline Functions Versus Macros
@@ -62,8 +68,10 @@ since the arguments have a well defined type. Also, the return type is well
 defined. There is no need to infer the result type by reading the macro code
 carefully.
 
-For backward compatibility, a macro is used to cast static inline function
-arguments as ``PyObject *``, so the functions still accepts "any type".
+To prevent emitting new compiler warnings, a macro is used to cast static
+inline function arguments as ``PyObject *``, so the functions still accepts
+pointer to other structures which inherit from ``PyObject`` (ex:
+``PyTupleObject``).
 
 Example of the ``Py_REFCNT()`` macro which casts to ``PyObject *``::
 
@@ -341,13 +349,20 @@ functions faster (see `PR #28893
 The internal C API exposes implemenation details by design. Using static inline
 functions in the internal C API is reasonable.
 
+Function with no return value
+-----------------------------
+
+Macros implemented as an expression and having a value, whereas they should
+not, are converted to functions which have no return value (``void``) to
+prevent misusing the C API and to detect bugs in C extensions.
+
 
 Backwards Compatibility
 =======================
 
-Converting a macro implemented as an expession to a static inline function or a
-function which has no return value (``void``) is an incomatible change made on
-purpose to prevent misusing the C API and to detect bugs in C extensions.
+Converting a macro implemented as an expression to a function which has no
+return value (``void``) is an incompatible change made on purpose
+(see `Function with no return value`_ section).
 
 
 Discussions
@@ -358,12 +373,6 @@ Discussions
   (March 2021)
 * `[C-API] Convert obvious unsafe macros to static inline functions
   <https://bugs.python.org/issue43502>`_ (March 2021)
-
-
-References
-==========
-
-.. [1] https://gcc.gnu.org/onlinedocs/cpp/Macro-Pitfalls.html
 
 
 Copyright
