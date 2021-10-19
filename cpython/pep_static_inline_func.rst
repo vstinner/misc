@@ -29,7 +29,7 @@ prevent misusing the C API and to detect bugs in C extensions.
 
 To prevent emitting new compiler warnings, some function arguments are still
 casted to ``PyObject*``. For example, ``Py_TYPE(obj)`` casts ``obj`` to
-``PyObject*`` to accept pointer to other structures which inherit from
+``PyObject*`` to accept pointers to other structures which inherit from
 ``PyObject`` (ex: ``PyTupleObject``).
 
 
@@ -68,10 +68,9 @@ since the arguments have a well defined type. Also, the return type is well
 defined. There is no need to infer the result type by reading the macro code
 carefully.
 
-To prevent emitting new compiler warnings, a macro is used to cast static
-inline function arguments as ``PyObject *``, so the functions still accepts
-pointer to other structures which inherit from ``PyObject`` (ex:
-``PyTupleObject``).
+To prevent emitting new compiler warnings, a macro is used to cast some
+function arguments to ``PyObject *``, so the functions still accept pointers
+to other structures which inherit from ``PyObject`` (ex: ``PyTupleObject``).
 
 Example of the ``Py_REFCNT()`` macro which casts to ``PyObject *``::
 
@@ -87,7 +86,11 @@ cast the argument::
     }
     #define Py_REFCNT(ob) _Py_REFCNT(_PyObject_CAST_CONST(ob))
 
-The ``Py_REFCNT()`` macro does the cast for backward compatibility.
+It becomes more obvious that the ``Py_REFCNT()`` return type is ``Py_ssize_t``.
+Moreover, the return type is enforced by the compiler.
+
+The ``Py_REFCNT()`` macro casts its argument to prevent introducing new
+compiler warnings.
 
 
 More readable code
@@ -98,14 +101,13 @@ but return an expression, the ``expr1, expr2`` syntax must be used.
 
 To respect operator precedence, macro arguments must be written between
 parenthesis. It is common to have 3 levels of nested parentheses, if not more.
-Example with ``(((``::
+Example with 3 levels of parentheses::
 
     #define DK_SIZE(dk) (((int64_t)1) << DK_LOG_SIZE(dk))
 
 If a macro contains multiple statements, ``do { ... } while (0)`` syntax
 must be used. Otherwise, ``if (test) MACRO();`` would unconditionally execute
-following statements. Example formatted using the ``\\`` continuation
-character::
+following statements. Example formatted using the line continuation character::
 
     #define Py_SETREF(op, op2)                      \
         do {                                        \
@@ -130,17 +132,17 @@ Converted to a static inline function (simplified code)::
         return op;
     }
 
-In a static inline function, the ``\\`` continuation character is no longer
+In a static inline function, the line  continuation character is no longer
 needed. It is just plain regular C code. For example, the extra parentheses are
 gone.
 
 
-Easy usage of macros
---------------------
+Use macros in functions
+-----------------------
 
 Using ``#ifdef`` inside a macro requires complicated code. Example with the
 ``_Py_NewReference()`` macro which required a ``_Py_COUNT_ALLOCS_COMMA`` macro
-to handle ``#ifdef COUNT_ALLOCS``. Simplified code::
+to handle ``#ifdef COUNT_ALLOCS`` (simplified code)::
 
     #ifdef COUNT_ALLOCS
     #  define _Py_INC_TPALLOCS(OP) inc_count(Py_TYPE(OP))
@@ -163,8 +165,8 @@ Converting the macro to a static inline function made the code more readable,
         Py_REFCNT(op) = 1;
     }
 
-Python has many ``#ifdef`` options to support various build modes, especially
-for debugging.
+Python has many ``#ifdef`` options to support various builds, especially for
+debugging.
 
 
 Variable scope
@@ -324,11 +326,11 @@ pitfalls listed in the Rationale section.
 
 Macros which can remain macros:
 
-* Macros with no value. Example:: `#define Py_HAVE_CONDVAR``
-* Macros defining a number. Example:: ``#define METH_VARARGS 0x0001``
-* Compatibility layer for different C compilers, C extensions, or recent C
-  features.
-  Example:: ``#define Py_ALWAYS_INLINE __attribute__((always_inline))``.
+* Macros with no value. Example: ``#define Py_HAVE_CONDVAR``.
+* Macros defining a number. Example: ``#define METH_VARARGS 0x0001``.
+* Compatibility layer for different C compilers, C language extensions, or
+  recent C features.
+  Example: ``#define Py_ALWAYS_INLINE __attribute__((always_inline))``.
 
 
 Convert static inline functions to regular functions
@@ -353,8 +355,9 @@ Function with no return value
 -----------------------------
 
 Macros implemented as an expression and having a value, whereas they should
-not, are converted to functions which have no return value (``void``) to
-prevent misusing the C API and to detect bugs in C extensions.
+not, are converted to static inline functions or regular functions which have
+no return value (``void``) to prevent misusing the C API and to detect bugs in
+C extensions.
 
 
 Backwards Compatibility
@@ -362,17 +365,39 @@ Backwards Compatibility
 
 Converting a macro implemented as an expression to a function which has no
 return value (``void``) is an incompatible change made on purpose
-(see `Function with no return value`_ section).
+(see the `Function with no return value`_ section).
+
+
+Rejected Ideas
+==============
+
+Keep macros, but fix some macro issues
+--------------------------------------
+
+The `Unintended expression value in macros`_ issue can be fixed by casting the
+macro result to ``void``. It was already done for the ``PyList_SET_ITEM()``
+macro.
+
+Macros are always "inlined" with any C compiler.
+
+The duplication of side effects can be worked around in the caller of the
+macro: don't pass an expression which has side effect to macros.
+
+People using macros should be considered "consenting adults". People who feel
+unsafe with macros should simply not use them.
 
 
 Discussions
 ===========
 
+* `bpo-45490 <https://bugs.python.org/issue45490>`_:
+  [meta][C API] Avoid C macro pitfalls and usage of static inline functions
+  (October 2021).
 * `What to do with unsafe macros
   <https://discuss.python.org/t/what-to-do-with-unsafe-macros/7771>`_
-  (March 2021)
-* `[C-API] Convert obvious unsafe macros to static inline functions
-  <https://bugs.python.org/issue43502>`_ (March 2021)
+  (March 2021).
+* `bpo-43502 <https://bugs.python.org/issue43502>`_: [C-API] Convert obvious
+  unsafe macros to static inline functions (March 2021).
 
 
 Copyright
