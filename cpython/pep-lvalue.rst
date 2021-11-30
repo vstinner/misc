@@ -70,9 +70,11 @@ nogil fork
 The `Sam Gross' nogil fork of CPython
 <https://github.com/colesbury/nogil/>`_ has no ``PyObject.ob_refcnt``
 member and so the ``Py_REFCNT(obj) = new_refcnt;`` code is invalid.
-
 It causes compatibility issues to merge this nogil branch into the
 upstream CPython main branch.
+
+The ``Py_REFCNT()`` macro was already modified in Python 3.10 to
+disallow using it as l-value.
 
 HPy
 ---
