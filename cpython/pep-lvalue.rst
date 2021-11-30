@@ -11,7 +11,17 @@ Python-Version: 3.11
 Abstract
 ========
 
-xxx
+Incompatible C API change disallowing using macros as l-value to allow
+evolving CPython internals and to ease the C API implementation on other
+Python implementation.
+
+In practice, projects impacted by these incompatible changes should only
+have to make two changes:
+
+* Replace ``Py_TYPE(obj) = new_type;``
+  with ``Py_SET_TYPE(obj, new_type);``.
+* Replace ``Py_SIZE(obj) = new_size;``
+  with ``Py_SET_SIZE(obj, new_size);``.
 
 
 Rationale
@@ -24,7 +34,7 @@ In the Python C API, some functions are technically implemented as macro
 because writing a macro is simpler than writing a regular function. If a
 macro exposes directly a struture member, it is technically possible to
 use this macro to not only read the structur member but also modify it.
-Example with the Python 3.10 Py_TYPE() macro::
+Example with the Python 3.10 ``Py_TYPE()`` macro::
 
     #define Py_TYPE(ob) (((PyObject *)(ob))->ob_type)
 
@@ -123,13 +133,14 @@ instead.
 Backwards Compatibility
 =======================
 
-The proposed C API changes are backward incompatible on purpose.
+The proposed C API changes are backward incompatible on purpose.  In
+practice, only a minority of third party projects are affected and most
+of them have already been prepared for these changes.
 
-In practice, only a minority of third party projects are affected. Most
-projects are broken by ``Py_TYPE()`` and ``Py_SIZE()`` changes. These
-two macros have been converted to static inline macro in Python 3.10
-alpha versions, but the change has been reverted since it broke too many
-projects. In the meanwhile, many projects, like Cython, have been
+Most projects are broken by ``Py_TYPE()`` and ``Py_SIZE()`` changes.
+These two macros have been converted to static inline macro in Python
+3.10 alpha versions, but the change has been reverted since it broke too
+many projects. In the meanwhile, many projects, like Cython, have been
 prepared for this change by using ``Py_SET_TYPE()`` and
 ``Py_SET_SIZE()``. For example, projects using Cython only have to
 regenerate their outdated C code to become compatible.
