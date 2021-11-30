@@ -29,8 +29,8 @@ have to make two changes:
 Rationale
 =========
 
-Use a macro as a l-value
-------------------------
+Using a macro as a l-value
+--------------------------
 
 In the Python C API, some functions are technically implemented as macro
 because writing a macro is simpler than writing a regular function. If a
@@ -40,11 +40,11 @@ Example with the Python 3.10 ``Py_TYPE()`` macro::
 
     #define Py_TYPE(ob) (((PyObject *)(ob))->ob_type)
 
-This macro can be used to get an object type::
+This macro can be used as a **r-value** to **get** an object type::
 
     type = Py_TYPE(object);
 
-But it can also be used to set an object type::
+But it can also be used as **l-value** to **set** an object type::
 
     Py_TYPE(object) = new_type;
 
@@ -55,35 +55,45 @@ Setting directly an object attribute relies on the current exact CPython
 implementation. Implementing this feature in other Python
 implementations can make their C API implementation less efficient.
 
+CPython nogil fork
+------------------
+
+Sam Gross forked Python 3.8 to remove the GIL: `nogil
+<https://github.com/colesbury/nogil/>`_. This fork has no
+``PyObject.ob_refcnt`` member, but a more elaborated implementation for
+reference counting, and so the ``Py_REFCNT(obj) = new_refcnt;`` code is
+invalid.
+
+Mering the nogil fork into the upstream CPython main branch requires
+first to fix this C API compatibility issue. It is a concrete example of
+a Python optimization blocked indirectly by the C API.
+
+Hopefully, the ``Py_REFCNT()`` macro was already modified in Python 3.10
+to disallow using it as a l-value.
+
+HPy project
+-----------
+
+The `HPy project <https://hpyproject.org/>`_ is a brand new C API for
+Python using only handles and function calls: handles are opaque,
+structure members cannot be accessed directly,and pointers cannot be
+dereferenced.
+
+Disallowing the usage of macros as l-value helps the migratation of
+existing C extensions to HPy by reducing differences between the C API
+and the HPy API.
+
 PyPy cpyext module
 ------------------
 
-For example, the PyPy ``cpyext`` module has to convert PyPy objects to
-CPython objects. While PyPy objects are designed to be efficient with
-the PyPy JIT compiler, CPython objects are less efficient and increase
-the memory usage. In practice, PyPy requires two versions (PyPy and
-CPython) of the same objects, and an object is accessed by the C API.
+In PyPy, when a Python object is accessed by the Python C API, the PyPy
+``cpyext`` module has to convert PyPy object to a CPython object. While
+PyPy objects are designed to be efficient with the PyPy JIT compiler,
+CPython objects are less efficient and increase the memory usage.
 
-nogil fork
-----------
-
-The `Sam Gross' nogil fork of CPython
-<https://github.com/colesbury/nogil/>`_ has no ``PyObject.ob_refcnt``
-member and so the ``Py_REFCNT(obj) = new_refcnt;`` code is invalid.
-It causes compatibility issues to merge this nogil branch into the
-upstream CPython main branch.
-
-The ``Py_REFCNT()`` macro was already modified in Python 3.10 to
-disallow using it as l-value.
-
-HPy
----
-
-The `HPy project <https://hpyproject.org/>`_ is a brand new C API for
-Python using only handles and function calls: structure members cannot
-be accessed directly and pointers cannot be dereferenced. Disallowing
-the usage of macros as l-value helps the migratation of existing C
-extensions to HPy.
+This PEP alone is not enough to get rid of the CPython objects in the
+PyPy ``cpyext`` module, but it is a step towards this long term goal.
+PyPy already supports HPy which is a better solution in the long term.
 
 
 Specification
@@ -163,6 +173,31 @@ For example, Cython uses the following code::
     PyByteArray_AS_STRING(string)[i] = (char) v;
 
 This code remains valid.
+
+
+Rejected Idea: Leave the code as it is
+======================================
+
+The documentation of each function can discourage developers to use
+macros to modify a Python object. If these is a need to make an
+assignment, a setter can be added and the documentation can require to
+use it. For example, a Py_SET_TYPE() function has been added to Python
+3.9 and the Py_TYPE() documentation requires to use Py_SET_TYPE() to set
+an object type.
+
+If developers use macros as l-value, it's their responsibility when
+their code breaks, not Python responsibility. We are operating under the
+consenting adults principle: we expect users of the Python C API to use
+it as documented and expect them to take care of the fallout, if things
+break when they don't.
+
+This idea was rejected because only few developers read the
+documentation, and even fewer are tracking changes of the Python C API
+documentation. The majority of developers are using CPython and so are
+not aware of compatibility issues with other Python implementations.
+
+Moreover, still allow to use macros as l-value doesn't solve issues of
+the nogil, PyPy and HPy projects.
 
 
 References
