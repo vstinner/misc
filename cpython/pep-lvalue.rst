@@ -100,19 +100,14 @@ PyPy already supports HPy which is a better solution in the long term.
 Specification
 =============
 
-Disallow using the macros as l-value
-------------------------------------
+Disallow using macros as l-value
+--------------------------------
 
 PyObject and PyVarObject macros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * ``Py_TYPE()``: ``Py_SET_TYPE()`` must be used instead
 * ``Py_SIZE()``: ``Py_SET_SIZE()`` must be used instead
-
-The ``Py_SET_TYPE()`` function must only be used to define statically a
-type. At runtime, setting an object type must be done by setting its
-``__class__`` attribute. Moreover, defining types as heap types is now
-recommended.
 
 "GET" macros
 ^^^^^^^^^^^^
@@ -125,8 +120,6 @@ recommended.
 * ``PyCFunction_GET_SELF()``
 * ``PyCell_GET()``
 * ``PyCode_GetNumFree()``
-* ``PyDescr_NAME()``
-* ``PyDescr_TYPE()``
 * ``PyDict_GET_SIZE()``
 * ``PyFunction_GET_ANNOTATIONS()``
 * ``PyFunction_GET_CLOSURE()``
@@ -195,6 +188,12 @@ PyDateTime "GET" macros
 * ``PyDateTime_TIME_GET_SECOND()``
 * ``PyDateTime_TIME_GET_TZINFO()``
 
+PyDescr macros
+^^^^^^^^^^^^^^
+
+* ``PyDescr_NAME()``
+* ``PyDescr_TYPE()``
+
 Port C extensions to Python 3.11
 --------------------------------
 
@@ -207,11 +206,11 @@ changes should only have to make two changes:
   with ``Py_SET_SIZE(obj, new_size);``.
 
 The `pythoncapi_compat project
-<https://github.com/pythoncapi/pythoncapi_compat>`_ can be used to get
-Python 3.9 ``Py_SET_REFCNT()``, ``Py_SET_TYPE()`` and ``Py_SET_SIZE()``
-functions on Python 3.8 and older. Moreover, this project provides a
-script to update automatically C extensions: add Python 3.11 support
-without losing support with older Python versions.
+<https://github.com/pythoncapi/pythoncapi_compat>`_ can be used to
+update automatically C extensions: add Python 3.11 support without
+losing support with older Python versions. The project provides a header
+file which provides ``Py_SET_REFCNT()``, ``Py_SET_TYPE()`` and
+``Py_SET_SIZE()`` functions to Python 3.8 and older.
 
 PyTuple_GET_ITEM() and PyList_GET_ITEM()
 ----------------------------------------
