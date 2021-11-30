@@ -101,12 +101,12 @@ Specification
 
 Disallow using the following macros as l-value:
 
-* PyObject:
+* PyObject macros:
 
   * ``Py_TYPE()``: ``Py_SET_TYPE()`` must be used instead
   * ``Py_SIZE()``: ``Py_SET_SIZE()`` must be used instead
 
-* "GET" functions:
+* "GET" macros:
 
   * ``PyByteArray_GET_SIZE()``
   * ``PyBytes_GET_SIZE()``
@@ -114,6 +114,10 @@ Disallow using the following macros as l-value:
   * ``PyCFunction_GET_FLAGS()``
   * ``PyCFunction_GET_FUNCTION()``
   * ``PyCFunction_GET_SELF()``
+  * ``PyCell_GET()``
+  * ``PyCode_GetNumFree()``
+  * ``PyDescr_NAME()``
+  * ``PyDescr_TYPE()``
   * ``PyDict_GET_SIZE()``
   * ``PyFunction_GET_ANNOTATIONS()``
   * ``PyFunction_GET_CLOSURE()``
@@ -131,13 +135,60 @@ Disallow using the following macros as l-value:
   * ``PyMethod_GET_SELF()``
   * ``PySet_GET_SIZE()``
   * ``PyTuple_GET_SIZE()``
+  * ``PyUnicode_GET_DATA_SIZE()``
+  * ``PyUnicode_GET_LENGTH()``
+  * ``PyUnicode_GET_LENGTH()``
+  * ``PyUnicode_GET_SIZE()``
   * ``PyWeakref_GET_OBJECT()``
 
-* "AS" functions:
+* "AS" macros:
 
   * ``PyByteArray_AS_STRING()``
   * ``PyBytes_AS_STRING()``
   * ``PyFloat_AS_DOUBLE()``
+  * ``PyUnicode_AS_DATA()``
+  * ``PyUnicode_AS_UNICODE()``
+
+* PyUnicode macros:
+
+  * ``PyUnicode_1BYTE_DATA()``
+  * ``PyUnicode_2BYTE_DATA()``
+  * ``PyUnicode_4BYTE_DATA()``
+  * ``PyUnicode_DATA()``
+  * ``PyUnicode_IS_ASCII()``
+  * ``PyUnicode_IS_COMPACT()``
+  * ``PyUnicode_IS_READY()``
+  * ``PyUnicode_KIND()``
+  * ``PyUnicode_READ()``
+  * ``PyUnicode_READ_CHAR()``
+
+* PyDateTime "GET" macros:
+
+  * ``PyDateTime_DATE_GET_FOLD()``
+  * ``PyDateTime_DATE_GET_HOUR()``
+  * ``PyDateTime_DATE_GET_MICROSECOND()``
+  * ``PyDateTime_DATE_GET_MINUTE()``
+  * ``PyDateTime_DATE_GET_SECOND()``
+  * ``PyDateTime_DATE_GET_TZINFO()``
+  * ``PyDateTime_DELTA_GET_DAYS()``
+  * ``PyDateTime_DELTA_GET_MICROSECONDS()``
+  * ``PyDateTime_DELTA_GET_SECONDS()``
+  * ``PyDateTime_GET_DAY()``
+  * ``PyDateTime_GET_MONTH()``
+  * ``PyDateTime_GET_YEAR()``
+  * ``PyDateTime_TIME_GET_FOLD()``
+  * ``PyDateTime_TIME_GET_HOUR()``
+  * ``PyDateTime_TIME_GET_MICROSECOND()``
+  * ``PyDateTime_TIME_GET_MINUTE()``
+  * ``PyDateTime_TIME_GET_SECOND()``
+  * ``PyDateTime_TIME_GET_TZINFO()``
+
+The ``PyTuple_GET_ITEM()`` and ``PyList_GET_ITEM()`` macros are left
+unchanged since it remains common to use ``&PyTuple_GET_ITEM(tuple, 0)``
+and ``&PyList_GET_ITEM(list, 0)`` to get access to the inner
+``PyObject**`` array. Changing these macros would require to add a new
+API to get access to the inner array which is out of the scope of this
+PEP.
 
 The ``Py_REFCNT()`` macro was already modified in Python 3.10 to
 disallow using it as a l-value: ``Py_SET_REFCNT()`` must be used
@@ -207,6 +258,25 @@ Moreover, still allow to use macros as l-value doesn't solve issues of
 the nogil, PyPy and HPy projects.
 
 
+Macros already modified
+=======================
+
+The following C API macros have already been modified to disallow using
+them as l-value:
+
+* ``PyCell_SET()``
+* ``PyList_SET_ITEM()``
+* ``PyTuple_SET_ITEM()``
+* ``Py_REFCNT()``
+* ``_PyGCHead_SET_FINALIZED()``
+* ``_PyGCHead_SET_NEXT()``
+* ``asdl_seq_GET()``
+* ``asdl_seq_GET_UNTYPED()``
+* ``asdl_seq_LEN()``
+* ``asdl_seq_SET()``
+* ``asdl_seq_SET_UNTYPED()``
+
+
 References
 ==========
 
@@ -221,6 +291,9 @@ References
   (September 2021)
 * `[C API] Avoid accessing PyObject and PyVarObject members directly: add Py_SET_TYPE() and Py_IS_TYPE(), disallow Py_TYPE(obj)=type
   <https://bugs.python.org/issue39573>`__ (February 2020)
+* `bpo-30459: PyList_SET_ITEM  could be safer
+  <https://bugs.python.org/issue30459>`_ (May 2017)
+
 
 Copyright
 =========
