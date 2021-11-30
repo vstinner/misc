@@ -17,8 +17,8 @@ Incompatible C API change disallowing using macros as l-value to allow
 evolving CPython internals and to ease the C API implementation on other
 Python implementation.
 
-In practice, projects impacted by these incompatible changes should only
-have to make two changes:
+In practice, the majority of projects impacted by these incompatible
+changes should only have to make two changes:
 
 * Replace ``Py_TYPE(obj) = new_type;``
   with ``Py_SET_TYPE(obj, new_type);``.
