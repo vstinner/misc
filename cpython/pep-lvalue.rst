@@ -243,6 +243,10 @@ For example, Cython uses the following code which remains valid::
 
     PyByteArray_AS_STRING(string)[i] = (char) v;
 
+This change does not follow the PEP 387 deprecation process. There is no
+known way to emit a deprecation warning when a macro is used as a
+l-value, but not when it's used differently (ex: r-value).
+
 
 Rejected Idea: Leave the macros as they are
 ===========================================
