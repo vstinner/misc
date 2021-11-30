@@ -108,6 +108,11 @@ PyObject macros
 * ``Py_TYPE()``: ``Py_SET_TYPE()`` must be used instead
 * ``Py_SIZE()``: ``Py_SET_SIZE()`` must be used instead
 
+The ``Py_SET_TYPE()`` function must only be used to define statically a
+type. At runtime, setting an object type must be done by setting its
+``__class__`` attribute. Moreover, defining types as heap types is now
+recommended.
+
 "GET" macros
 ------------
 
