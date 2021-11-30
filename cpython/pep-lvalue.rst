@@ -1,11 +1,13 @@
-PEP: xxx
-Title: Disallow using macros as l-value
-Author: Victor Stinner <vstinner@python.org>
-Status: Draft
-Type: Standards Track
-Content-Type: text/x-rst
-Created: 30-Oct-2021
-Python-Version: 3.11
+::
+
+    PEP: xxx
+    Title: Disallow using macros as l-value
+    Author: Victor Stinner <vstinner@python.org>
+    Status: Draft
+    Type: Standards Track
+    Content-Type: text/x-rst
+    Created: 30-Oct-2021
+    Python-Version: 3.11
 
 
 Abstract
