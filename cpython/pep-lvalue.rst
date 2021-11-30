@@ -32,10 +32,11 @@ Rationale
 Using a macro as a l-value
 --------------------------
 
-In the Python C API, some functions are technically implemented as macro
-because writing a macro is simpler than writing a regular function. If a
-macro exposes directly a struture member, it is technically possible to
-use this macro to not only read the structur member but also modify it.
+In the Python C API, some functions are implemented as macro because
+writing a macro is simpler than writing a regular function. If a macro
+exposes directly a struture member, it is technically possible to use
+this macro to not only get the structure member but also set it.
+
 Example with the Python 3.10 ``Py_TYPE()`` macro::
 
     #define Py_TYPE(ob) (((PyObject *)(ob))->ob_type)
@@ -44,7 +45,7 @@ This macro can be used as a **r-value** to **get** an object type::
 
     type = Py_TYPE(object);
 
-But it can also be used as **l-value** to **set** an object type::
+It can also be used as **l-value** to **set** an object type::
 
     Py_TYPE(object) = new_type;
 
@@ -58,18 +59,18 @@ implementations can make their C API implementation less efficient.
 CPython nogil fork
 ------------------
 
-Sam Gross forked Python 3.8 to remove the GIL: `nogil
+Sam Gross forked Python 3.8 to remove the GIL: the `nogil branch
 <https://github.com/colesbury/nogil/>`_. This fork has no
 ``PyObject.ob_refcnt`` member, but a more elaborated implementation for
-reference counting, and so the ``Py_REFCNT(obj) = new_refcnt;`` code is
-invalid.
+reference counting, and so the ``Py_REFCNT(obj) = new_refcnt;`` code
+fails with a compiler error.
 
-Mering the nogil fork into the upstream CPython main branch requires
+Merging the nogil fork into the upstream CPython main branch requires
 first to fix this C API compatibility issue. It is a concrete example of
 a Python optimization blocked indirectly by the C API.
 
-Hopefully, the ``Py_REFCNT()`` macro was already modified in Python 3.10
-to disallow using it as a l-value.
+This issue was already fixed in Python 3.10: the ``Py_REFCNT()`` macro
+has been already modified to disallow using it as a l-value.
 
 HPy project
 -----------
@@ -79,7 +80,7 @@ Python using only handles and function calls: handles are opaque,
 structure members cannot be accessed directly,and pointers cannot be
 dereferenced.
 
-Disallowing the usage of macros as l-value helps the migratation of
+Disallowing the usage of macros as l-value helps the migration of
 existing C extensions to HPy by reducing differences between the C API
 and the HPy API.
 
@@ -101,98 +102,105 @@ Specification
 
 Disallow using the following macros as l-value:
 
-* PyObject macros:
+PyObject macros
+---------------
 
-  * ``Py_TYPE()``: ``Py_SET_TYPE()`` must be used instead
-  * ``Py_SIZE()``: ``Py_SET_SIZE()`` must be used instead
+* ``Py_TYPE()``: ``Py_SET_TYPE()`` must be used instead
+* ``Py_SIZE()``: ``Py_SET_SIZE()`` must be used instead
 
-* "GET" macros:
+"GET" macros
+------------
 
-  * ``PyByteArray_GET_SIZE()``
-  * ``PyBytes_GET_SIZE()``
-  * ``PyCFunction_GET_CLASS()``
-  * ``PyCFunction_GET_FLAGS()``
-  * ``PyCFunction_GET_FUNCTION()``
-  * ``PyCFunction_GET_SELF()``
-  * ``PyCell_GET()``
-  * ``PyCode_GetNumFree()``
-  * ``PyDescr_NAME()``
-  * ``PyDescr_TYPE()``
-  * ``PyDict_GET_SIZE()``
-  * ``PyFunction_GET_ANNOTATIONS()``
-  * ``PyFunction_GET_CLOSURE()``
-  * ``PyFunction_GET_CODE()``
-  * ``PyFunction_GET_DEFAULTS()``
-  * ``PyFunction_GET_GLOBALS()``
-  * ``PyFunction_GET_KW_DEFAULTS()``
-  * ``PyFunction_GET_MODULE()``
-  * ``PyHeapType_GET_MEMBERS()``
-  * ``PyInstanceMethod_GET_FUNCTION()``
-  * ``PyList_GET_SIZE()``
-  * ``PyMemoryView_GET_BASE()``
-  * ``PyMemoryView_GET_BUFFER()``
-  * ``PyMethod_GET_FUNCTION()``
-  * ``PyMethod_GET_SELF()``
-  * ``PySet_GET_SIZE()``
-  * ``PyTuple_GET_SIZE()``
-  * ``PyUnicode_GET_DATA_SIZE()``
-  * ``PyUnicode_GET_LENGTH()``
-  * ``PyUnicode_GET_LENGTH()``
-  * ``PyUnicode_GET_SIZE()``
-  * ``PyWeakref_GET_OBJECT()``
+* ``PyByteArray_GET_SIZE()``
+* ``PyBytes_GET_SIZE()``
+* ``PyCFunction_GET_CLASS()``
+* ``PyCFunction_GET_FLAGS()``
+* ``PyCFunction_GET_FUNCTION()``
+* ``PyCFunction_GET_SELF()``
+* ``PyCell_GET()``
+* ``PyCode_GetNumFree()``
+* ``PyDescr_NAME()``
+* ``PyDescr_TYPE()``
+* ``PyDict_GET_SIZE()``
+* ``PyFunction_GET_ANNOTATIONS()``
+* ``PyFunction_GET_CLOSURE()``
+* ``PyFunction_GET_CODE()``
+* ``PyFunction_GET_DEFAULTS()``
+* ``PyFunction_GET_GLOBALS()``
+* ``PyFunction_GET_KW_DEFAULTS()``
+* ``PyFunction_GET_MODULE()``
+* ``PyHeapType_GET_MEMBERS()``
+* ``PyInstanceMethod_GET_FUNCTION()``
+* ``PyList_GET_SIZE()``
+* ``PyMemoryView_GET_BASE()``
+* ``PyMemoryView_GET_BUFFER()``
+* ``PyMethod_GET_FUNCTION()``
+* ``PyMethod_GET_SELF()``
+* ``PySet_GET_SIZE()``
+* ``PyTuple_GET_SIZE()``
+* ``PyUnicode_GET_DATA_SIZE()``
+* ``PyUnicode_GET_LENGTH()``
+* ``PyUnicode_GET_LENGTH()``
+* ``PyUnicode_GET_SIZE()``
+* ``PyWeakref_GET_OBJECT()``
 
-* "AS" macros:
+"AS" macros
+-----------
 
-  * ``PyByteArray_AS_STRING()``
-  * ``PyBytes_AS_STRING()``
-  * ``PyFloat_AS_DOUBLE()``
-  * ``PyUnicode_AS_DATA()``
-  * ``PyUnicode_AS_UNICODE()``
+* ``PyByteArray_AS_STRING()``
+* ``PyBytes_AS_STRING()``
+* ``PyFloat_AS_DOUBLE()``
+* ``PyUnicode_AS_DATA()``
+* ``PyUnicode_AS_UNICODE()``
 
-* PyUnicode macros:
+PyUnicode macros
+----------------
 
-  * ``PyUnicode_1BYTE_DATA()``
-  * ``PyUnicode_2BYTE_DATA()``
-  * ``PyUnicode_4BYTE_DATA()``
-  * ``PyUnicode_DATA()``
-  * ``PyUnicode_IS_ASCII()``
-  * ``PyUnicode_IS_COMPACT()``
-  * ``PyUnicode_IS_READY()``
-  * ``PyUnicode_KIND()``
-  * ``PyUnicode_READ()``
-  * ``PyUnicode_READ_CHAR()``
+* ``PyUnicode_1BYTE_DATA()``
+* ``PyUnicode_2BYTE_DATA()``
+* ``PyUnicode_4BYTE_DATA()``
+* ``PyUnicode_DATA()``
+* ``PyUnicode_IS_ASCII()``
+* ``PyUnicode_IS_COMPACT()``
+* ``PyUnicode_IS_READY()``
+* ``PyUnicode_KIND()``
+* ``PyUnicode_READ()``
+* ``PyUnicode_READ_CHAR()``
 
-* PyDateTime "GET" macros:
+PyDateTime "GET" macros
+-----------------------
 
-  * ``PyDateTime_DATE_GET_FOLD()``
-  * ``PyDateTime_DATE_GET_HOUR()``
-  * ``PyDateTime_DATE_GET_MICROSECOND()``
-  * ``PyDateTime_DATE_GET_MINUTE()``
-  * ``PyDateTime_DATE_GET_SECOND()``
-  * ``PyDateTime_DATE_GET_TZINFO()``
-  * ``PyDateTime_DELTA_GET_DAYS()``
-  * ``PyDateTime_DELTA_GET_MICROSECONDS()``
-  * ``PyDateTime_DELTA_GET_SECONDS()``
-  * ``PyDateTime_GET_DAY()``
-  * ``PyDateTime_GET_MONTH()``
-  * ``PyDateTime_GET_YEAR()``
-  * ``PyDateTime_TIME_GET_FOLD()``
-  * ``PyDateTime_TIME_GET_HOUR()``
-  * ``PyDateTime_TIME_GET_MICROSECOND()``
-  * ``PyDateTime_TIME_GET_MINUTE()``
-  * ``PyDateTime_TIME_GET_SECOND()``
-  * ``PyDateTime_TIME_GET_TZINFO()``
+* ``PyDateTime_DATE_GET_FOLD()``
+* ``PyDateTime_DATE_GET_HOUR()``
+* ``PyDateTime_DATE_GET_MICROSECOND()``
+* ``PyDateTime_DATE_GET_MINUTE()``
+* ``PyDateTime_DATE_GET_SECOND()``
+* ``PyDateTime_DATE_GET_TZINFO()``
+* ``PyDateTime_DELTA_GET_DAYS()``
+* ``PyDateTime_DELTA_GET_MICROSECONDS()``
+* ``PyDateTime_DELTA_GET_SECONDS()``
+* ``PyDateTime_GET_DAY()``
+* ``PyDateTime_GET_MONTH()``
+* ``PyDateTime_GET_YEAR()``
+* ``PyDateTime_TIME_GET_FOLD()``
+* ``PyDateTime_TIME_GET_HOUR()``
+* ``PyDateTime_TIME_GET_MICROSECOND()``
+* ``PyDateTime_TIME_GET_MINUTE()``
+* ``PyDateTime_TIME_GET_SECOND()``
+* ``PyDateTime_TIME_GET_TZINFO()``
+
+PyTuple_GET_ITEM() and PyList_GET_ITEM()
+----------------------------------------
 
 The ``PyTuple_GET_ITEM()`` and ``PyList_GET_ITEM()`` macros are left
-unchanged since it remains common to use ``&PyTuple_GET_ITEM(tuple, 0)``
-and ``&PyList_GET_ITEM(list, 0)`` to get access to the inner
-``PyObject**`` array. Changing these macros would require to add a new
-API to get access to the inner array which is out of the scope of this
-PEP.
+unchanged.
 
-The ``Py_REFCNT()`` macro was already modified in Python 3.10 to
-disallow using it as a l-value: ``Py_SET_REFCNT()`` must be used
-instead.
+The code pattern ``&PyTuple_GET_ITEM(tuple, 0)`` and
+``&PyList_GET_ITEM(list, 0)`` is still commonly used to get access to
+the inner ``PyObject**`` array.
+
+Changing these macros would require to add a new API to get access to
+the inner array which is out of the scope of this PEP.
 
 
 Backwards Compatibility
@@ -201,16 +209,16 @@ Backwards Compatibility
 The proposed C API changes are backward incompatible on purpose.  In
 practice, only a minority of third party projects are affected (16
 projects are known to be broken) and `most of them have already been
-prepared for these changes
+updated for these changes
 <https://bugs.python.org/issue39573#msg401378>`__ (12 on 16).
 
 Most projects are broken by ``Py_TYPE()`` and ``Py_SIZE()`` changes.
 These two macros have been converted to static inline macro in Python
-3.10 alpha versions, but the change has been reverted since it broke too
-many projects. In the meanwhile, many projects, like Cython, have been
-prepared for this change by using ``Py_SET_TYPE()`` and
+3.10 alpha versions, but the change had to be reverted since it broke
+too many projects. In the meanwhile, many projects, like Cython, have
+been prepared for this change by using ``Py_SET_TYPE()`` and
 ``Py_SET_SIZE()``. For example, projects using Cython only have to
-regenerate their outdated C code to become compatible.
+regenerate their outdated generated C code to become compatible.
 
 The `pythoncapi_compat project
 <https://github.com/pythoncapi/pythoncapi_compat>`_ can be used to get
@@ -226,36 +234,37 @@ PyPI top 5000 projects.
 The ``PyBytes_AS_STRING()`` and ``PyByteArray_AS_STRING()`` are used as
 l-value but only to modify string characters, not to override the
 ``PyBytesObject.ob_sval`` or ``PyByteArrayObject.ob_start`` member.
-For example, Cython uses the following code::
+For example, Cython uses the following code which remains valid::
 
     PyByteArray_AS_STRING(string)[i] = (char) v;
 
-This code remains valid.
 
-
-Rejected Idea: Leave the code as it is
-======================================
+Rejected Idea: Leave the macros as they are
+===========================================
 
 The documentation of each function can discourage developers to use
-macros to modify a Python object. If these is a need to make an
-assignment, a setter can be added and the documentation can require to
-use it. For example, a Py_SET_TYPE() function has been added to Python
-3.9 and the Py_TYPE() documentation requires to use Py_SET_TYPE() to set
-an object type.
+macros to modify Python objects.
+
+If these is a need to make an assignment, a setter function can be added
+and the macro documentation can require to use the setter function. For
+example, a ``Py_SET_TYPE()`` function has been added to Python 3.9 and
+the ``Py_TYPE()`` documentation now requires to use the
+``Py_SET_TYPE()`` function to set an object type.
 
 If developers use macros as l-value, it's their responsibility when
-their code breaks, not Python responsibility. We are operating under the
-consenting adults principle: we expect users of the Python C API to use
-it as documented and expect them to take care of the fallout, if things
-break when they don't.
+their code breaks, not the Python responsibility. We are operating under
+the consenting adults principle: we expect users of the Python C API to
+use it as documented and expect them to take care of the fallout, if
+things break when they don't.
 
 This idea was rejected because only few developers read the
-documentation, and even fewer are tracking changes of the Python C API
-documentation. The majority of developers are using CPython and so are
-not aware of compatibility issues with other Python implementations.
+documentation, and only a minority is tracking changes of the Python C
+API documentation. The majority of developers are only using CPython and
+so are not aware of compatibility issues with other Python
+implementations.
 
-Moreover, still allow to use macros as l-value doesn't solve issues of
-the nogil, PyPy and HPy projects.
+Moreover, continuing to allow using macros as l-values does not solve
+issues of the nogil, PyPy and HPy projects.
 
 
 Macros already modified
@@ -267,7 +276,7 @@ them as l-value:
 * ``PyCell_SET()``
 * ``PyList_SET_ITEM()``
 * ``PyTuple_SET_ITEM()``
-* ``Py_REFCNT()``
+* ``Py_REFCNT()`` (Python 3.10): ``Py_SET_REFCNT()`` must be used
 * ``_PyGCHead_SET_FINALIZED()``
 * ``_PyGCHead_SET_NEXT()``
 * ``asdl_seq_GET()``
@@ -275,6 +284,9 @@ them as l-value:
 * ``asdl_seq_LEN()``
 * ``asdl_seq_SET()``
 * ``asdl_seq_SET_UNTYPED()``
+
+For example, ``PyList_SET_ITEM(list, 0, item) < 0`` now fails with a
+compiler error as expected.
 
 
 References
