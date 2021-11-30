@@ -148,8 +148,10 @@ Backwards Compatibility
 =======================
 
 The proposed C API changes are backward incompatible on purpose.  In
-practice, only a minority of third party projects are affected and most
-of them have already been prepared for these changes.
+practice, only a minority of third party projects are affected (16
+projects are known to be broken) and `most of them have already been
+prepared for these changes
+<https://bugs.python.org/issue39573#msg401378>`__ (12 on 16).
 
 Most projects are broken by ``Py_TYPE()`` and ``Py_SIZE()`` changes.
 These two macros have been converted to static inline macro in Python
@@ -158,6 +160,11 @@ many projects. In the meanwhile, many projects, like Cython, have been
 prepared for this change by using ``Py_SET_TYPE()`` and
 ``Py_SET_SIZE()``. For example, projects using Cython only have to
 regenerate their outdated C code to become compatible.
+
+The `pythoncapi_compat project
+<https://github.com/pythoncapi/pythoncapi_compat>`_ can be used to get
+Python 3.9 ``Py_SET_REFCNT()``, ``Py_SET_TYPE()`` and ``Py_SET_SIZE()``
+functions on Python 3.8 and older.
 
 For the "GET" functions like ``PyDict_GET_SIZE()``, no project in the PyPI
 top 5000 projects use these functions as l-value.
@@ -203,8 +210,17 @@ the nogil, PyPy and HPy projects.
 References
 ==========
 
+* `Python C API: Add functions to access PyObject
+  <https://vstinner.github.io/c-api-abstract-pyobject.html>`_ (October
+  2021) article by Victor Stinner
 * `[C API] Disallow using PyFloat_AS_DOUBLE() as l-value
   <https://bugs.python.org/issue45476>`_
+  (October 2021)
+* `[capi-sig] Py_TYPE() and Py_SIZE() become static inline functions
+  <https://mail.python.org/archives/list/capi-sig@python.org/thread/WGRLTHTHC32DQTACPPX36TPR2GLJAFRB/>`_
+  (September 2021)
+* `[C API] Avoid accessing PyObject and PyVarObject members directly: add Py_SET_TYPE() and Py_IS_TYPE(), disallow Py_TYPE(obj)=type
+  <https://bugs.python.org/issue39573>`__ (February 2020)
 
 Copyright
 =========
