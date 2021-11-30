@@ -102,8 +102,8 @@ Specification
 
 Disallow using the following macros as l-value:
 
-PyObject macros
----------------
+PyObject and PyVarObject macros
+-------------------------------
 
 * ``Py_TYPE()``: ``Py_SET_TYPE()`` must be used instead
 * ``Py_SIZE()``: ``Py_SET_SIZE()`` must be used instead
