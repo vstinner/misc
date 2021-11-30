@@ -100,10 +100,11 @@ PyPy already supports HPy which is a better solution in the long term.
 Specification
 =============
 
-Disallow using the following macros as l-value:
+Disallow using the macros as l-value
+------------------------------------
 
 PyObject and PyVarObject macros
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * ``Py_TYPE()``: ``Py_SET_TYPE()`` must be used instead
 * ``Py_SIZE()``: ``Py_SET_SIZE()`` must be used instead
@@ -114,7 +115,7 @@ type. At runtime, setting an object type must be done by setting its
 recommended.
 
 "GET" macros
-------------
+^^^^^^^^^^^^
 
 * ``PyByteArray_GET_SIZE()``
 * ``PyBytes_GET_SIZE()``
@@ -150,7 +151,7 @@ recommended.
 * ``PyWeakref_GET_OBJECT()``
 
 "AS" macros
------------
+^^^^^^^^^^^
 
 * ``PyByteArray_AS_STRING()``
 * ``PyBytes_AS_STRING()``
@@ -159,7 +160,7 @@ recommended.
 * ``PyUnicode_AS_UNICODE()``
 
 PyUnicode macros
-----------------
+^^^^^^^^^^^^^^^^
 
 * ``PyUnicode_1BYTE_DATA()``
 * ``PyUnicode_2BYTE_DATA()``
@@ -173,7 +174,7 @@ PyUnicode macros
 * ``PyUnicode_READ_CHAR()``
 
 PyDateTime "GET" macros
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 * ``PyDateTime_DATE_GET_FOLD()``
 * ``PyDateTime_DATE_GET_HOUR()``
@@ -193,6 +194,24 @@ PyDateTime "GET" macros
 * ``PyDateTime_TIME_GET_MINUTE()``
 * ``PyDateTime_TIME_GET_SECOND()``
 * ``PyDateTime_TIME_GET_TZINFO()``
+
+Port C extensions to Python 3.11
+--------------------------------
+
+In practice, the majority of projects impacted by these PEP incompatible
+changes should only have to make two changes:
+
+* Replace ``Py_TYPE(obj) = new_type;``
+  with ``Py_SET_TYPE(obj, new_type);``.
+* Replace ``Py_SIZE(obj) = new_size;``
+  with ``Py_SET_SIZE(obj, new_size);``.
+
+The `pythoncapi_compat project
+<https://github.com/pythoncapi/pythoncapi_compat>`_ can be used to get
+Python 3.9 ``Py_SET_REFCNT()``, ``Py_SET_TYPE()`` and ``Py_SET_SIZE()``
+functions on Python 3.8 and older. Moreover, this project provides a
+script to update automatically C extensions: add Python 3.11 support
+without losing support with older Python versions.
 
 PyTuple_GET_ITEM() and PyList_GET_ITEM()
 ----------------------------------------
@@ -224,11 +243,6 @@ too many projects. In the meanwhile, many projects, like Cython, have
 been prepared for this change by using ``Py_SET_TYPE()`` and
 ``Py_SET_SIZE()``. For example, projects using Cython only have to
 regenerate their outdated generated C code to become compatible.
-
-The `pythoncapi_compat project
-<https://github.com/pythoncapi/pythoncapi_compat>`_ can be used to get
-Python 3.9 ``Py_SET_REFCNT()``, ``Py_SET_TYPE()`` and ``Py_SET_SIZE()``
-functions on Python 3.8 and older.
 
 For the "GET" functions like ``PyDict_GET_SIZE()``, no project in the PyPI
 top 5000 projects use these functions as l-value.
