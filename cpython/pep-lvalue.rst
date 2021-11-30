@@ -225,7 +225,7 @@ PyPI top 5000 projects.
 
 The ``PyBytes_AS_STRING()`` and ``PyByteArray_AS_STRING()`` are used as
 l-value but only to modify string characters, not to override the
-``PyBytesObject.ob_sval`` or ``PyByteArrayObject.ob_start `` member.
+``PyBytesObject.ob_sval`` or ``PyByteArrayObject.ob_start`` member.
 For example, Cython uses the following code::
 
     PyByteArray_AS_STRING(string)[i] = (char) v;
