@@ -6,7 +6,7 @@ import tarfile
 import zipfile
 
 
-pypi_dir = "PYPI-TOP-5000"
+pypi_dir = "PYPI-2021-12-01-TOP-5000"
 IGNORED_FILE_EXTENSIONS = (".so,")
 
 
