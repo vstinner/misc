@@ -39,6 +39,9 @@ IGNORED_FILE_EXTENSIONS = (
     # Misc
     "BIN", "PDF", "MO", "DB", "ISO", "JAR", "TTF", "XLS",
     "DS_Store",
+    # Text which is not Python nor C code but can contain false positive,
+    # and is unlikely to be used as template to generate Python or C code
+    "JS", "JSON", "RST", "HTML",
 )
 IGNORED_FILE_EXTENSIONS = tuple("." + ext.lower()
                                 for ext in IGNORED_FILE_EXTENSIONS)
@@ -193,9 +196,10 @@ def _main():
                         format="# %(message)s")
 
     start_time = datetime.datetime.now()
-    output = None
     if output_filename:
         output = open(output_filename, "w", encoding="utf8")
+    else:
+        output = None
     try:
         lines = 0
         projects = set()
