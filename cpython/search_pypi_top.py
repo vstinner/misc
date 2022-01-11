@@ -154,9 +154,11 @@ def grep(args, archive_filename, regex):
 
 def search_dir(args, pypi_dir, pattern):
     regex = re.compile(pattern)
-    for filename in os.listdir(pypi_dir):
+    filenames = os.listdir(pypi_dir)
+    for index, filename in enumerate(filenames, 1):
         filename = os.path.join(pypi_dir, filename)
-        logging.warning(f"grep {filename}")
+        percent = index * 100 / len(filenames)
+        logging.warning(f"grep {filename} ({percent:.0f}%, {index}/{len(filenames)})")
         for name, line in grep(args, filename, regex):
             line = line.decode('utf8', 'replace').strip()
             yield (filename, name, line)
