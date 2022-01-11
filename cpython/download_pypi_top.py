@@ -67,7 +67,7 @@ def download_sdist(dst_dir, index, proj, nproject):
 def main():
     start_time = time.monotonic()
 
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 2 or sys.argv[1] in ['-h', '--help']:
         print("Usage: %s directory [count]" % sys.argv[0])
         sys.exit(1)
     dst_dir = sys.argv[1]
