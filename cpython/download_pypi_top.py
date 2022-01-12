@@ -17,6 +17,7 @@
 # Try:
 # https://hugovk.github.io/top-pypi-packages/top-pypi-packages-30-days.min.json
 
+import argparse
 import requests
 import traceback
 import json
@@ -64,31 +65,34 @@ def download_sdist(dst_dir, index, proj, nproject):
     with open(filename, "wb") as f:
         f.write(content)
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Download the source code of PyPI top projects.')
+    parser.add_argument('pypi_dir', metavar="PYPI_DIRECTORY",
+                        help='PyPI local directory')
+    parser.add_argument('count', metavar='COUNT', type=int, nargs='?',
+                        help='Only download the top N projects')
+
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
     start_time = time.monotonic()
 
-    if len(sys.argv) < 2 or sys.argv[1] in ['-h', '--help']:
-        print("Usage: %s directory [count]" % sys.argv[0])
-        sys.exit(1)
-    dst_dir = sys.argv[1]
-    if len(sys.argv) >= 3:
-        count = int(sys.argv[2])
-    else:
-        count = None
     try:
-        os.mkdir(dst_dir)
+        os.mkdir(args.pypi_dir)
     except FileExistsError:
         pass
 
     projs = projects()
-    if count:
-        projs = projs[:count]
+    if args.count:
+        projs = projs[:args.count]
     nproject = len(projs)
     print(f"Project#: {nproject}")
 
     for index, proj in enumerate(projs):
         try:
-            download_sdist(dst_dir, index, proj, nproject)
+            download_sdist(args.pypi_dir, index, proj, nproject)
         except Exception:
             traceback.print_exc()
             print(f"Failed to download {proj}")
