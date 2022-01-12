@@ -17,6 +17,7 @@
 # Try:
 # https://hugovk.github.io/top-pypi-packages/top-pypi-packages-30-days.min.json
 
+import argparse
 import requests
 import traceback
 import json
@@ -64,17 +65,22 @@ def download_sdist(dst_dir, index, proj, nproject):
     with open(filename, "wb") as f:
         f.write(content)
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Download the source code of PyPI top projects.')
+    parser.add_argument('dst_dir', metavar="DIRECTORY",
+                        help='Destination directory')
+    parser.add_argument('count', metavar='COUNT', type=int, nargs='?',
+                        help='Only download the top COUNT projects')
+
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
+    dst_dir = args.dst_dir
+    count = args.count
     start_time = time.monotonic()
 
-    if len(sys.argv) < 2:
-        print("Usage: %s directory [count]" % sys.argv[0])
-        sys.exit(1)
-    dst_dir = sys.argv[1]
-    if len(sys.argv) >= 3:
-        count = int(sys.argv[2])
-    else:
-        count = None
     try:
         os.mkdir(dst_dir)
     except FileExistsError:
