@@ -67,8 +67,8 @@ def download_sdist(dst_dir, index, proj, nproject):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Download the source code of PyPI top projects.')
-    parser.add_argument('pypi_dir', metavar="PYPI_DIRECTORY",
-                        help='PyPI local directory')
+    parser.add_argument('dst_dir', metavar="DIRECTORY",
+                        help='Destination directory')
     parser.add_argument('count', metavar='COUNT', type=int, nargs='?',
                         help='Only download the top COUNT projects')
 
@@ -77,22 +77,24 @@ def parse_args():
 
 def main():
     args = parse_args()
+    dst_dir = args.dst_dir
+    count = args.count
     start_time = time.monotonic()
 
     try:
-        os.mkdir(args.pypi_dir)
+        os.mkdir(dst_dir)
     except FileExistsError:
         pass
 
     projs = projects()
-    if args.count:
-        projs = projs[:args.count]
+    if count:
+        projs = projs[:count]
     nproject = len(projs)
     print(f"Project#: {nproject}")
 
     for index, proj in enumerate(projs):
         try:
-            download_sdist(args.pypi_dir, index, proj, nproject)
+            download_sdist(dst_dir, index, proj, nproject)
         except Exception:
             traceback.print_exc()
             print(f"Failed to download {proj}")
