@@ -70,7 +70,7 @@ def parse_args():
     parser.add_argument('pypi_dir', metavar="PYPI_DIRECTORY",
                         help='PyPI local directory')
     parser.add_argument('count', metavar='COUNT', type=int, nargs='?',
-                        help='Only download the top N projects')
+                        help='Only download the top COUNT projects')
 
     return parser.parse_args()
 
