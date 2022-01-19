@@ -27,9 +27,6 @@ case "$project" in
         project=pyperf
         organization=psf
         ;;
-    peps)
-        ref_branch=master
-        ;;
 esac
 
 echo "branches: $local_branch -> $ref_branch"
