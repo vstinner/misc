@@ -110,7 +110,7 @@ XXX sys.stdlib_module_names XXX
 Unix shebang
 ------------
 
-Long options cannot be used.
+Multiple long options cannot be used.
 
 Perl 5.26
 ---------
