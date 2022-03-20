@@ -22,8 +22,10 @@ import requests
 import traceback
 import json
 import os
-import sys
 import time
+
+from termcolor import cprint
+
 
 session = requests.Session()
 
@@ -31,11 +33,12 @@ JSON_URL = 'https://hugovk.github.io/top-pypi-packages/top-pypi-packages-30-days
 
 
 def projects():
-    print("Download JSON from: %s" % JSON_URL)
+    cprint(f"Download JSON from: {JSON_URL}", "green")
     resp = session.get(JSON_URL)
     resp.raise_for_status()
     top = json.loads(resp.content)
     return [p["project"] for p in top["rows"]]
+
 
 def find_url(proj):
     resp = session.get(f"https://pypi.org/pypi/{proj}/json")
@@ -46,24 +49,26 @@ def find_url(proj):
             return entry["url"]
     return None
 
+
 def download_sdist(dst_dir, index, proj, nproject):
     url = find_url(proj)
     if not url:
         # Universal wheel only, maybe.
-        print(f"Cannot find URL for project: {proj}")
+        cprint(f"Cannot find URL for project: {proj}", "red")
         return
     filename = url[url.rfind('/')+1:]
     filename = os.path.join(dst_dir, filename)
     if os.path.exists(filename):
-        print(f"Exists: {filename}")
+        cprint(f"Exists: {filename}", "yellow")
         return
     resp = session.get(url)
     resp.raise_for_status()
     content = resp.content
-    print(f"[{index}/{nproject}] "
-          f"Saving to {filename} ({len(content) / 1024.:.1f} kB)")
+    cprint(f"[{index}/{nproject}] "
+           f"Saving to {filename} ({len(content) / 1024.:.1f} kB)", "green")
     with open(filename, "wb") as f:
         f.write(content)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Download the source code of PyPI top projects.')
@@ -97,10 +102,11 @@ def main():
             download_sdist(dst_dir, index, proj, nproject)
         except Exception:
             traceback.print_exc()
-            print(f"Failed to download {proj}")
+            cprint(f"Failed to download {proj}", "red")
 
     dt = time.monotonic() - start_time
-    print(f"Downloaded {nproject} projects in {dt:.1f} seconds")
+    cprint(f"Downloaded {nproject} projects in {dt:.1f} seconds", "green")
+
 
 if __name__ == "__main__":
     main()
