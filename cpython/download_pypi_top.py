@@ -22,9 +22,17 @@ import requests
 import traceback
 import json
 import os
+import sys
 import time
 
-from termcolor import cprint
+
+try:
+    from termcolor import cprint
+except ImportError:
+    print("termcolor is missing, install it with: python -m pip install --user termcolor", file=sys.stderr)
+
+    def cprint(msg, *ignored):
+        print(msg)
 
 
 session = requests.Session()
