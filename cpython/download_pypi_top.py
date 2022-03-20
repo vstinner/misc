@@ -92,7 +92,7 @@ def main():
     nproject = len(projs)
     print(f"Project#: {nproject}")
 
-    for index, proj in enumerate(projs):
+    for index, proj in enumerate(projs, start=1):
         try:
             download_sdist(dst_dir, index, proj, nproject)
         except Exception:
