@@ -29,7 +29,8 @@ import time
 try:
     from termcolor import cprint
 except ImportError:
-    print("termcolor is missing, install it with: python -m pip install --user termcolor", file=sys.stderr)
+    print("Warning: termcolor is missing, install it with: python -m pip install --user termcolor", file=sys.stderr)
+    print(file=sys.stderr)
 
     def cprint(msg, *ignored):
         print(msg)
