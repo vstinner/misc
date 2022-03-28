@@ -41,7 +41,7 @@ IGNORED_FILE_EXTENSIONS = (
     "DS_Store",
     # Text which is not Python nor C code but can contain false positive,
     # and is unlikely to be used as template to generate Python or C code
-    "JS", "JSON", "RST", "HTML",
+    "JS", "JS.MAP", "JSON", "RST", "HTML",
 )
 IGNORED_FILE_EXTENSIONS = tuple("." + ext.lower()
                                 for ext in IGNORED_FILE_EXTENSIONS)
