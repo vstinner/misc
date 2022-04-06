@@ -29,7 +29,7 @@ IGNORED_FILE_EXTENSIONS = (
     # Archives
     "BZ2", "CAB", "GZ", "ZIP", "RAR", "TAR", "TGZ", "XZ",
     # Pictures
-    "AI", "BMP", "ICO", "JPG", "PNG", "PSD", "TGA", "TIF", "WMF", "XCF",
+    "AI", "BMP", "ICO", "JPG", "PNG", "PSD", "SVG", "TGA", "TIF", "WMF", "XCF",
     # Audio
     "AAC", "AIF", "ANI", "MP3", "WAV", "WMA",
     # Video
