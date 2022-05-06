@@ -32,6 +32,7 @@ def get_ensurepip_versions():
 
 
 def write_version(name, version):
+    version = version.strip()
     print("%s: %s" % (name, version))
 
 
@@ -60,6 +61,9 @@ def main():
     grep_version('zlib',
                  'Modules/zlib/zlib.h',
                  r'#define ZLIB_VERSION "(.*)"')
+    grep_version('zlib[Windows]',
+                 'PCbuild/get_externals.bat',
+                 r'zlib-([0-9][^"]*)')
     grep_version('libmpdec',
                  'Modules/_decimal/libmpdec/mpdecimal.h',
                  r'MPD_VERSION "(.*)"')
