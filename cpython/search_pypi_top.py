@@ -22,7 +22,7 @@ IGNORE_CYTHON = True
 # Ignore file extensions known to be binary files to avoid the slow
 # is_binary_string() check
 IGNORED_FILE_EXTENSIONS = (
-    # Programs and dynamic liraries
+    # Programs and dynamic libraries
     "EXE", "SO", "PYD",
     # Python
     "PYC", "WHL",
@@ -138,13 +138,14 @@ def is_binary_file(args, fp):
         return True
     return False
 
+
 def grep(args, archive_filename, regex):
     for filename, fp in decompress(args, archive_filename):
         if is_binary_file(args, fp):
             logging.info(f"ignore binary file: {archive_filename}: {filename}")
             continue
 
-        matchs = []
+        matches = []
         ignore = False
         lineno = 1
         # Split at Unix newline b'\n' byte
@@ -154,11 +155,12 @@ def grep(args, archive_filename, regex):
                 ignore = True
                 break
             if regex.search(line):
-                matchs.append((filename, line))
+                matches.append((filename, line))
             lineno += 1
 
-        if matchs and not ignore:
-            yield from matchs
+        if matches and not ignore:
+            yield from matches
+
 
 
 def search_dir(args, pypi_dir, pattern):
