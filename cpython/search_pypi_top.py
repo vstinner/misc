@@ -16,6 +16,8 @@ import re
 import sys
 import tarfile
 import zipfile
+from itertools import repeat
+from multiprocessing import Pool
 
 
 IGNORE_CYTHON = True
@@ -162,17 +164,52 @@ def grep(args, archive_filename, regex):
             yield from matches
 
 
+def search_file(filename, index, len_filenames, args, pypi_dir, regex):
+    lines = 0
+    results = []
+    filename = os.path.join(pypi_dir, filename)
+    percent = index * 100 / len_filenames
+    logging.warning(f"grep {filename} ({percent:.0f}%, {index}/{len_filenames})")
+
+    for name, line in grep(args, filename, regex):
+        line = line.decode('utf8', 'replace').strip()
+
+        result = f"{filename}: {name}: {line}"
+        print(result, flush=True)
+        results.append(result)
+        lines += 1
+
+    return lines, filename if lines >= 1 else None, results
+
 
 def search_dir(args, pypi_dir, pattern):
+    lines = 0
+    projects = set()
+    all_results = []
     regex = re.compile(pattern)
     filenames = os.listdir(pypi_dir)
-    for index, filename in enumerate(filenames, 1):
-        filename = os.path.join(pypi_dir, filename)
-        percent = index * 100 / len(filenames)
-        logging.warning(f"grep {filename} ({percent:.0f}%, {index}/{len(filenames)})")
-        for name, line in grep(args, filename, regex):
-            line = line.decode('utf8', 'replace').strip()
-            yield (filename, name, line)
+
+    with Pool() as pool:
+        ret = pool.starmap(
+            search_file,
+            zip(
+                filenames,
+                range(len(filenames)),
+                repeat(len(filenames)),
+                repeat(args),
+                repeat(pypi_dir),
+                repeat(regex),
+            )
+        )
+        for new_lines, new_project, results in ret:
+            lines += new_lines
+            if new_project:
+                projects.add(new_project)
+            all_results.extend(results)
+    pool.close()
+    pool.join()
+
+    return lines, projects, all_results
 
 
 def parse_args():
@@ -214,23 +251,11 @@ def _main():
                         format="# %(message)s")
 
     start_time = datetime.datetime.now()
+    lines, projects, results = search_dir(args, pypi_dir, pattern)
+
     if output_filename:
-        output = open(output_filename, "w", encoding="utf8")
-    else:
-        output = None
-    try:
-        lines = 0
-        projects = set()
-        for archive_name, filename, line in search_dir(args, pypi_dir, pattern):
-            result = f"{archive_name}: {filename}: {line}"
-            print(result, flush=True)
-            if output is not None:
-                print(result, file=output, flush=True)
-            lines += 1
-            projects.add(archive_name)
-    finally:
-        if output is not None:
-            output.close()
+        with open(output_filename, "w", encoding="utf8") as output:
+            print("\n".join(results), file=output, flush=True)
 
     dt = datetime.datetime.now() - start_time
     print()
@@ -247,6 +272,7 @@ def main():
         print()
         print("Interrupted")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
