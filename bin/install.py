@@ -24,6 +24,7 @@ FILES = (
     'system_load.py',
     'upload_private.sh',
     'upload_tmp.sh',
+    'radio-nova',
 )
 
 def main():
