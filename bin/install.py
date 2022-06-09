@@ -16,7 +16,6 @@ FILES = (
     'couleur3.ch',
     'dedup.py',
     'gh_pr.sh',
-    'nova.sh',
     'pyreplace.py',
     'releaser.py',
     'rename_torrent.py',
