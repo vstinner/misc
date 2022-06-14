@@ -6,3 +6,4 @@ buildmaster-config: git=git@github.com:python/buildmaster-config.git
 devguide: git=git@github.com:python/devguide.git
 peps: git=git@github.com:vstinner/peps.git
 pyperformance: git=git@github.com:python/pyperformance.git
+pythoncapi-compat: git=git@github.com:vstinner/pythoncapi-compat.git
