@@ -117,7 +117,7 @@ def decompress_tar(args, archive_filename, mode):
             if fp is None:
                 continue
             with fp:
-                yield (filename, fp)
+                yield filename, fp
 
 
 def decompress_zip(args, archive_filename):
@@ -128,7 +128,7 @@ def decompress_zip(args, archive_filename):
                 log_ignored_file(archive_filename, filename)
                 continue
             with zf.open(member) as fp:
-                yield (filename, fp)
+                yield filename, fp
 
 
 def decompress(args, filename):
