@@ -19,6 +19,19 @@ import zipfile
 from itertools import repeat
 import multiprocessing
 
+try:
+    from termcolor import colored
+except ImportError:
+    print(
+        "Warning: termcolor is missing, install it with: "
+        "python -m pip install --user termcolor",
+        file=sys.stderr,
+    )
+    print(file=sys.stderr, end="")
+
+    def colored(msg, *ignored, **ignored2):
+        return msg
+
 
 IGNORE_CYTHON = True
 # Ignore file extensions known to be binary files to avoid the slow
@@ -154,8 +167,9 @@ def grep(args, archive_filename, regex):
                 logger.info(f"ignore Cython file: {archive_filename}: {filename}")
                 ignore = True
                 break
-            if regex.search(line):
-                matches.append((filename, line))
+            match = regex.search(line)
+            if match:
+                matches.append((filename, line, match.span()))
             lineno += 1
 
         if matches and not ignore:
@@ -169,9 +183,15 @@ def search_file(filename, index, len_filenames, args, pypi_dir, regex):
     percent = index * 100 / len_filenames
     logger.warning(f"grep {filename} ({percent:.0f}%, {index}/{len_filenames})")
 
-    for name, line in grep(args, filename, regex):
-        line = line.decode('utf8', 'replace').strip()
+    for name, line, span in grep(args, filename, regex):
+        line = line.decode('utf8', 'replace')
 
+        start, end = span
+        line = (
+            line[:start] + colored(line[start:end], "red", attrs=["bold"]) + line[end:]
+        ).strip()
+
+        name = colored(name, "magenta")
         result = f"{filename}: {name}: {line}\n"
         print(result, flush=True, end="")
         results.append(result)
