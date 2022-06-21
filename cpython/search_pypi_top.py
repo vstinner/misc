@@ -186,14 +186,17 @@ def search_file(filename, index, len_filenames, args, pypi_dir, regex):
     for name, line, span in grep(args, filename, regex):
         line = line.decode('utf8', 'replace')
 
+        # print to terminal with color
         start, end = span
-        line = (
+        line_color = (
             line[:start] + colored(line[start:end], "red", attrs=["bold"]) + line[end:]
-        ).strip()
-
-        name = colored(name, "magenta")
-        result = f"{filename}: {name}: {line}\n"
+        )
+        name_color = colored(name, "magenta")
+        result = f"{filename}: {name_color}: {line_color.strip()}\n"
         print(result, flush=True, end="")
+
+        # print to file without color
+        result = f"{filename}: {name}: {line.strip()}\n"
         results.append(result)
         lines += 1
 
