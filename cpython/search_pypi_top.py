@@ -172,8 +172,8 @@ def search_file(filename, index, len_filenames, args, pypi_dir, regex):
     for name, line in grep(args, filename, regex):
         line = line.decode('utf8', 'replace').strip()
 
-        result = f"{filename}: {name}: {line}\n"
-        print(result, flush=True, end="")
+        result = f"{filename}: {name}: {line}"
+        print(result, flush=True)
         results.append(result)
         lines += 1
 
