@@ -192,11 +192,11 @@ def search_file(filename, index, len_filenames, args, pypi_dir, regex):
             line[:start] + colored(line[start:end], "red", attrs=["bold"]) + line[end:]
         )
         name_color = colored(name, "magenta")
-        result = f"{filename}: {name_color}: {line_color.strip()}\n"
-        print(result, flush=True, end="")
+        result = f"{filename}: {name_color}: {line_color.strip()}"
+        print(result, flush=True)
 
         # print to file without color
-        result = f"{filename}: {name}: {line.strip()}\n"
+        result = f"{filename}: {name}: {line.strip()}"
         results.append(result)
         lines += 1
 
