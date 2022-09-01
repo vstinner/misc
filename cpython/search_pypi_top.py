@@ -110,6 +110,8 @@ def decompress_tar(args, archive_filename, mode):
                 continue
             try:
                 fp = tar.extractfile(member)
+                if fp is None:
+                    continue
             except KeyError:
                 # graphitesend-0.10.0.tar.gz fails with:
                 #  File "tarfile.py", line 2124, in extractfile
@@ -117,9 +119,8 @@ def decompress_tar(args, archive_filename, mode):
                 #  File "tarfile.py", line 2431, in _find_link_target
                 #    raise KeyError("linkname %r not found" % linkname)
                 # KeyError: "linkname 'graphitesend-0.10.0/README.md' not found"
-                pass
-            if fp is None:
                 continue
+
             with fp:
                 yield filename, fp
 
