@@ -66,7 +66,7 @@ stty -ixon
 alias pyconfigure_debug="./configure --cache-file=../python-config.cache --with-pydebug CFLAGS=-O0 --with-system-expat --with-system-ffi"
 
 # Prefer @REDHAT.COM rather than @FEDORAPROJECT.ORG
-alias kinit="kinit vstinner@REDHAT.COM"
+alias kinit="kinit -l 5d vstinner@REDHAT.COM"
 
 HOSTNAME=$(hostname)
 if [ "$HOSTNAME" = "selma" -o "$HOSTNAME" = "apu" ]; then
