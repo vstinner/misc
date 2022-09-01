@@ -7,6 +7,10 @@ Usage::
     ./search_pypi_top.py --verbose PYPI_DIR/ REGEX -o output_file
 
 Use --help command line option to get the command line usage.
+
+Faster alternative but producing more false alarms:
+
+    rg -zl "REGEX" pypi_directory/*.{zip,gz,bz2,tgz}
 """
 import argparse
 import datetime
