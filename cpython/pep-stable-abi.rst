@@ -67,11 +67,11 @@ Tasks
 
 * ???: Get rid of borrowed references in the API
 
- * PyDict_GetItem()
- * PyTuple_GetItem()
- * PyErr_Occurred()
- * PyWeakref_GetObject()
- * etc.
+  * PyDict_GetItem()
+  * PyTuple_GetItem()
+  * PyErr_Occurred()
+  * PyWeakref_GetObject()
+  * etc.
 
 Constraints
 ===========
