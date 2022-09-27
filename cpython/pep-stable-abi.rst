@@ -2,11 +2,10 @@ Goals
 =====
 
 * Stable ABI for everyone.
-* Get rid of reference counting inside Python; public C API can still
-  use reference counting (or handles)
+* Moving GC
+* Performance scales better with the number of CPU cores
 * Being able to change Python internals without having to worry
   about breaking any C extension
-* Moving GC
 
 Milestones
 ==========
@@ -25,13 +24,16 @@ Milestones
 * Stage 2
 
   * All structures are opaque
+  * ABI only made of function calls
   * UNLOCK: stable ABI for everyone
 
 * Stage 3
 
   * ``PyObject*`` cannot be dereference: PyObject is opaque
   * Explicit resource management in the API (get/release)
-  * UNLOCK: moving GC
+  * Get rid of reference counting inside Python; public C API can still
+    use reference counting (or handles)
+  * UNLOCK: moving GC, performance scales with the number of CPU cores
 
 Tasks
 =====
