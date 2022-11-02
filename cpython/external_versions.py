@@ -79,6 +79,9 @@ def main():
     grep_version('SQLite[macOS]',
                  'Mac/BuildScript/build-installer.py',
                  r'SQLite ([0-9][^"]*)')
+    grep_version('ncurses[macOS]',
+                 'Mac/BuildScript/build-installer.py',
+                 r'ftp.gnu.org/pub/gnu/ncurses/ncurses-([0-9]+\.[0-9]+).tar.gz')
     versions = get_ensurepip_versions()
     for name in ('setuptools', 'pip'):
         if name in versions:
