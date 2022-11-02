@@ -3,8 +3,8 @@ import collections
 import os
 import subprocess
 
-DATE = "2018-04-01"
-BRANCH = 'master'
+DATE = "2022-01-01"
+BRANCH = 'main'
 
 print("Statistics on the %s branch after %s" % (BRANCH, DATE))
 print("cwd: %s" % os.getcwd())
