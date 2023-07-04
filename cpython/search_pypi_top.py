@@ -38,8 +38,8 @@ except ImportError:
 
 
 IGNORE_CYTHON = True
-# Ignore these files from the initial directory listing
-IGNORED_FILENAMES = (".DS_Store",)
+# Ignore macOS directory metadata files from the initial directory listing
+DS_STORE = ".DS_Store"
 # Ignore file extensions known to be binary files to avoid the slow
 # is_binary_string() check
 IGNORED_FILE_EXTENSIONS = (
@@ -215,9 +215,8 @@ def search_dir(args, pypi_dir, pattern):
     projects = set()
     all_results = []
     regex = re.compile(pattern)
-    filenames = sorted(
-        (f for f in os.listdir(pypi_dir) if f not in IGNORED_FILENAMES), key=str.lower
-    )
+    filenames = (filename for filename in os.listdir(pypi_dir) if filename != DS_STORE)
+    filenames = sorted(filenames, key=str.lower)
 
     with multiprocessing.Pool() as pool:
         ret = pool.starmap(
