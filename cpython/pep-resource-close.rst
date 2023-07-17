@@ -47,6 +47,25 @@ Python objects. For borrowed references, an easy fix is to provide a new
 API which returns a strong reference instead. The problem of borrowed
 references is outside the scope of this PEP.
 
+XXX avoid exposing multiple "free" functions such as (now removed)
+private ``_Py_FreeCharPArray()`` function which was used by
+``_PySequence_BytesToCharpArray()``.
+
+XXX relationship with ``PyBuffer_Release()``.
+
+XXX similar APIs
+
+* Unix file descriptor: ``close(fd)``
+* Windows ``HANDLE``: ``CloseHandle(handle)``
+* HPy handle: ``HPy_Close(handle)``
+
+XXX old APIs
+
+* Python 2 PyObject_AsCharBuffer(), PyObject_AsReadBuffer() and
+  PyObject_AsWriteBuffer() return a pointer which can later become a
+  dangling pointer: there is no "release" function.
+
+
 Proposition
 ===========
 
@@ -73,6 +92,10 @@ safer API. For example, a variant of the ``PyUnicode_AsUTF8()`` function
 can be added to hold a strong reference to the string, to make sure that
 the pointer of the cached UTF-8 string remains valid until
 ``PyResource_Close()`` is called.
+
+Depending on the code which should be executed in
+``PyResource_Close()``, different "close callback" functions can be
+used.
 
 If a close callback function needs *extra* data to close a resource, it
 should allocate a structure on a heap memory and store it as
@@ -173,3 +196,9 @@ variants using ``PyResource`` can be added later.
   * ``Py_GetProgramFullPath()`` (``wchar_t*``)
   * ``Py_GetProgramName()`` (``wchar_t*``)
   * ``Py_GetPythonHome()`` (``wchar_t*``)
+
+Links
+=====
+
+* https://github.com/python/cpython/issues/106592
+* https://github.com/capi-workgroup/problems/issues/57
