@@ -81,20 +81,34 @@ The ``PyResource_Close()`` implementation is simple::
 Variants using PyResource
 -------------------------
 
-* ``PyBytes_AsString()`` (``char*``)
-* ``PyByteArray_AsString()`` (``char*``)
-* ``PyEval_GetFuncName()`` (``const char*``)
-* ``PyUnicode_AsUTF8()`` (``const char*``)
-* ``PyUnicode_AsUTF8AndSize()`` (``const char*``)
-* ``PyCapsule_GetName()`` (``const char*``)
+Add the following functions:
+
+* ``const char* PyBytes_AsStringRes(PyObject *op, PyResource *res)``:
+  safe variant of ``PyBytes_AsString()``.
+* ``char* PyByteArray_AsStringRes(PyObject *self, PyResource *res)``:
+  safe variant of ``PyByteArray_AsString()``.
+* ``const char* PyEval_GetFuncNameRes(PyObject *func, PyResource *res)``:
+  safe variant of ``PyEval_GetFuncName()``.
+* ``const char* PyUnicode_AsUTF8Res(PyObject *unicode, PyResource *res)``:
+  safe variant of ``PyUnicode_AsUTF8()``.
+* ``const char* PyUnicode_AsUTF8AndSizeRes(PyObject *unicode, Py_ssize_t *psize, PyResource *res)``:
+  safe variant of ``PyUnicode_AsUTF8AndSize()``.
+* ``const char* PyCapsule_GetNameRes(PyObject *capsule, PyResource *res)``:
+  safe variant of ``PyCapsule_GetName()``.
+
+These variants hold a strong reference to the object and so the returned
+pointer is guaranteed to remain valid until the resource is closed with
+``PyResource_Close()``.
 
 Functions left unchanged
 ------------------------
 
-No variant is planned to be added for the following functions, they are
-safe, or variants can be added later.
+No variant is planned to be added for the following functions which
+return pointers. Some functions are safe. For the unsafe functions,
+variants using ``PyResource`` can be added later.
 
-* Caller must release the returned newly allocated memory block:
+* The caller function must release the returned newly allocated memory
+  block:
 
   * ``PyOS_double_to_string()``
   * ``PyUnicode_AsUTF8String()``
@@ -120,12 +134,19 @@ safe, or variants can be added later.
 
 * Misc functions:
 
-  * ``PyBuffer_GetPointer()`` (``void*``): use ``PyBuffer_Release()``
-  * ``PyModule_GetState()`` (``void*``)
-  * ``PyType_GetSlot()`` (``void*``)
-  * ``Py_GETENV()`` and ``Py_GETENV()`` (``char*``)
-  * ``PyCapsule_Import()`` (``void*``)
-  * ``PyType_GetModuleState()`` (``void*``)
+  * ``PyBuffer_GetPointer()`` (``void*``): the caller must call
+    ``PyBuffer_Release()``.
+  * ``PyCapsule_Import()`` (``void*``):
+    the caller must hold a reference to the capsule object.
+  * ``Py_GETENV()`` and ``Py_GETENV()`` (``char*``):
+    the pointer becomes invalid if environment variables are changed.
+  * ``PyType_GetSlot()`` (``void*``):
+    the caller must hold a reference to the type object.
+  * ``PyModule_GetState()`` (``void*``):
+    the caller must hold a reference to the module object.
+  * ``PyType_GetModuleState()`` (``void*``):
+    the caller must hold a reference to the module object of the type
+    object.
 
 * Deprecated functions, planned for removal:
 
