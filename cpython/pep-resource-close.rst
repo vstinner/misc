@@ -81,6 +81,10 @@ memory block which should be released by the close callback, it can
 allocate a larger memory block and stores these *extra* data before or
 after data inside the memory block.
 
+The ``PyResource`` should be avoided with the function which returns a
+newly allocated string: the caller should just call a function to
+release the memory in this case.
+
 The ``PyResource_Close()`` implementation is simple::
 
     void PyResource_Close(PyResource *res)
@@ -131,33 +135,33 @@ variants using ``PyResource`` can be added later.
 
 * Get static data:
 
-  * ``PyUnicode_GetDefaultEncoding()`` (``const char*``)
-  * ``PyImport_GetMagicTag()`` (``const char*``)
-  * ``Py_GetVersion()`` (``const char *``)
-  * ``Py_GetPlatform()`` (``const char *``)
-  * ``Py_GetCopyright()`` (``const char *``)
-  * ``Py_GetCompiler()`` (``const char *``)
-  * ``Py_GetBuildInfo()`` (``const char *``)
-  * ``PyHash_GetFuncDef()`` (``PyHash_FuncDef*``)
+  * ``PyUnicode_GetDefaultEncoding()``
+  * ``PyImport_GetMagicTag()``
+  * ``Py_GetVersion()``
+  * ``Py_GetPlatform()``
+  * ``Py_GetCopyright()``
+  * ``Py_GetCompiler()``
+  * ``Py_GetBuildInfo()``
+  * ``PyHash_GetFuncDef()``
 
 * Thread local storage:
 
-  * ``PyThread_tss_get()`` (``void*``)
-  * ``PyThread_get_key_value()`` (``void*``)
+  * ``PyThread_tss_get()``
+  * ``PyThread_get_key_value()``
 
 * Misc functions:
 
-  * ``PyBuffer_GetPointer()`` (``void*``): the caller must call
+  * ``PyBuffer_GetPointer()``: the caller must call
     ``PyBuffer_Release()``.
-  * ``PyCapsule_Import()`` (``void*``):
+  * ``PyCapsule_Import()``:
     the caller must hold a reference to the capsule object.
   * ``Py_GETENV()`` and ``Py_GETENV()`` (``char*``):
     the pointer becomes invalid if environment variables are changed.
-  * ``PyType_GetSlot()`` (``void*``):
+  * ``PyType_GetSlot()``:
     the caller must hold a reference to the type object.
-  * ``PyModule_GetState()`` (``void*``):
+  * ``PyModule_GetState()``:
     the caller must hold a reference to the module object.
-  * ``PyType_GetModuleState()`` (``void*``):
+  * ``PyType_GetModuleState()``:
     the caller must hold a reference to the module object of the type
     object.
 
