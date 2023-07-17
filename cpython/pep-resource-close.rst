@@ -1,5 +1,18 @@
 PEP: PyResource_Close() API
 
+Abstract
+========
+
+Add ``PyResource`` structure and the following functions:
+
+* ``PyResource_Close()``
+* ``PyByteArray_AsStringRes()``
+* ``PyBytes_AsStringRes()``
+* ``PyCapsule_GetNameRes()``
+* ``PyEval_GetFuncNameRes()``
+* ``PyUnicode_AsUTF8AndSizeRes()``
+* ``PyUnicode_AsUTF8Res()``
+
 Rationale
 =========
 
@@ -87,14 +100,14 @@ Add the following functions:
   safe variant of ``PyBytes_AsString()``.
 * ``char* PyByteArray_AsStringRes(PyObject *self, PyResource *res)``:
   safe variant of ``PyByteArray_AsString()``.
+* ``const char* PyCapsule_GetNameRes(PyObject *capsule, PyResource *res)``:
+  safe variant of ``PyCapsule_GetName()``.
 * ``const char* PyEval_GetFuncNameRes(PyObject *func, PyResource *res)``:
   safe variant of ``PyEval_GetFuncName()``.
 * ``const char* PyUnicode_AsUTF8Res(PyObject *unicode, PyResource *res)``:
   safe variant of ``PyUnicode_AsUTF8()``.
 * ``const char* PyUnicode_AsUTF8AndSizeRes(PyObject *unicode, Py_ssize_t *psize, PyResource *res)``:
   safe variant of ``PyUnicode_AsUTF8AndSize()``.
-* ``const char* PyCapsule_GetNameRes(PyObject *capsule, PyResource *res)``:
-  safe variant of ``PyCapsule_GetName()``.
 
 These variants hold a strong reference to the object and so the returned
 pointer is guaranteed to remain valid until the resource is closed with
