@@ -1,9 +1,19 @@
-PEP: PyResource_Close() API
+PEP: 799
+Title: Add PyResource callback C API to release resources
+Author: Victor Stinner <vstinner@python.org>
+Status: Draft
+Type: Standards Track
+Content-Type: text/x-rst
+Created: 24-Jul-2023
+Python-Version: 3.13
 
 Abstract
 ========
 
-Add ``PyResource`` structure and the following functions:
+Add the ``PyResource`` structure to the C API: callback to close a
+resource.
+
+Add new variants using ``PyResource`` of functions returning pointer:
 
 * ``PyResource_Close()``
 * ``PyByteArray_AsStringRes()``
@@ -13,102 +23,94 @@ Add ``PyResource`` structure and the following functions:
 * ``PyUnicode_AsUTF8AndSizeRes()``
 * ``PyUnicode_AsUTF8Res()``
 
+These functions keep the resource valid until ``PyResource_Close()`` is
+being called.
+
+
+Motivation
+==========
+
+Problem of dangling pointers
+----------------------------
+
+The Python C API has multiple functions returning pointers which give a
+direct access to object contents. Python is not notified when the caller
+is done with this pointer. Usually, the pointer becomes a **dangling
+pointer** once the object is destroyed, and so the caller should ensure
+that the object is not destroyed while it uses the pointer.
+
+Using a dangling pointer may crash or not depending if the memory was
+reused or not, and if the memory block was freed or not. The behavior is
+not deterministic which makes such bug harder to detect and to fix.
+
+The Python C API does not document well which functions can execute
+arbitrary Python code and so can indirectly destroyed the used object.
+For example, a simple comparison like ``PyObject_RichCompare`` can
+execute arbitrary code if a method like ``__eq__()`` is overriden in
+Python.
+
+Cannot change Python internals
+------------------------------
+
+Functions returning pointers with no associated "close" function prevent
+changing Python internals. For example, the ``PyUnicode_AsUTF8()``
+function does cache the UTF-8 encoded string in the Python str object
+and this cache cannot be removed.
+
+
 Rationale
 =========
 
-The Python C API has multiple functions returning pointers which are
-direct access to an object content. The caller cannot notice Python when
-it is done with this pointer. Usually, the pointer is expected to remain
-valid until the object is finalized. Such API makes the assumption that
-objects cannot move in memory (they are pinned in memory, their memory
-address don't change) and that the caller is able to ensure that the
-object is not finalized while the pointer is used.
+Avoid exposing specific cleanup function
+----------------------------------------
 
-One problem is that the Python C API does not document well which
-functions can execute arbitrary Python code which can indirectly
-finalize the object. For example, just a simple comparison like
-``PyObject_RichCompare`` can execute arbitrary Python code, since it's
-possible to override comparison methods in Python, like ``__eq__()``.
+Having an unique ``PyResource_Close()`` API avoids having to expose many
+specific cleanup functions, one per API returning a resource. For
+example, Python 3.12 ``_PySequence_BytesToCharpArray()`` allocates
+memory and requires calling a specific ``_Py_FreeCharPArray()`` function
+to release the memory.
 
-If the object is finalized, the pointer becomes a dangling pointer and
-the C extension can crash or not depending if the memory was reused or
-not, and if the pointer can still be deferenced or not. The behavior is
-not deterministic which makes such bug harder to detect and to fix.
+Using ``PyResource_Close()``, the ``_Py_FreeCharPArray()`` function does
+not have to be exposed in the public C API.
 
-Such API prevents to change Python internals. For example, currently the
-``PyUnicode_AsUTF8()`` function does cache the UTF-8 encoded string
-inside the Python string object. It prevents to remove the cache. If a
-new API using a "close callback" is added, once the old API is removed,
-it becomes possible to no longer cache the encoded string: encode the
-string at each call.
+Moving garbage collector
+------------------------
 
-This problem is similar to use the usage of borrowed references to
-Python objects. For borrowed references, an easy fix is to provide a new
-API which returns a strong reference instead. The problem of borrowed
-references is outside the scope of this PEP.
+The ``PyResource`` allows Python implementation with a moving garbage
+collector, like PyPy, to pin an object in memory while a resource is
+being used, and unpin it in ``PyResource_Close()``. Or a function can
+create a copy and release the memory in ``PyResource_Close()``.
+Currently, objects should always be pinned in memory.
 
-XXX avoid exposing multiple "free" functions such as (now removed)
-private ``_Py_FreeCharPArray()`` function which was used by
-``_PySequence_BytesToCharpArray()``.
+Similar existing API
+--------------------
 
-XXX relationship with ``PyBuffer_Release()``.
+The ``PyResource`` API is similar to the concept of opaque handles used
+with Unix file descriptor (``close(fd)``), Windows ``HANDLE``
+(``CloseHandle(handle)``), and HPy handle (``HPy_Close(handle)``).
 
-XXX similar APIs
-
-* Unix file descriptor: ``close(fd)``
-* Windows ``HANDLE``: ``CloseHandle(handle)``
-* HPy handle: ``HPy_Close(handle)``
-
-XXX old APIs
-
-* Python 2 PyObject_AsCharBuffer(), PyObject_AsReadBuffer() and
-  PyObject_AsWriteBuffer() return a pointer which can later become a
-  dangling pointer: there is no "release" function.
+It is also similar to Python ``PyBuffer_Release()`` API.
 
 
-Proposition
-===========
+Specification
+=============
 
 PyResource API
 --------------
 
-API::
+::
 
     typedef struct {
         void (*close_func) (void *data);
         void *data;
     } PyResource;
 
-    PyAPI_FUNC(void) PyResource_Close(PyResource *res);
+    void PyResource_Close(PyResource *res);
 
-A new PyResource_Close() function is proposed so the owner of a resource
-can report when it is done with a resource: when the resource can be
-released. The function expects a pointer to a new ``PyResource``
-structure which contains information to close the resource.
+PyResource_Close()
+------------------
 
-Since code can now be executed when a resource is closed, it becomes
-possible to also execute code to create the resource and so provide a
-safer API. For example, a variant of the ``PyUnicode_AsUTF8()`` function
-can be added to hold a strong reference to the string, to make sure that
-the pointer of the cached UTF-8 string remains valid until
-``PyResource_Close()`` is called.
-
-Depending on the code which should be executed in
-``PyResource_Close()``, different "close callback" functions can be
-used.
-
-If a close callback function needs *extra* data to close a resource, it
-should allocate a structure on a heap memory and store it as
-``PyResource.data``. If the function creating a resource allocates a
-memory block which should be released by the close callback, it can
-allocate a larger memory block and stores these *extra* data before or
-after data inside the memory block.
-
-The ``PyResource`` should be avoided with the function which returns a
-newly allocated string: the caller should just call a function to
-release the memory in this case.
-
-The ``PyResource_Close()`` implementation is simple::
+Implementation of the ``PyResource_Close()`` function::
 
     void PyResource_Close(PyResource *res)
     {
@@ -118,8 +120,53 @@ The ``PyResource_Close()`` implementation is simple::
         res->close_func(res->data);
     }
 
-Variants using PyResource
--------------------------
+Example
+-------
+
+Example holding a strong reference to an object::
+
+    static void
+    close_resource(void *data)
+    {
+        PyObject *obj = (PyObject*)data;
+        Py_DECREF(obj);
+    }
+
+    static char*
+    get_resource(PyResource *res)
+    {
+        PyObject *obj = PyUnicode_FromString("resource");
+        if (obj == NULL) {
+            // res is left uninitialized on purpose.
+            // It must not be used in the error path.
+            return NULL;
+        }
+        char *utf8 = PyUnicode_AsUTF8(obj);
+        if (utf8 == NULL) {
+            Py_DECREF(obj);
+            return NULL;
+        }
+        res->close_func = close_resource;
+        res->data = obj;  // strong reference
+        return utf8;
+    }
+
+Example of ``get_resource()`` usage::
+
+    void use_resource(void)
+    {
+        PyResource res;
+        char *str = get_resource(&res);
+        if (str == NULL) {
+            // ... report the error ...
+            return;
+        }
+        // ... use str ...
+        PyResource_Close(&res);
+    }
+
+Function variants using PyResource
+----------------------------------
 
 Add the following functions:
 
@@ -137,15 +184,15 @@ Add the following functions:
   safe variant of ``PyUnicode_AsUTF8AndSize()``.
 
 These variants hold a strong reference to the object and so the returned
-pointer is guaranteed to remain valid until the resource is closed with
-``PyResource_Close()``.
+pointer is guaranteed to remain valid until the resource is closed by
+``PyResource_Close()`` (delete the strong reference).
 
 Functions left unchanged
 ------------------------
 
-No variant is planned to be added for the following functions which
-return pointers. Some functions are safe. For the unsafe functions,
-variants using ``PyResource`` can be added later.
+The following functions which return pointers are left unchanged: no
+variant is planned to be added. Most of these functions are safe. For
+the unsafe functions, variants using ``PyResource`` can be added later.
 
 * The caller function must release the returned newly allocated memory
   block:
@@ -156,7 +203,7 @@ variants using ``PyResource`` can be added later.
   * ``Py_DecodeLocale()``, ``Py_EncodeLocale()``
   * Allocator functions like ``PyMem_Malloc()``
 
-* Get static data:
+* Get static data (safe in CPython):
 
   * ``PyUnicode_GetDefaultEncoding()``
   * ``PyImport_GetMagicTag()``
@@ -179,7 +226,7 @@ variants using ``PyResource`` can be added later.
   * ``PyCapsule_Import()``:
     the caller must hold a reference to the capsule object.
   * ``Py_GETENV()`` and ``Py_GETENV()`` (``char*``):
-    the pointer becomes invalid if environment variables are changed.
+    the pointer can become invalid if environment variables are changed.
   * ``PyType_GetSlot()``:
     the caller must hold a reference to the type object.
   * ``PyModule_GetState()``:
@@ -190,15 +237,103 @@ variants using ``PyResource`` can be added later.
 
 * Deprecated functions, planned for removal:
 
-  * ``Py_GetExecPrefix()`` (``wchar_t*``)
-  * ``Py_GetPath()`` (``wchar_t*``)
-  * ``Py_GetPrefix()`` (``wchar_t*``)
-  * ``Py_GetProgramFullPath()`` (``wchar_t*``)
-  * ``Py_GetProgramName()`` (``wchar_t*``)
-  * ``Py_GetPythonHome()`` (``wchar_t*``)
+  * ``Py_GetExecPrefix()``
+  * ``Py_GetPath()``
+  * ``Py_GetPrefix()``
+  * ``Py_GetProgramFullPath()``
+  * ``Py_GetProgramName()``
+  * ``Py_GetPythonHome()``
 
-Links
-=====
+Backwards Compatibility
+=======================
 
-* https://github.com/python/cpython/issues/106592
-* https://github.com/capi-workgroup/problems/issues/57
+Only new functions added: existing API are not affected, and no function
+is planned for deprecation.
+
+
+Security Implications
+=====================
+
+Added APIs are safer since they make sure that resource remains valid
+until ``PyResource_Close()`` is being called, and prevent a risk of race
+conditions.
+
+
+How to Teach This
+=================
+
+When a function returns a resource, like a pointer, the
+``PyResource_Close()`` must be called to close the resource.
+
+
+Reference Implementation
+========================
+
+* `Issue #106592 <https://github.com/python/cpython/issues/106592>`_:
+  C API: Add PyResource API: generic API to "close a resource"
+* `PR #107202 <https://github.com/python/cpython/pull/107202>`_
+
+
+Rejected Ideas
+==============
+
+Use the existing PyBuffer_Release() API
+---------------------------------------
+
+The ``Py_buffer`` API already exists and can be modified to fit into
+``PyResource_Close()`` use case. Pseudo-code::
+
+    Py_buffer buffer;
+    char *utf8 = PyUnicode_AsUTF8Res(str, &buffer);
+    // ... use utf8 ...
+    PyBuffer_Release(&buffer);
+
+The ``Py_buffer`` structure has 11 members. They would be initialized
+to:
+
+* ``buf = NULL``
+* ``obj = NULL``
+* ``len = 0``
+* ``itemsize = 1``
+* ``readonly = 1``
+* ``ndim = 1``
+* ``format = NULL``
+* ``shape = NULL``
+* ``strides = NULL``
+* ``suboffsets = NULL``
+* ``internal = NULL``
+
+The problem is that most of these members are irrelevant just to "close
+a resource".  Moreover, the structure has no callback to close the
+resource: it relies on the ``bf_releasebuffer`` protocol of the object
+type (``PyTypeObject.tp_as_buffer.bf_releasebuffer``).
+
+Another problem is that the ``Py_buffer`` structure is now part of the
+stable ABI and so it became complicated to add new members.
+
+Copy the resource at each call
+------------------------------
+
+Instead of caching the UTF-8 encoding string with
+``PyUnicode_AsUTF8()``, the ``PyUnicode_AsUTF8String()`` function can be
+used: it allocates a new string at each call. A similar idea can be
+applied to other functions returning pointers.
+
+The problem is that a memory copy is inefficient and can be slow,
+especially if the resource is large.
+
+
+References
+==========
+
+* `C API Working group: Issue #57
+  <https://github.com/capi-workgroup/problems/issues/57>`_:
+  Function must not return a pointer to content without an explicit
+  resource management
+
+
+Copyright
+=========
+
+This document is placed in the public domain or under the
+CC0-1.0-Universal license, whichever is more permissive.
