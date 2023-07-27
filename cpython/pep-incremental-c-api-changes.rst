@@ -11,8 +11,8 @@ C API issues
 The Python C API has multiple issues: see the
 `An Evaluation of Python's C API
 <https://github.com/capi-workgroup/problems/blob/main/capi_problems.rst>`_
-document of the C API Working group. Each issue is hard to fix and
-likely require incompatible changes. Easy issues which didn't require
+document of the C API Working group. Most issues are hard to fix and
+require incompatible changes. Easy issues which didn't require
 incompatible changes were already fixed in the past.
 
 Limits of the D-Day migration approach
@@ -21,10 +21,11 @@ Limits of the D-Day migration approach
 The Python 2 to Python 3 approach showed limits of a D-Day migration:
 require all projects to migrate at once at "the same day". The main
 blocker issue was that the proposed tool, 2to3, removed support for the
-old API (Python 2), option which was a no-go for many project
-maintainers. The migration only really started when a compatibility
-layer, the ``six`` module, became popular, so projects can come
-compatible with the new API without losing support for the old API.
+old API (Python 2), option which was a no-go for many projects
+maintainers. The migration only started seriously when a compatibility
+layer, the ``six`` module, became popular, so projects can be made
+compatible with the new API without losing support for the old API,
+which is more an incremental approach than a D-day migration.
 
 Rationale
 =========
@@ -37,16 +38,21 @@ Specification
 Incremental change
 ------------------
 
-For each C API issue, propose a new API which address the process, soft
-deprecate or deprecate the old API, upgrade projects to use the new API
-by using the `pythoncapi-compat project
-<https://pythoncapi-compat.readthedocs.io/>`_ project to get the new API
-on old Python version. Once the number of projects still using the old
-API becomes resonable, consider removing the old API.
+For each C API issue, propose a new API, upgrade affected projects to
+use the new API, and deprecate the old API. Once most affected projects
+published a release using the new API, remove the old API.
+
+For minor C API issues, the old API can be only `soft deprecated
+<https://peps.python.org/pep-0387/#soft-deprecation>`_ (don't schedule
+its removal), rather than being "hard" deprecated.
+
+The `pythoncapi-compat project
+<https://pythoncapi-compat.readthedocs.io/>`_ project can be used to get
+the new API on old Python versions, or another compatibility layer.
 
 This document doesn't go into the detail of each issue and proposed
-solution: it should be done on a case by case basis and discussed
-separately. This document is more about the general "incremental change"
+solutions: it should be done on a case by case basis and discussed
+separately. This document is only about the general "incremental change"
 approach.
 
 Process
@@ -102,18 +108,18 @@ Move private and internal API to the internal C API
 ---------------------------------------------------
 
 In Python 3.7, a new ``Include/internal/`` directory was created for the
-"internal C API". Between Python 3.7 and 3.13, more and more privates
-are being moved there: each release moves a bunch of private functions
-there.
+"internal C API". Between Python 3.7 and 3.13, more and more private
+functions are moved to the internal C API: each release moves a bunch of
+private functions there.
 
-The internal C API is exposed to third party projects, but it requires
-to define a specific ``Py_BUILD_CORE`` macro and the header files
-are less easy to use.
+The internal C API can be used by third party projects, but it requires
+to define a specific ``Py_BUILD_CORE`` macro and multiple header files
+should be included.
 
-Moreover, more and more internal C API are no longer exported and so
-cannot be called by third party projects. Debuggers and profilers can
-use internal C structures to inspect Python internal state without
-modifying this state nor having to call functions.
+Moreover, more and more internal C API symbols are no longer exported
+and so cannot be used by third party projects. Debuggers and profilers
+can use internal C API structures to inspect Python internal state
+without modifying this state nor having to call functions.
 
 Make PyGC_Head structure opaque
 -------------------------------
@@ -138,9 +144,8 @@ Prepare making PyObject structure opaque
 ----------------------------------------
 
 See `issue GH-83754 <https://github.com/python/cpython/issues/83754>`_.
-Avoid accessing directly PyObject members in the public C API.
-
-* Add Py_IS_TYPE() function
+Avoid accessing directly PyObject members in the public C API. Add
+Py_IS_TYPE() function.
 
 Disallow using macros as l-value
 --------------------------------
@@ -156,8 +161,8 @@ l-value to set an object reference count, type or size:
   anymore.
 * ``Py_TYPE()`` and ``Py_SIZE()`` macros was converted to static inline
   functions in a similar way in Python 3.11. This change was first done
-  in May 2020 but reverted in November. Most affected projects got
-  updated before the `change was done again
+  in May 2020, but had to be reverted in November. Most affected
+  projects were updated before the `change was done again
   <https://github.com/python/cpython/commit/cb15afcccffc6c42cbfb7456ce8db89cd2f77512>`_
   in September 2021.  See `PEP 674: Py_TYPE() and Py_SIZE() macros
   <https://peps.python.org/pep-0674/#py-type-and-py-size-macros>`_.
@@ -271,7 +276,7 @@ The change was prepared in Python 3.9 by adding two getter functions:
 
 * PyFrame_GetBack()
 * PyFrame_GetCode()
-* Moreover, PyFrame_GetLineNumber() was moved to the internal C API
+* Moreover, PyFrame_GetLineNumber() was moved to the limited C API
 
 In Python 3.12, new helper functions were added:
 
