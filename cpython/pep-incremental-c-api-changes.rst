@@ -38,9 +38,10 @@ blocker issue was that the proposed tool 2to3 removed support for the
 old API (Python 2), option which was a no-go for many projects
 maintainers. The migration only started seriously when a compatibility
 layer, the ``six`` module, became popular, so projects can be made
-compatible with the new API without losing support for the old API,
-which is more an *incremental approach* than a *flag day migration*.
-Migration tools using the compatibility layer were also written.
+compatible with the new API without losing support for the old API.
+In practice, it became more an *incremental approach* than a *flag day
+migration*. Migration tools using the compatibility layer were also
+written.
 
 
 Rationale
