@@ -12,7 +12,7 @@ projects, available maintainers and remaining time until a new Python
 version is released which removes the old API.
 
 Discuss practical solutions to discover affected projects and offer a
-compatibility layer to ready for the next Python version without losing
+compatibility layer to be ready for the next Python version without losing
 support for old Python versions.
 
 
