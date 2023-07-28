@@ -2,6 +2,20 @@
 PEP: Incremental C API changes
 ++++++++++++++++++++++++++++++
 
+Abstract
+========
+
+Changing incrementally the Python C API to fix C API issues.
+
+Process to adapt the migration pace depending on the number of affected
+projects, available maintainers and remaining time until a new Python
+version is released which removes the old API.
+
+Discuss practical solutions to discover affected projects and offer a
+compatibility layer to migrate to be ready for the next Python version
+without losing support for old Python versions.
+
+
 Motivation
 ==========
 
@@ -27,6 +41,7 @@ layer, the ``six`` module, became popular, so projects can be made
 compatible with the new API without losing support for the old API,
 which is more an *incremental approach* than a *flag day migration*.
 Migration tools using the compatibility layer were also written.
+
 
 Rationale
 =========
@@ -110,18 +125,18 @@ For minor C API issues, the old API can be only `soft deprecated
 <https://peps.python.org/pep-0387/#soft-deprecation>`_ (no scheduled
 removal), rather than being "hard" deprecated.
 
-The ideal migration is to only start to deprecate once most affected
+The ideal migration is to only start deprecating once most affected
 projects published a release upgraded to the new API. In practice,
-usually the deprecation happens early to give incentives to developers
-to migrate. If the old API is not deprecated, only a minority of
-developers will upgrade which can block the work on fixing following C
-API issues.
+usually the deprecation happens early to give incentives to migrate. If
+the old API is not deprecated, only a minority of developers will
+upgrade which can block the work on fixing following more complex C API
+issues.
 
 The `pythoncapi-compat project
-<https://pythoncapi-compat.readthedocs.io/>`_ project can be used to get
-the new API on old Python versions, or another compatibility layer.
+<https://pythoncapi-compat.readthedocs.io/>`_, or other compatibility
+layers, can be used to get the new API on old Python versions.
 
 This document doesn't go into the detail of each issue and proposed
 solutions: it should be done on a case by case basis and discussed
 separately. This document is only about the general "incremental change"
-approach.
+migration approach.
