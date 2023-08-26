@@ -46,6 +46,10 @@ alias nssh='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 alias nscp='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 #alias cat='cat -v'
 
+# dnf always want to refresh its cache, it's slow and it logs errors
+# when it cannot fetch Red Hat repositories behind the VPN (when it's off).
+alias dnf='dnf --cacheonly'
+
 # Protect myself against stupid commands like "echo user:password: >/etc/passwd"
 set -C
 
