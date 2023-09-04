@@ -9,8 +9,8 @@ email = vstinner@python.org
 [alias]
 glog = log --graph
 out = log '@{upstream}..' --pretty='format:%Cred%h%Creset %s' --color --reverse
+b = branch --show-current
 amend = commit -v --untracked-files=no --amend --all
-b = branch
 ci = commit -v --untracked-files=no
 co = checkout
 st = status
