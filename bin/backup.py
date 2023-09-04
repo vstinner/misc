@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Experimental script to backup my Linux PC between two disks.
 
@@ -108,7 +108,7 @@ class Backup:
         if not self.prune:
             exitcode = subprocess.call(args)
             if exitcode:
-                info("Command failed with exit code %s: %s" % (exitcode, format_shell_args(args)))
+                self.info("Command failed with exit code %s: %s" % (exitcode, format_shell_args(args)))
                 sys.exit(exitcode)
 
     def main(self):
@@ -118,14 +118,14 @@ class Backup:
         self.info("Make directory: %s" % self.dst_disk)
         if os.path.isdir(self.dst_disk):
             print("Destination directory exists: %s" % self.dst_disk)
-            question = raw_input("If you want to restart an interrupted transfer, please write YES: ")
+            question = input("If you want to restart an interrupted transfer, please write YES: ")
             if question.strip() != "YES":
                 sys.exit(1)
             self.info()
 
             self.delete = True
         else:
-            question = raw_input("Create a new backup into %s? please write YES: " % self.dst_disk)
+            question = input("Create a new backup into %s? please write YES: " % self.dst_disk)
             if question.strip() != "YES":
                 sys.exit(1)
             self.info()

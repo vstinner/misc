@@ -3,9 +3,7 @@
 Install scripts as symbolic links in ~/.local/bin/
 """
 from os.path import dirname, realpath, join as path_join, expanduser, exists, islink
-from os import stat, readlink, symlink, lstat, unlink, mkdir
-from stat import S_ISLNK
-from shutil import copyfile
+from os import readlink, symlink, lstat, unlink, mkdir
 from sys import exit, stdout
 from difflib import unified_diff
 from errno import EEXIST

@@ -175,7 +175,7 @@ def ask_confirmation(prompt):
         if PY3:
             answer = input(prompt)
         else:
-            answer = raw_input(prompt)
+            answer = input(prompt)
     except (KeyboardInterrupt, EOFError):
         print("no")
         sys.exit(1)
