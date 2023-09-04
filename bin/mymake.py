@@ -4,10 +4,18 @@ import subprocess
 import sys
 import time
 
+
 patterns = (
     ('error', 'error: '),
     ('warning', 'warning: '),
 )
+
+
+def plural(name, count):
+    if count > 1:
+        name += 's'
+    return name
+
 
 def main():
     start_time = time.perf_counter()
@@ -36,7 +44,7 @@ def main():
                 for name, pattern in patterns:
                     if pattern not in line:
                         continue
-                    matched.append(line.rstrip())
+                    matched.append((name, line.rstrip()))
         except:
             proc.kill()
             raise
@@ -45,9 +53,17 @@ def main():
 
     if matched:
         print()
-        for line in matched:
+        match_types = {}
+        for name, line in matched:
             print(line)
-        print(f"=> Found {len(matched)} compiler warnings/errors")
+            try:
+                match_types[name] += 1
+            except KeyError:
+                match_types[name] = 1
+        text = [f'{count} {plural(name, count)}'
+                for name, count in match_types.items()]
+        text = ' and '.join(text)
+        print(f"=> Found {text}")
 
     duration = time.perf_counter() - start_time
     duration = f"{duration:.1f} sec)"
