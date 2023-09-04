@@ -4,8 +4,12 @@
 # Inherit system defaults
 source /etc/profile
 
-# don't put duplicate lines in the history
-export HISTCONTROL=ignoredups
+# don't put duplicate lines in the history.
+# 'ignoredups' still stores duplicates in the history.
+export HISTCONTROL=erasedups
+# store 10 000 lines in the history
+export HISTSIZE=10000
+export HISTFILESIZE=10000
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -49,6 +53,7 @@ alias nscp='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 # dnf always want to refresh its cache, it's slow and it logs errors
 # when it cannot fetch Red Hat repositories behind the VPN (when it's off).
 alias dnf='dnf --cacheonly'
+alias make='python ~/myprojects/misc/bin/mymake.py'
 
 # Protect myself against stupid commands like "echo user:password: >/etc/passwd"
 set -C
