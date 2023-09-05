@@ -66,7 +66,7 @@ def main():
         print(f"=> Found {text}")
 
     duration = time.perf_counter() - start_time
-    duration = f"{duration:.1f} sec)"
+    duration = f"{duration:.1f} sec"
     print()
     if exitcode:
         print(f"Build FAILED with exit code {exitcode} ({duration})")
@@ -74,6 +74,7 @@ def main():
         print(f"Build OK but with some warnings/errors ({duration})")
     else:
         print(f"Build OK: no compiler warnings or errors ({duration})")
+    sys.exit(exitcode)
 
 
 if __name__ == "__main__":
