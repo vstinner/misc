@@ -40,7 +40,7 @@ def main():
                 if not line:
                     # process completed
                     break
-                print(line, end="")
+                print(line, end="", flush=True)
                 for name, pattern in patterns:
                     if pattern not in line:
                         continue
