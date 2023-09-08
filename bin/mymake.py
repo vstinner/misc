@@ -51,11 +51,12 @@ def main():
 
         exitcode = proc.wait()
 
+    file = sys.stderr
     if matched:
-        print()
+        print(file=file)
         match_types = {}
         for name, line in matched:
-            print(line)
+            print(line, file=file)
             try:
                 match_types[name] += 1
             except KeyError:
@@ -63,17 +64,17 @@ def main():
         text = [f'{count} {plural(name, count)}'
                 for name, count in match_types.items()]
         text = ' and '.join(text)
-        print(f"=> Found {text}")
+        print(f"=> Found {text}", file=file)
 
     duration = time.perf_counter() - start_time
     duration = f"{duration:.1f} sec"
-    print()
+    print(file=file)
     if exitcode:
-        print(f"Build FAILED with exit code {exitcode} ({duration})")
+        print(f"Build FAILED with exit code {exitcode} ({duration})", file=file)
     elif matched:
-        print(f"Build OK but with some warnings/errors ({duration})")
+        print(f"Build OK but with some warnings/errors ({duration})", file=file)
     else:
-        print(f"Build OK: no compiler warnings or errors ({duration})")
+        print(f"Build OK: no compiler warnings or errors ({duration})", file=file)
     sys.exit(exitcode)
 
 
