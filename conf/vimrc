@@ -34,8 +34,6 @@ set nofoldenable
 "set showmatch   " Display corresponding parenthesis
 set incsearch   " Incremental search (while typing)
 
-set nowrapscan  " Don't cycle on search (go back to start of file)
-
 " Delete trailing spaces before saving.
 " Use ":autocmd!" to disable this temporary
 autocmd BufWrite * silent! %s/[ \t\r]\+$//
