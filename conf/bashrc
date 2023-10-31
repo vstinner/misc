@@ -53,7 +53,7 @@ alias nscp='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 # dnf always want to refresh its cache, it's slow and it logs errors
 # when it cannot fetch Red Hat repositories behind the VPN (when it's off).
 alias dnf='dnf --cacheonly'
-alias make='python ~/myprojects/misc/bin/mymake.py'
+alias make='python -I ~/myprojects/misc/bin/mymake.py'
 
 # Protect myself against stupid commands like "echo user:password: >/etc/passwd"
 set -C
