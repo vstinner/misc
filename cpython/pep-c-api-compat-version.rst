@@ -4,6 +4,13 @@ Add Py_COMPAT_API_VERSION to Python C API
 
 Target version: Python 3.13
 
+Abstract
+========
+
+Add ``Py_COMPAT_API_VERSION`` and ``Py_COMPAT_API_VERSION_MAX`` macros
+to decide **when** a C extension is impacted by incompatible changes.
+
+
 Rationale
 =========
 
@@ -21,18 +28,18 @@ these features. Some incompatible changes are driven by other reasons:
 Currently, there is no middle ground between "not change the C API" and
 "incompatible C API impacting everybody".
 
-On the other side, the limited C API is versionned: the
-``Py_LIMITED_API`` macro can be set to a Python version to select which
-API is available. On the Python side, it allows introducing incompatible
-changes at a specific ``Py_LIMITED_API`` version. For example, if
-``Py_LIMITED_API`` is set to Python 3.11 or newer, the ``<stdio.h>`` is
-no longer included by ``Python.h``.
+The limited C API is versionned: the ``Py_LIMITED_API`` macro can be set
+to a Python version to select which API is available. On the Python
+side, it allows introducing incompatible changes at a specific
+``Py_LIMITED_API`` version. For example, if ``Py_LIMITED_API`` is set to
+Python 3.11 or newer, the ``<stdio.h>`` is no longer included by
+``Python.h``.
 
 The difference here is that upgrading Python does not change if
 ``<stdio.h>`` is included or not, but updating ``Py_LIMITED_API`` does,
-and updating ``Py_LIMITED_API`` is an action from the C extension
-maintainer. It gives more freedom to decide when the maintainer is ready
-to deal with the latest batch of incompatible changes.
+and updating ``Py_LIMITED_API`` is an action made by C extension
+maintainer. It gives more freedom to decide **when** the maintainer is
+ready to deal with the latest batch of incompatible changes.
 
 
 Specification
@@ -76,6 +83,9 @@ Non-goals:
 
 * Freeze the API forever: this is not the stable ABI. For example,
   deprecated functions will continue to be removed on a regular basis.
+  Not updating ``Py_COMPAT_API_VERSION`` does not prevent C extensions
+  maintainers to update their code: incompatible changes will still
+  happen soon or later.
 * Provide a stable ABI: the macro only impacts the API.
 * Silver bullet solving all C API issues.
 
@@ -92,6 +102,6 @@ Prior Art
 =========
 
 * ``Py_LIMITED_API`` macro of `PEP 384 – Defining a Stable ABI
-  <https://peps.python.org/pep-0384/>`_
+  <https://peps.python.org/pep-0384/>`_.
 * Rejected `PEP 606 – Python Compatibility Version
-  <https://peps.python.org/pep-0606/>`_
+  <https://peps.python.org/pep-0606/>`_ which has a global scope.
