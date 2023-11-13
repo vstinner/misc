@@ -77,7 +77,7 @@ Goals:
   ``Py_COMPAT_API_VERSION_MAX`` to detect future incompatibilities. For C
   extensions releases, it can be set a fixed Python version.
 * For core developers, make sure that the C API can still evolve
-  without being afraid of broking an unknown number of C extensions.
+  without being afraid of breaking an unknown number of C extensions.
 
 Non-goals:
 
