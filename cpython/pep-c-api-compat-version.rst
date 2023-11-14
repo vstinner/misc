@@ -4,6 +4,9 @@ Add Py_COMPAT_API_VERSION to Python C API
 
 Target version: Python 3.13
 
+* https://github.com/capi-workgroup/problems/issues/54
+* https://github.com/capi-workgroup/api-evolution/issues/24
+
 Abstract
 ========
 
