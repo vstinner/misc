@@ -1,12 +1,24 @@
 PEP: Unify type name formatting
 
+::
+
+    PEP: xxx
+    Title: Unify type name formatting
+    Author: Victor Stinner <vstinner@python.org>
+    Status: Draft
+    Type: Standards Track
+    Content-Type: text/x-rst
+    Created: 29-Nov-2023
+    Python-Version: 3.13
+
+
 Abstract
 ========
 
-Change how type names are formatted in Python and C to no longer format
-type names differently depending on how types are implemented. Add new
-convenient API for that. Also, put an end to the cargo cult of
-truncating type names in C.
+Add new convenient APIs to format type names the same way in Python and
+in C. No longer format type names differently depending on how types are
+implemented. Also, put an end to truncating type names in C. The new C
+API is compatible with the limited C API.
 
 Rationale
 =========
@@ -16,10 +28,21 @@ Standard library
 
 In the Python standard library, formatting a type name or the type name
 of an object is a common operation to format an error message and to
-implepment a ``__repr__()`` method. There are different ways to format a
+implement a ``__repr__()`` method. There are different ways to format a
 type name which give different outputs.
 
-In Python, ``type.__name__`` formats the type "short name", whereas
+Example with the ``datetime.timedelta`` type:
+
+* The type short name (``type.__name__``) and the type qualified name
+  (``type.__qualname__``) are ``'timedelta'``.
+* The type module (``type.__module__``) is ``'datetime'``.
+* The type fully qualified name is ``'datetime.timedelta'``.
+
+
+Python code
+^^^^^^^^^^^
+
+In Python, ``type.__name__`` gets the type "short name", whereas
 ``f"{type.__module__}.{type.__qualname__}"`` formats the type "fully
 qualified name. Usually, ``type(obj)`` or ``obj.__class__`` are used to
 get the type of the object *obj*. Sometimes, the type name is put
@@ -34,6 +57,9 @@ Examples:
 Qualified names were added to types (``type.__qualname__``) in Python
 3.3 by `PEP 3155 – Qualified name for classes and functions
 <https://peps.python.org/pep-3155/>`_.
+
+C code
+^^^^^^
 
 In C, the most common way to format a type name is to get the
 ``PyTypeObject.tp_name`` member of the type. Example::
@@ -61,8 +87,7 @@ Using PyTypeObject.tp_name is inconsistent
 The ``PyTypeObject.tp_name`` member is different depending on the type
 implementation:
 
-* Static types and heap types in C: type fully qualified name (module
-  qualified name and type qualified name)
+* Static types and heap types in C: type fully qualified name.
 * Python class: type short name (``type.__name__``).
 
 So using ``Py_TYPE(obj)->tp_name`` to format an object type name gives
@@ -73,18 +98,52 @@ Compatibility Requirements <https://peps.python.org/pep-0399/>`__
 principles which require code to behave the same way if written in
 Python or in C.
 
-So the ``PyTypeObject.tp_name`` member should not be used to format a
-type name.
+Example::
+
+    $ python3.12
+    >>> import _datetime; c_obj = _datetime.date(1970, 1, 1)
+    >>> import _pydatetime; py_obj = _pydatetime.date(1970, 1, 1)
+    >>> my_list = list(range(3))
+
+    >>> my_list[c_obj]  # C type
+    TypeError: list indices must be integers or slices, not datetime.date
+
+    >>> my_list[py_obj]  # Python type
+    TypeError: list indices must be integers or slices, not date
+
+The error message contains the type fully qualified name
+(``datetime.date``) if the type is implemented in C, or the type short
+name (``date``) if the type is implemented in Python.
+
+The ``PyTypeObject.tp_name`` member should not be used to format a type
+name in an error message.
+
+
+Limited C API
+-------------
+
+The ``Py_TYPE(obj)->tp_name`` code cannot be used with the limited C
+API, since the ``PyTypeObject`` members are excluded from the limited C
+API.
+
+The type name should be read using ``PyType_GetName()``,
+``PyType_GetQualName()`` and ``PyType_GetModule()`` functions which are
+less convenient to use.
 
 
 Truncating type names in C
 --------------------------
 
 In 1998, when the ``PyErr_Format()`` function was added, the
-implementation used a fixed buffer of 500 bytes. In 2001, it was
-modified to allocate a dynamic buffer on the heap. Too late, the cargo
-cult is to use ``"%.100s"`` format and nobody reminds why. In Python,
-type names are not truncated.
+implementation used a fixed buffer of 500 bytes. The function came
+with the comment::
+
+    /* Caller is responsible for limiting the format */
+
+In 2001, the function was modified to allocate a dynamic buffer on the
+heap. Too late, the practice of truncating type names, like using the
+``%.100s`` format, already became a habit, and developers forgot why
+type names are truncated. In Python, type names are not truncated.
 
 Truncating type names in C but not in Python goes against `PEP 399 –
 Pure Python/C Accelerator Module Compatibility Requirements
@@ -103,7 +162,7 @@ Specification
 * Add ``%T`` and ``%#T`` formats to ``PyUnicode_FromFormat()``.
 * Add ``PyType_GetFullyQualifiedName()`` function.
 * Recommend using the type short name format in error messages.
-* Recommend using the type fully qualified name in ``repr()``.
+* Recommend using the type fully qualified name in ``__repr()__``.
 * Recommend not truncating type names.
 
 Python API
@@ -124,13 +183,16 @@ a type name:
 * ``%#T`` formats ``type.__fully_qualified_name__``: the type "fully
   qualified name".
 
+Both formats expect a type object.
+
 The hash character (``#``) in the format string stands for
 `alternative format
 <https://docs.python.org/3/library/string.html#format-specification-mini-language>`_.
 For example, ``f"{123:x}"`` returns ``'7b'`` and ``f"{123:#x}"`` returns
 ``'0x7b'`` (``#`` adds ``0x`` prefix).
 
-Both formats expect a type object.
+The ``%T`` format is used by ``time.strftime()``, but it's not used by
+``printf()``.
 
 For example, the code::
 
@@ -143,6 +205,15 @@ can be replaced with::
     PyErr_Format(PyExc_TypeError,
                  "__format__ must return a str, not %T",
                  Py_TYPE(result));
+
+Advantages of the updated code:
+
+* The ``PyTypeObject.tp_name`` member is no longer read explicitly: the
+  code becomes compatible with the limited C API.
+* The ``PyTypeObject.tp_name`` bytes string no longer has to be decoded
+  from UTF-8 at each ``PyErr_Format()`` call, since
+  ``type.__fully_qualified_name__`` is already a Unicode string.
+* The type name is no longer truncated.
 
 Add PyType_GetFullyQualifiedName() function
 -------------------------------------------
@@ -158,11 +229,11 @@ On success, return a new reference to the string. On error, raise an
 exception and return ``NULL``.
 
 
-Recommend using the type short name in error message
-----------------------------------------------------
+Recommend using the type short name in error messages
+-----------------------------------------------------
 
-The type short name (``type.__name__``) is recommended to format error
-messages displayed to users.
+The type short name (``type.__name__`` and ``%T`` format in C) is
+recommended to format error messages displayed to users.
 
 Example in Python::
 
@@ -171,7 +242,7 @@ Example in Python::
 Example in C::
 
     PyErr_Format(PyExc_TypeError,
-                 "__format__ must return a str, not %T",
+                 "__index__ returned non-int (type %T)",
                  Py_TYPE(result));
 
 The type fully qualified name (``type.__fully_qualified_name__``) can be
@@ -186,11 +257,12 @@ name.
 Recommend using the type fully qualified name in __repr__()
 -----------------------------------------------------------
 
-The type fully qualified name (``type.__fully_qualified_name__``) is
-recommended to implemented a ``__repr__()`` method. The type can be
-identified in a reliable way by its fully qualified name. There is less
-risk of having two different types with the same fully qualified name,
-than two types with the same short name (``type.__name__``).
+The type fully qualified name (``type.__fully_qualified_name__`` and
+``%#T`` format in C) is recommended to implemented a ``__repr__()``
+method. The type can be identified in a reliable way by its fully
+qualified name. There is less risk of having two different types with
+the same fully qualified name, than two types with the same short name
+(``type.__name__``).
 
 Example in Python::
 
@@ -201,26 +273,23 @@ Example in Python::
 Recommend not truncating type names
 -----------------------------------
 
-Type names must not be truncated. For example, the ``"%.100s"`` format
-should be avoided: use the ``"%s"`` format instead (or ``"%T`` and
-``"%#T`` formats in C).
+Type names must not be truncated. For example, the ``%.100s`` format
+should be avoided: use the ``%s`` format instead (or ``%T`` and ``%#T``
+formats in C).
 
 
-Out of the PEP scope
-====================
+Implementation
+==============
 
-Later, the ``__fully_qualified_name__`` attribute can be added to other
-types:
+* Pull request: `Add type.__fully_qualified_name__ attribute <https://github.com/python/cpython/pull/112133>`_.
+* Pull requets: `Add %T format to PyUnicode_FromFormat() <https://github.com/python/cpython/pull/111703>`_.
 
-* Coroutine
-* Function
-* Generator
-* Method
 
-But these changes are out of the scope of this PEP.
+Backwards Compatibility
+=======================
 
-By the way, modules have no ``__qualname__`` attribute. A module name,
-``module.__name__``, is already the fully qualified name.
+Only new APIs are added. No existing API is modified. Changes are fully
+backward compatible.
 
 
 Rejected Ideas
@@ -232,43 +301,60 @@ Change str(type)
 The ``type.__str__()`` method can be modified to format a type name
 differently. For example, to format the fully qualified name.
 
-The problem is that it's an incompatible change. For example, ``enum``,
-``functools``, ``optparse``, ``pdb`` and ``xmlrpc.server`` modules of
-the standard library have to be updated. And ``test_dataclasses``,
-``test_descrtut`` and ``test_cmd_line_script`` have to be updated as
-well.
+The problem is that it's a backward incompatible change. For example,
+``enum``, ``functools``, ``optparse``, ``pdb`` and ``xmlrpc.server``
+modules of the standard library have to be updated. And
+``test_dataclasses``, ``test_descrtut`` and ``test_cmd_line_script``
+have to be updated as well.
 
 See the `pull request: type(str) returns the fully qualified name
 <https://github.com/python/cpython/pull/112129>`_.
 
 
-Add !t formatter to get an object type in format()
---------------------------------------------------
-
-Use ``f"{obj!t:T}"`` to format ``type(obj).__name__``.
-
-
 Add formats to type.__format__()
 --------------------------------
 
-Proposed formats:
+Examples of proposed formats:
 
 * ``f"{type(obj):z}"`` formats ``type(obj).__name__``.
 * ``f"{type(obj):M.T}"`` formats ``type(obj).__fully_qualified_name__``.
 * ``f"{type(obj):M:T}"`` formats ``type(obj).__fully_qualified_name__``
   using colon (``:``) separator.
+* ``f"{type(obj):T}"`` formats ``type(obj).__name__``.
+* ``f"{type(obj):#T}"`` formats ``type(obj).__fully_qualified_name__``.
 
-Using short format (such as a single letter ``z``) requires to refer to
+Using short format (such as ``z``, a single letter) requires to refer to
 format documentation to understand how a type name is formatted, whereas
 ``type(obj).__name__`` is explicit.
 
 The dot character (``.``) is already used for the "precision" in format
 strings. The colon character (``:``) is already used to separated the
 expression from the format specification. For example, ``f"{3.14:g}"``
-uses ``g`` format which comes after ``:``. Usually, a format type is a
-single format, such as ``g`` in ``f"{3.14:g}"``, not ``M.T`` or ``M:T``.
-Reusing dot and colon characters for a different purpose can be
-misleading and make the format parser more complicated.
+uses ``g`` format which comes after the colon (``:``). Usually, a format
+type is a single letter, such as ``g`` in ``f"{3.14:g}"``, not ``M.T``
+or ``M:T``. Reusing dot and colon characters for a different purpose can
+be misleading and make the format parser more complicated.
+
+Add formats to str % args
+-------------------------
+
+It was proposed to add formats to format a type name in ``str % arg``.
+For example, ``%T`` and ``%#T`` formats.
+
+Nowadays, f-string is preferred for new code.
+
+
+Add !t formatter to get an object type
+--------------------------------------
+
+Use ``f"{obj!t:T}"`` to format ``type(obj).__name__``, similar to
+``f"{type(obj).__name__}"``.
+
+When the ``!t`` formatter was proposed in 2018, `Eric Smith was opposed
+to this
+<https://mail.python.org/archives/list/python-dev@python.org/message/BMIW3FEB77OS7OB3YYUUDUBITPWLRG3U/>`_.
+Eric is the author of `PEP 498 f-string
+<https://peps.python.org/pep-0498/>`_.
 
 
 Use colon separator in fully qualified name
@@ -286,17 +372,19 @@ It is already tricky to get a type from its qualified name. The type
 qualified name already uses the dot (``.``) separator between different
 parts: class name, ``<locals>``, nested class name, etc.
 
-The colon separator is not consistent with dot separator used in module
-fully qualified name (``module.__name__``).
+The colon separator is not consistent with dot separator used in a
+module fully qualified name (``module.__name__``).
 
 
 Other ways to format type names in C
 ------------------------------------
 
-The ``PyUnicode_FromFormat()`` function supports multiple size
-modifiers: ``hh`` (``char``), ``h`` (``short``), ``l``, ``ll``, ``z``,
-``t``, ``j``.  The following length modifiers can be used to format a
-type name:
+The ``printf()`` function supports multiple size modifiers: ``hh``
+(``char``), ``h`` (``short``), ``l`` (``long``), ``ll`` (``long long``),
+``z`` (``size_t``), ``t`` (``ptrdiff_t``) and ``j`` (``intmax_t``).
+The ``PyUnicode_FromFormat()`` function supports most of them.
+
+Proposed formats using ``h`` and ``hh`` length modifiers:
 
 * ``%hhT`` formats ``type.__name__``.
 * ``%hT`` formats ``type.__qualname__``.
@@ -304,61 +392,88 @@ type name:
 
 Other proposed formats:
 
-* ``"%Q"``
+* ``%Q``
+* ``%t``. printf() now uses ``t`` as a length modifier for a
+  ``ptrdiff_t`` argument.
 * ``%lT`` formats ``type.__fully_qualified_name__``.
+* ``%Tn`` formats ``type.__name__``.
+* ``%Tq`` formats ``type.__qualname__``.
+* ``%Tf`` formats ``type.__fully_qualified_name__``.
 
-Having more formats to format type names can lead to inconsistencies
+Having more options to format type names can lead to inconsistencies
 between different modules and make the API more error prone.
 
-To format a type qualified name, ``f"{type.__qualname__}"`` can be used
-in Python and ``PyType_GetQualName()`` can be used in C.
+Length modifiers are used to specify the C type of the argument, not to
+change how an argument is formatted. The alternate form (``#``) changes
+how an argument is formatted. Here the argument C type is always
+``PyObject*``.
+
+``type.__qualname__`` can be used in Python and ``PyType_GetQualName()``
+can be used in C to format a type qualified name.
 
 
-Pass an instance to %T format in C: omit Py_TYPE()
---------------------------------------------------
+Omit Py_TYPE() with %T format: pass an instance
+-----------------------------------------------
 
 It was proposed to format a type name from a instance, like::
 
-    PyErr_Format(..., "type %T", obj);
+    PyErr_Format(..., "type name: %T", obj);
 
 The intent is to avoid ``Py_TYPE()`` which returns a borrowed reference
 to the type. Using a borrowed referencen can cause bug or crash if the
 type is finalized or deallocated while being used.
 
 In practice, it's unlikely that a type is finalized while the error
-message is formatted. Instances of static types cannot see their type
-being deallocated: static types are never deallocated. Instances of heap
-types hold a strong reference to their type (in ``PyObject.ob_type``)
-and it's safe to make the assumption that the code holds a strong
-reference to the formatted object, so the object type cannot be
-deallocated.
+message is formatted. Instances of static types cannot have their type
+being deallocated: static types are never deallocated. Since Python 3.8,
+instances of heap types hold a strong reference to their type (in
+``PyObject.ob_type``) and it's safe to make the assumption that the code
+holds a strong reference to the formatted object, so the object type
+cannot be deallocated.
 
-In short, using ``Py_TYPE(obj)`` to format an error message is safe.
+In short, it is safe to use ``Py_TYPE(obj)`` borrowed reference while
+formatting an error message.
 
-If the ``%T`` format expects an instance, formatting a **type** name
-cannot use ``%T`` format, whereas it's a common operation in extensions
-of the standard library. So the ``%T`` format would only cover half of
-cases. If the ``%T`` format takes a type, all cases are covered.
-
-
-Other APIs to get a type fully qualified name
----------------------------------------------
-
-* ``type.__fullyqualname__`` attribute
-* Add a function to the ``inspect`` module
+If the ``%T`` format expects an instance, formatting a type cannot use
+the ``%T`` format, whereas it's a common operation in stdlib C
+extensions. The ``%T`` format would only cover half of cases (only
+instances). If the ``%T`` format takes a type, all cases are covered
+(types and instances using ``Py_TYPE()``).
 
 
-Omit __main__ in the type fully qualified name
-----------------------------------------------
+Other proposed APIs to get a type fully qualified name
+------------------------------------------------------
+
+* ``type.__fullyqualname__`` attribute name: attribute without underscore
+  between words. Several dunders, including some of the most recently
+  added ones, include an underscore in the word: ``__class_getitem__``,
+  ``__release_buffer__``, ``__type_params__``, ``__init_subclass__`` and
+  ``__text_signature__``.
+* ``type.__fqn__`` attribute name (Fully Qualified Name: FDN).
+* Add a function to the ``inspect`` module. Need to import the
+  ``inspect`` module to use it.
+
+
+Omit __main__ module in the type fully qualified name
+-----------------------------------------------------
 
 The ``pdb`` module formats a type fully qualified names in a similar way
-than proposed ``type.__fully_qualified_name__`` but omits the module if
-the module is equal to ``"__main__"``.
+than proposed ``type.__fully_qualified_name__``, but it omits the module
+if the module is equal to ``"__main__"``.
 
-The ``unittest`` module formats a type fully qualified names the same
-way than proposed ``type.__fully_qualified_name__``: only omits the
-module if the module is equal to ``"builtins"``.
+The ``unittest`` module and a lot of existing stdlib code format a type
+fully qualified names the same way than proposed
+``type.__fully_qualified_name__``: only omits the module if the module
+is equal to ``"builtins"``.
 
+It's possible to omit the ``"__main__."`` prefix for the ``__main__``
+module with::
+
+    def format_type(cls):
+        if cls.__module__ != "__main"__:
+            return cls.__fully_qualified_name__
+        else:
+            return cls.__qualname__
 
 
 Discussions
@@ -382,3 +497,10 @@ Discussions
 * Issue: `Replace %.100s by %s in PyErr_Format(): the arbitrary limit of
   500 bytes is outdated
   <https://github.com/python/cpython/issues/55042>`__ (2011).
+
+
+Copyright
+=========
+
+This document is placed in the public domain or under the
+CC0-1.0-Universal license, whichever is more permissive.
