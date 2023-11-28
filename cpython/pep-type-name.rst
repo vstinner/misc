@@ -11,75 +11,100 @@ truncating type names in C.
 Rationale
 =========
 
-Qualified name
---------------
-
-Python 3.3 added qualified names to types with `PEP 3155 – Qualified
-name for classes and functions <https://peps.python.org/pep-3155/>`_.
-
 Standard library
 ----------------
 
-In the Python standard library, there are many functions formatting
-a type name or the type name of an objects, with different formats.
-Main ways to format a type name.
+In the Python standard library, formatting a type name or the type name
+of an object is a common operation to format an error message and to
+implepment a ``__repr__()`` method. There are different ways to format a
+type name which give different outputs.
 
-Python:
+In Python, ``type.__name__`` formats the type "short name", whereas
+``f"{type.__module__}.{type.__qualname__}"`` formats the type "fully
+qualified name. Usually, ``type(obj)`` or ``obj.__class__`` are used to
+get the type of the object *obj*. Sometimes, the type name is put
+between quotes.
 
-* XXX
+Examples:
 
-C:
+* ``raise TypeError("str expected, not %s" % type(value).__name__)``
+* ``raise TypeError("can't serialize %s" % self.__class__.__name__)``
+* ``name = "%s.%s" % (obj.__module__, obj.__qualname__)``
 
-* XXX
+Qualified names were added to types (``type.__qualname__``) in Python
+3.3 by `PEP 3155 – Qualified name for classes and functions
+<https://peps.python.org/pep-3155/>`_.
 
-Formatting a type in C is inconsistent
---------------------------------------
+In C, the most common way to format a type name is to get the
+``PyTypeObject.tp_name`` member of the type. Example::
 
-Common code pattern to format a object type name in C::
+    PyErr_Format(PyExc_TypeError, "globals must be a dict, not %.100s",
+                 Py_TYPE(globals)->tp_name);
 
-    PyErr_Format(..., "... %s ...", Py_TYPE(obj)->tp_name);
+The type qualified name (``type.__qualname__``) is only used at a single
+place, by the ``type.__repr__()`` implementation. Using
+``Py_TYPE(obj)->tp_name`` is more convenient than calling
+``PyType_GetQualName()`` which requires ``Py_DECREF()``. Moreover,
+``PyType_GetQualName()`` was only added recently, in Python 3.11.
 
-The problem is that ``PyTypeObject.tp_name`` is different depending on
-the type implementation:
+Some functions use ``%R`` to format a type name. Example::
 
-* Static types and heap types in C: ``type.__fully_qualified_name__``
-  fully qualified name
-* Python class: ``type.__name__`` short name
+    PyErr_Format(PyExc_TypeError,
+                 "calling %R should have returned an instance "
+                 "of BaseException, not %R",
+                 type, Py_TYPE(value));
 
 
-Truncate type names in C
-------------------------
+Using PyTypeObject.tp_name is inconsistent
+------------------------------------------
 
-The PEP-399 requires that C accelerator behaves exactly as Python, but a
-lot of C code truncates type name to an arbitrary length: 80, 100, 200,
-up to 500 (not sure if it's a number of bytes or characters).
+The ``PyTypeObject.tp_name`` member is different depending on the type
+implementation:
+
+* Static types and heap types in C: type fully qualified name (module
+  qualified name and type qualified name)
+* Python class: type short name (``type.__name__``).
+
+So using ``Py_TYPE(obj)->tp_name`` to format an object type name gives
+a different output depending if a type is implemented in C or in Python.
+
+It goes against `PEP 399 – Pure Python/C Accelerator Module
+Compatibility Requirements <https://peps.python.org/pep-0399/>`__
+principles which require code to behave the same way if written in
+Python or in C.
+
+So the ``PyTypeObject.tp_name`` member should not be used to format a
+type name.
+
+
+Truncating type names in C
+--------------------------
 
 In 1998, when the ``PyErr_Format()`` function was added, the
 implementation used a fixed buffer of 500 bytes. In 2001, it was
 modified to allocate a dynamic buffer on the heap. Too late, the cargo
-cult is to use ``"%.100s"`` format and nobody reminds why.
+cult is to use ``"%.100s"`` format and nobody reminds why. In Python,
+type names are not truncated.
 
-Issue: `Replace %.100s by %s in PyErr_Format(): the arbitrary limit of
-500 bytes is outdated <https://github.com/python/cpython/issues/55042>`__
-(2011).
+Truncating type names in C but not in Python goes against `PEP 399 –
+Pure Python/C Accelerator Module Compatibility Requirements
+<https://peps.python.org/pep-0399/>`__ principles which require code to
+behave the same way if written in Python or in C.
 
-Recent C API changes
---------------------
-
-Python 3.11 added `the PyType_GetQualName() function
-<https://docs.python.org/dev/c-api/type.html#c.PyType_GetQualName>`_ to
-the C API.
+See the issue: `Replace %.100s by %s in PyErr_Format(): the arbitrary
+limit of 500 bytes is outdated
+<https://github.com/python/cpython/issues/55042>`__ (2011).
 
 
 Specification
 =============
 
-* Add ``type.__fully_qualified_name__``.
+* Add ``type.__fully_qualified_name__`` attribute.
 * Add ``%T`` and ``%#T`` formats to ``PyUnicode_FromFormat()``.
-* Add ``PyType_GetFullyQualName()`` function.
-* Recommend to no longer truncate type names in C code.
-* Recommend the type short name format for error messages.
-* Recommend the type fully qualified name in ``repr()``.
+* Add ``PyType_GetFullyQualifiedName()`` function.
+* Recommend using the type short name format in error messages.
+* Recommend using the type fully qualified name in ``repr()``.
+* Recommend not truncating type names.
 
 Python API
 ----------
@@ -89,10 +114,10 @@ qualified name of a type: similar to
 ``f"{type.__module__}.{type.__qualname__}"`` or ``type.__qualname__`` if
 ``type.__module__`` is not a string or is equal to ``"builtins"``.
 
-C API
------
+Add PyUnicode_FromFormat() formats
+----------------------------------
 
-Add ``%T`` and ``%#T`` formats to ``PyUnicode_FromFormat()``, format
+Add ``%T`` and ``%#T`` formats to ``PyUnicode_FromFormat()`` to format
 a type name:
 
 * ``%T`` formats ``type.__name__``: the type "short name"
@@ -105,13 +130,7 @@ The hash character (``#``) in the format string stands for
 For example, ``f"{123:x}"`` returns ``'7b'`` and ``f"{123:#x}"`` returns
 ``'0x7b'`` (``#`` adds ``0x`` prefix).
 
-Both formats expect a type object. Example of usage::
-
-Add also the ``PyType_GetFullyQualName()`` function to get the
-``__fully_qualified_name__`` attribute of a type.
-
-Type names should not be truncated. For example, the ``"%.100s"`` format
-should be avoided.
+Both formats expect a type object.
 
 For example, the code::
 
@@ -125,13 +144,29 @@ can be replaced with::
                  "__format__ must return a str, not %T",
                  Py_TYPE(result));
 
-Recommendations
----------------
+Add PyType_GetFullyQualifiedName() function
+-------------------------------------------
 
-The type short name format is recommended for error messages. Example in
-Python::
+Add the ``PyType_GetFullyQualifiedName()`` function to get the fully
+qualified name of a type (``type.__fully_qualified_name__``).
 
-    XXX
+API::
+
+    PyObject* PyType_GetFullyQualifiedName(PyTypeObject *type)
+
+On success, return a new reference to the string. On error, raise an
+exception and return ``NULL``.
+
+
+Recommend using the type short name in error message
+----------------------------------------------------
+
+The type short name (``type.__name__``) is recommended to format error
+messages displayed to users.
+
+Example in Python::
+
+    raise TypeError(f"cannot pickle {cls.__name__} object")
 
 Example in C::
 
@@ -139,24 +174,53 @@ Example in C::
                  "__format__ must return a str, not %T",
                  Py_TYPE(result));
 
-The type fully qualified name is recommended in ``repr()``. Example in
-Python::
+The type fully qualified name (``type.__fully_qualified_name__``) can be
+used in error messages written in logs which are more likely to be read
+by system administrators and developers than being read by users.
 
-    XXX
+In general, the short name is enough to identify a type and is easier to
+read by an user than the longer and more complicated fully qualified
+name.
+
+
+Recommend using the type fully qualified name in __repr__()
+-----------------------------------------------------------
+
+The type fully qualified name (``type.__fully_qualified_name__``) is
+recommended to implemented a ``__repr__()`` method. The type can be
+identified in a reliable way by its fully qualified name. There is less
+risk of having two different types with the same fully qualified name,
+than two types with the same short name (``type.__name__``).
+
+Example in Python::
+
+    def __repr__(self):
+        return (f"<{self.__class__.__fully_qualified_name__}"
+                f" at {id(self):#x}: value={self._value}>")
+
+Recommend not truncating type names
+-----------------------------------
+
+Type names must not be truncated. For example, the ``"%.100s"`` format
+should be avoided: use the ``"%s"`` format instead (or ``"%T`` and
+``"%#T`` formats in C).
 
 
 Out of the PEP scope
 ====================
 
-Add ``__fully_qualified_name__`` attributes to other types:
+Later, the ``__fully_qualified_name__`` attribute can be added to other
+types:
 
 * Coroutine
 * Function
 * Generator
 * Method
 
+But these changes are out of the scope of this PEP.
+
 By the way, modules have no ``__qualname__`` attribute. A module name,
-``module.__name__``, is the fully qualified name.
+``module.__name__``, is already the fully qualified name.
 
 
 Rejected Ideas
