@@ -161,8 +161,6 @@ Specification
 * Add ``type.__fully_qualified_name__`` attribute.
 * Add ``%T`` and ``%#T`` formats to ``PyUnicode_FromFormat()``.
 * Add ``PyType_GetFullyQualifiedName()`` function.
-* Recommend using the type short name format in error messages.
-* Recommend using the type fully qualified name in ``__repr()__``.
 * Recommend not truncating type names.
 
 Python API
@@ -229,47 +227,6 @@ On success, return a new reference to the string. On error, raise an
 exception and return ``NULL``.
 
 
-Recommend using the type short name in error messages
------------------------------------------------------
-
-The type short name (``type.__name__`` and ``%T`` format in C) is
-recommended to format error messages displayed to users.
-
-Example in Python::
-
-    raise TypeError(f"cannot pickle {cls.__name__} object")
-
-Example in C::
-
-    PyErr_Format(PyExc_TypeError,
-                 "__index__ returned non-int (type %T)",
-                 Py_TYPE(result));
-
-The type fully qualified name (``type.__fully_qualified_name__``) can be
-used in error messages written in logs which are more likely to be read
-by system administrators and developers than being read by users.
-
-In general, the short name is enough to identify a type and is easier to
-read by an user than the longer and more complicated fully qualified
-name.
-
-
-Recommend using the type fully qualified name in __repr__()
------------------------------------------------------------
-
-The type fully qualified name (``type.__fully_qualified_name__`` and
-``%#T`` format in C) is recommended to implemented a ``__repr__()``
-method. The type can be identified in a reliable way by its fully
-qualified name. There is less risk of having two different types with
-the same fully qualified name, than two types with the same short name
-(``type.__name__``).
-
-Example in Python::
-
-    def __repr__(self):
-        return (f"<{self.__class__.__fully_qualified_name__}"
-                f" at {id(self):#x}: value={self._value}>")
-
 Recommend not truncating type names
 -----------------------------------
 
@@ -314,7 +271,7 @@ See the `pull request: type(str) returns the fully qualified name
 Add formats to type.__format__()
 --------------------------------
 
-Examples of proposed formats:
+Examples of proposed formats for ``type.__format__()``:
 
 * ``f"{type(obj):z}"`` formats ``type(obj).__name__``.
 * ``f"{type(obj):M.T}"`` formats ``type(obj).__fully_qualified_name__``.
@@ -335,15 +292,6 @@ type is a single letter, such as ``g`` in ``f"{3.14:g}"``, not ``M.T``
 or ``M:T``. Reusing dot and colon characters for a different purpose can
 be misleading and make the format parser more complicated.
 
-Add formats to str % args
--------------------------
-
-It was proposed to add formats to format a type name in ``str % arg``.
-For example, ``%T`` and ``%#T`` formats.
-
-Nowadays, f-string is preferred for new code.
-
-
 Add !t formatter to get an object type
 --------------------------------------
 
@@ -355,6 +303,15 @@ to this
 <https://mail.python.org/archives/list/python-dev@python.org/message/BMIW3FEB77OS7OB3YYUUDUBITPWLRG3U/>`_.
 Eric is the author of `PEP 498 f-string
 <https://peps.python.org/pep-0498/>`_.
+
+
+Add formats to str % args
+-------------------------
+
+It was proposed to add formats to format a type name in ``str % arg``.
+For example, ``%T`` and ``%#T`` formats.
+
+Nowadays, f-string is preferred for new code.
 
 
 Use colon separator in fully qualified name
