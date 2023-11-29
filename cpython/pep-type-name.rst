@@ -81,8 +81,8 @@ Some functions use ``%R`` to format a type name. Example::
                  type, Py_TYPE(value));
 
 
-Using PyTypeObject.tp_name is inconsistent
-------------------------------------------
+Using PyTypeObject.tp_name is inconsistent with Python
+------------------------------------------------------
 
 The ``PyTypeObject.tp_name`` member is different depending on the type
 implementation:
@@ -95,7 +95,7 @@ a different output depending if a type is implemented in C or in Python.
 
 It goes against `PEP 399 – Pure Python/C Accelerator Module
 Compatibility Requirements <https://peps.python.org/pep-0399/>`__
-principles which require code to behave the same way if written in
+principles which recommends code to behave the same way if written in
 Python or in C.
 
 Example::
@@ -147,8 +147,8 @@ type names are truncated. In Python, type names are not truncated.
 
 Truncating type names in C but not in Python goes against `PEP 399 –
 Pure Python/C Accelerator Module Compatibility Requirements
-<https://peps.python.org/pep-0399/>`__ principles which require code to
-behave the same way if written in Python or in C.
+<https://peps.python.org/pep-0399/>`__ principles which recommends code
+to behave the same way if written in Python or in C.
 
 See the issue: `Replace %.100s by %s in PyErr_Format(): the arbitrary
 limit of 500 bytes is outdated
