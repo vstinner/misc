@@ -169,13 +169,20 @@ Examples of ``Py_COMPAT_API_VERSION`` usages
 Implementation
 ==============
 
-xxx
+* `Issue gh-116587 <https://github.com/python/cpython/issues/116587>`_
+* PR: `Add Py_COMPAT_API_VERSION and Py_COMPAT_API_VERSION_MAX macros
+  <https://github.com/python/cpython/pull/116588>`_
 
 
 Backwards Compatibility
 =======================
 
-xxx
+There is no impact on backward compatibility.
+
+Adding ``Py_COMPAT_API_VERSION`` and ``Py_COMPAT_API_VERSION_MAX``
+macros has no effect on backward compatibility. Only developers setting
+the ``Py_COMPAT_API_VERSION`` macro in their project will be impacted by
+effects of this macro which is the expected behavior.
 
 
 Discussions
