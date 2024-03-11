@@ -1,37 +1,56 @@
-+++++++++++++++++++++++++++++++++++++++++
-Add Py_COMPAT_API_VERSION to Python C API
-+++++++++++++++++++++++++++++++++++++++++
+Headers::
 
-Target version: Python 3.13
+    PEP: xxx
+    Title: Add Py_COMPAT_API_VERSION to Python C API
+    Author: Victor Stinner <vstinner@python.org>
+    Discussions-To: https://github.com/capi-workgroup/api-evolution/issues/24
+    Status: Draft
+    Type: Standards Track
+    Created: 11-Mar-2024
+    Python-Version: 3.13
+    Post-History: `11-Oct-2023 <https://github.com/capi-workgroup/api-evolution/issues/24>`__,
+                  `23-Jun-2023  <https://github.com/capi-workgroup/problems/issues/54>`__,
 
-* https://github.com/capi-workgroup/problems/issues/54
-* https://github.com/capi-workgroup/api-evolution/issues/24
 
 Abstract
 ========
 
 Add ``Py_COMPAT_API_VERSION`` and ``Py_COMPAT_API_VERSION_MAX`` macros
-to decide **when** a C extension is impacted by incompatible changes.
+to opt-in for planned incompatible C API changes in a C extension.
+Maintainers can decide when they make their C extension compatible
+and also decide which future Python version they want to be compatible
+with.
 
 
 Rationale
 =========
 
-The Python C API evolves at each Python version and gets a bunch of
-changes. Some of them are backward incompatible: C extensions must be
-updated to work on the new Python. Some incompatible changes are driven
-by new features: they cannot be avoided, unless we decide to not add
-these features. Some incompatible changes are driven by other reasons:
+Python enforces C API changes
+-----------------------------
 
-* Remove deprecated API (see PEP 387).
+Every Python 3.x release has a long list of C API changes, including
+incompatible changes. C extensions have to be updated to work on the
+newly released Python.
+
+Some incompatible changes are driven by new features: they cannot be
+avoided, unless we decide to not add these features. Some incompatible
+changes are driven by other reasons:
+
+* Remove deprecated API (see :pep:`387`).
 * Ease the implementation of another change.
 * Change or remove error-prone API.
 * Other reasons.
 
 Currently, there is no middle ground between "not change the C API" and
-"incompatible C API impacting everybody".
+"incompatible C API changes impact everybody". Either a C extension is
+updated or Python cannot be updated. Such all-or-nothing deal does not
+satisfy C extension maintainers nor C extensions users.
 
-The limited C API is versionned: the ``Py_LIMITED_API`` macro can be set
+
+Limited C API
+-------------
+
+The limited C API is versioned: the ``Py_LIMITED_API`` macro can be set
 to a Python version to select which API is available. On the Python
 side, it allows introducing incompatible changes at a specific
 ``Py_LIMITED_API`` version. For example, if ``Py_LIMITED_API`` is set to
@@ -44,13 +63,65 @@ and updating ``Py_LIMITED_API`` is an action made by C extension
 maintainer. It gives more freedom to decide **when** the maintainer is
 ready to deal with the latest batch of incompatible changes.
 
+A similiar version can be used with the regular (non-limited) C API.
+
+
+Deprecation and compiler warnings
+---------------------------------
+
+Some C API changes are scheduled over 3 years: deprecations. For
+example, a function is deprecated in Python 3.11 and only removed in
+Python 3.13. Deprecated functions are marked with ``Py_DEPRECATED()``
+which emits a compiler warning. The problem is that ``pip`` and
+``build`` tools hide compiler logs by default, unless a build fails.
+Moreover, it's easy to miss a single warning in the middle of hundred
+logs lines.
+
+Schedule changes
+----------------
+
+Currently, there is no way to schedule a C API change: announce it but
+also provide a test to C extension maintainers to test their C
+extensions with the change. Either a change is not made, or everybody
+must update their code if they want to update Python.
+
+Again, making incompatible changes "immediately" during at single Python
+release does not satisfy C API consumers and C extensions users.
+
 
 Specification
 =============
 
-Add a new ``Py_COMPAT_API_VERSION`` macro which can be set by users of the C
-API to opt-in to be compatible with future Python versions. Example for
-Python 3.13 scheduling the removal of an API in Python 3.15::
+New macros
+----------
+
+Add new ``Py_COMPAT_API_VERSION`` and ``Py_COMPAT_API_VERSION_MAX``
+macros. They can be set to test if a C extension is prepared for future
+C API changes: compatible with future Python versions.
+
+The ``Py_COMPAT_API_VERSION`` macro can be set to a specific Python
+version. For example, ``Py_COMPAT_API_VERSION=0x030e0000`` tests C API
+changes scheduled in Python 3.14.
+
+If the ``Py_COMPAT_API_VERSION`` macro is set to
+``Py_COMPAT_API_VERSION_MAX``, all scheduled C API changes are tested at
+once.
+
+If the ``Py_COMPAT_API_VERSION`` macro is not set, it is to
+``PY_VERSION_HEX`` by default.
+
+The ``Py_COMPAT_API_VERSION`` macro can be set in a single C file or for
+a whole project in compiler flags. The macro does not affected other
+projects or Python itself, its scope is "local".
+
+
+Example in Python
+-----------------
+
+For example, the ``PyImport_ImportModuleNoBlock()`` function is
+deprecated in Python 3.13 and scheduled for removal in Python 3.15. The
+function can be declared in the Python C API with the following
+declaration::
 
     #if Py_COMPAT_API_VERSION < 0x030f0000
     Py_DEPRECATED(3.13) PyAPI_FUNC(PyObject *) PyImport_ImportModuleNoBlock(
@@ -58,48 +129,66 @@ Python 3.13 scheduling the removal of an API in Python 3.15::
         );
     #endif
 
-If the ``Py_COMPAT_API_VERSION`` macro is not set, it is to
-``PY_VERSION_HEX`` by default.
+Goals
+-----
 
-Building a C extension with ``Py_COMPAT_API_VERSION`` set to
-``Py_COMPAT_API_VERSION_MAX`` checks for future incompatible changes: it
-helps to make a C extension compatible with future Python versions. It
-can also be set to a specific version. For example, ``#define
-Py_COMPAT_API_VERSION 0x030f0000`` checks for changes up to Python 3.15
-(included).
-
-The macro can be set in a single C file or for a whole project in
-compiler flags. The macro does not affected other projects or Python
-itself, its scope is "local".
-
-Goals:
-
-* Reduce the number of incompatible C API changes affecting C extensions
-  on a Python upgrade.
-* For C extensions tests, ``Py_COMPAT_API_VERSION`` can be set to
-  ``Py_COMPAT_API_VERSION_MAX`` to detect future incompatibilities. For C
-  extensions releases, it can be set a fixed Python version.
+* Reduce the number of C API changes affecting C extensions when
+  updating Python.
+* When testing C extensions (ex: optional CI test),
+  ``Py_COMPAT_API_VERSION`` can be set to ``Py_COMPAT_API_VERSION_MAX``
+  to detect future incompatibilities. For mandatory tests, it is
+  recommended to set ``Py_COMPAT_API_VERSION`` to a specific Python
+  version.
 * For core developers, make sure that the C API can still evolve
   without being afraid of breaking an unknown number of C extensions.
 
-Non-goals:
+Non-goals
+---------
 
 * Freeze the API forever: this is not the stable ABI. For example,
   deprecated functions will continue to be removed on a regular basis.
-  Not updating ``Py_COMPAT_API_VERSION`` does not prevent C extensions
-  maintainers to update their code: incompatible changes will still
-  happen soon or later.
+* C extensions maintainers not using ``Py_COMPAT_API_VERSION`` will
+  still be affected by C API changes when updating Python.
 * Provide a stable ABI: the macro only impacts the API.
 * Silver bullet solving all C API issues.
 
 
-Examples which can use Py_COMPAT_API_VERSION
+Examples of ``Py_COMPAT_API_VERSION`` usages
 ============================================
 
-* Remove deprecated functions. Example: ``PyImport_ImportModuleNoBlock``
-  deprecated in Python 3.13.
+* Remove deprecated functions.
 * Remove deprecated members of a structure, such as
   ``PyBytesObject.ob_shash``.
+* Remove a standard ``#include``, such as ``#include <string.h>``,
+  from ``<Python.h>``.
+* Change the behavior of a function or a macro. For example, calling
+  ``PyObject_SetAttr(obj, name, NULL)`` can fail, to enforce the usage
+  of the ``PyObject_DelAttr()`` function instead to delete an attribute.
+
+
+Implementation
+==============
+
+xxx
+
+
+Backwards Compatibility
+=======================
+
+xxx
+
+
+Discussions
+===========
+
+* C API Evolutions: `Macro to hide deprecated functions
+  <https://github.com/capi-workgroup/api-evolution/issues/24>`_
+  (October 2023)
+* C API Problems: `Opt-in macro for a new clean API? Subset of functions
+  with no known issues
+  <https://github.com/capi-workgroup/problems/issues/54>`_
+  (June 2023)
+
 
 Prior Art
 =========
@@ -108,3 +197,10 @@ Prior Art
   <https://peps.python.org/pep-0384/>`_.
 * Rejected `PEP 606 – Python Compatibility Version
   <https://peps.python.org/pep-0606/>`_ which has a global scope.
+
+
+Copyright
+=========
+
+This document is placed in the public domain or under the
+CC0-1.0-Universal license, whichever is more permissive.
