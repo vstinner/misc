@@ -201,7 +201,9 @@ Prior Art
 =========
 
 * xxx: PEP 703 simpler plan to overallocate memory in the stable ABI
-* xxx: Mark Shannon's plan
+* `Grand Unified Python Object Layout
+  <https://github.com/faster-cpython/ideas/issues/553>`_
+  (February 2023) by Mark Shannon.
 * Article: `Make structures opaque in the Python C API
   <https://vstinner.github.io/c-api-opaque-structures.html>`_ (March
   2021) by Victor Stinner.
