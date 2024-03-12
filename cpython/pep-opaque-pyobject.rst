@@ -10,6 +10,16 @@ Headers::
 
     .. highlight:: c
 
+Abstract
+========
+
+Change the ABI to solve the problem of the different ``PyObject`` and
+``PyVarObject`` layout between regular Python build and Free Threading
+(PEP 703) build. This change makes it easier to ship a single binary
+working on the two builds, but it only solves the problem of the
+``PyObject`` problem, it doesn't solve all problems.
+
+
 Rationale
 =========
 
@@ -87,28 +97,31 @@ macros as l-values" to disallow `Py_TYPE(obj) = new_type;` and
 for ``Py_TYPE()`` and then because I forgot to revert ``Py_SIZE()``
 (merged before PEP 674 was proposed), it landed in Python 3.12.
 
+
 Analysis of making PyObject empty
-=================================
+---------------------------------
 
 One way to make the PyObject structure members opaque is to remove them.
 An issue is that ``sizeof(PyObject)`` is used in a few places:
 
 * ``PyType_Spec.basicsize`` of ``PyType_FromSpec()``.
 
-One option to make the PyObject structure opaque would be to modify the
-PyObject structure to make it empty, and move its members into a new
-private _PyObject structure. This _PyObject structure would be allocated
-before the PyObject* pointer, same idea as the current PyGC_Head header
-which is also allocated before the PyObject* pointer.
-
-These changes are more complex than what I expected and so I prefer to
-open a new issue later to propose these changes. Also, the performance
-of these changes must be checked with benchmarks, to ensure that there
-is no performance overhead or that the overhead is acceptable.
-
 
 Specificiation
 ==============
+
+Summary
+-------
+
+* Remove ``PyObject`` structure members: enforce usage of functions to
+  access them.
+* Add internal ``_PyObject`` structure and move old ``PyObject`` members
+  there.
+* Allocate ``_PyObject`` before ``PyObject*`` pointer: in the
+  "preheader" section.
+* Implement ``Py_INCREF()`` and ``Py_DECREF()`` as function calls.
+* ``PyType_FromSpec()`` will overallocate object to not break the stable
+  ABI.
 
 Make PyObject structure empty
 -----------------------------
@@ -155,6 +168,31 @@ Before ``PyObject*`` was pointing to ``ob_refcnt``. Now it points to
 
 See also the ``_PyType_PreHeaderSize()`` function which computes the
 size in bytes of data stored before the ``PyObject*`` pointer.
+
+Py_INCREF() and Py_DECREF()
+---------------------------
+
+Py_INCREF(), Py_XINCREF(), Py_DECREF() and Py_XDECREF() functions are
+now implemented as function calls. They are already implemented as
+function calls in the limited C API version 3.12.
+
+Thanks to that, C extensions use the same ABI for regular Python build
+and Free Threading build for Py_INCREF() and Py_DECREF(): function
+calls.
+
+
+Backward Compatibility
+======================
+
+This PEP breaks the C API on purpose.
+
+Accessing directly ``PyObject`` and ``PyVarObject`` members is no longer
+possible: ``Py_REFCNT()``, ``Py_TYPE()`` and ``Py_SIZE()`` must be used
+instead.
+
+The stable ABI is not broken: ``PyType_FromSpec()`` overallocates memory
+to not break the stable ABI. The only ABI change is ``sizeof(PyObject)``
+and ``sizeof(PyVarObject)`` which become ``0`` bytes.
 
 
 Prior Art
