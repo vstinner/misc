@@ -74,12 +74,13 @@ makes reference counting way more complicated::
         PyTypeObject *ob_type;
     };
 
-## PyObject setters
+PyObject setters
+----------------
 
-Since Python 3.10, I'm working on making enforcing access to
+Since Python 3.10, there is an on-going work to enforce accessing
 ``PyObject`` and ``PyVarObject`` members via abstractions. Python always
 had ``Py_REFCNT()``, ``Py_TYPE()`` and ``Py_SIZE()`` macros to **get**
-these members. I added APIs to **set** these members:
+these members. The following APIs were added to **set** these members:
 
 * Python 3.10: ``Py_SET_REFCNT()``
 * Python 3.12: ``Py_SET_TYPE()``, ``Py_SET_SIZE()``
@@ -90,12 +91,13 @@ static type at build time (the compiler fails to retrive some symbols),
 so C extensions set the base type at runtime when the type is
 initialized (before calling ``PyType_Ready()``).
 
-I wrote `PEP 674 <https://peps.python.org/pep-0674/>`_ "Disallow using
-macros as l-values" to disallow `Py_TYPE(obj) = new_type;` and
-``Py_SIZE(obj) = new_size;`` but enforces usage of ``Py_SET_TYPE()`` and
+`PEP 674 <https://peps.python.org/pep-0674/>`_ "Disallow using macros as
+l-values" disallows `Py_TYPE(obj) = new_type;` and ``Py_SIZE(obj) =
+new_size;`` to enforce the usage of ``Py_SET_TYPE()`` and
 ``Py_SET_SIZE()``. While the whole PEP got rejected, it got an exception
-for ``Py_TYPE()`` and then because I forgot to revert ``Py_SIZE()``
-(merged before PEP 674 was proposed), it landed in Python 3.12.
+for ``Py_TYPE()`` and then because the ``Py_SIZE()`` change was not
+reverted on time (it was merged before PEP 674 was proposed), it landed
+in Python 3.12.
 
 
 Analysis of making PyObject empty
