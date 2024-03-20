@@ -72,7 +72,7 @@ stty -ixon
 # - use -C to use a config.cache in the current directory
 # - force -O0 (instead of -Og) for best debug experience (in gdb)
 # - use --with-pydebug to compile python in debug mode.
-alias pyconfigure_debug="./configure --cache-file=../python-config.cache --with-pydebug --with-system-expat"
+alias pyconfigure_debug="./configure --cache-file=../python-config.cache --with-pydebug --with-system-expat CFLAGS='-O0'"
 
 # Prefer @REDHAT.COM rather than @FEDORAPROJECT.ORG
 alias kinit="kinit -l 5d vstinner@IPA.REDHAT.COM"
@@ -87,3 +87,6 @@ fi
 
 # Red Hat qa-tools package sets PYTHONPATH
 unset PYTHONPATH
+
+# Run gvim with Wayland, rather than X11
+GVIM_ENABLE_WAYLAND=1
