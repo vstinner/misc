@@ -1,6 +1,13 @@
 " Use ":source %" (:so %) to reload this configuration
 " See also ~/.gvimrc for configuration specific to the GUI
 
+"=== Shortcuts ============
+
+" F2 to copy text
+map <F2> "+y
+" F3 to paste text
+nmap <F3> "+gP
+
 "=== Display ==============
 
 " I prefer dark background for a text terminal
