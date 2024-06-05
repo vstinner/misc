@@ -6,7 +6,7 @@
 " F2 to copy text
 map <F2> "+y
 " F3 to paste text
-nmap <F3> "+gP
+map <F3> "+gP
 
 "=== Display ==============
 
