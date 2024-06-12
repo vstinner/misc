@@ -1,10 +1,11 @@
 """
 Links:
 
+* https://vstinner.github.io/contrib-cpython-2017q1.html
 * https://bugs.python.org/issue46600
 * https://bugs.python.org/issue30866
-* https://vstinner.github.io/contrib-cpython-2017q1.html
 * https://bugs.python.org/issue29227
+* https://bugs.python.org/issue28870
 * https://bugs.python.org/issue28858
 """
 
