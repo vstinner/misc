@@ -1,6 +1,8 @@
 """
 Links:
 
+* https://github.com/serhiy-storchaka/python-misc/blob/main/stack_overflow.py
+* https://discuss.python.org/t/recursion-limits/33869
 * https://vstinner.github.io/contrib-cpython-2017q1.html
 * https://bugs.python.org/issue46600
 * https://bugs.python.org/issue30866
