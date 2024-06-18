@@ -1,9 +1,16 @@
 main: git=git@github.com:python/cpython.git
+3.2: git=git@github.com:python/cpython.git
+3.3: git=git@github.com:python/cpython.git
+3.4: git=git@github.com:python/cpython.git
+3.5: git=git@github.com:python/cpython.git
+3.6: git=git@github.com:python/cpython.git
+3.7: git=git@github.com:python/cpython.git
 3.8: git=git@github.com:python/cpython.git
 3.9: git=git@github.com:python/cpython.git
 3.10: git=git@github.com:python/cpython.git
 3.11: git=git@github.com:python/cpython.git
 3.12: git=git@github.com:python/cpython.git
+3.13: git=git@github.com:python/cpython.git
 buildmaster-config: git=git@github.com:python/buildmaster-config.git
 devguide: git=git@github.com:python/devguide.git
 peps: git=git@github.com:vstinner/peps.git
