@@ -24,6 +24,7 @@ import json
 import os
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 
 try:
@@ -106,12 +107,20 @@ def main():
     nproject = len(projs)
     print(f"Project#: {nproject}")
 
-    for index, proj in enumerate(projs, start=1):
+    def download_wrapper(args):
+        dst_dir, index, proj, nproject = args
         try:
             download_sdist(dst_dir, index, proj, nproject)
         except Exception:
             traceback.print_exc()
             cprint(f"Failed to download {proj}", "red")
+
+    max_workers = 8
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        wrapper_args = [
+            (dst_dir, index, proj, nproject) for index, proj in enumerate(projs, start=1)]
+        for _ in executor.map(download_wrapper, wrapper_args):
+            pass
 
     dt = time.monotonic() - start_time
     cprint(f"Downloaded {nproject} projects in {dt:.1f} seconds", "green")
