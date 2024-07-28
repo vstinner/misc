@@ -24,6 +24,7 @@ import json
 import os
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 
 try:
@@ -85,6 +86,8 @@ def parse_args():
                         help='Destination directory')
     parser.add_argument('count', metavar='COUNT', type=int, nargs='?',
                         help='Only download the top COUNT projects')
+    parser.add_argument('-j', '--jobs', metavar='N', type=int, default=8,
+                        help='run N download jobs in parallel (default: %(default)s)')
 
     return parser.parse_args()
 
@@ -106,12 +109,20 @@ def main():
     nproject = len(projs)
     print(f"Project#: {nproject}")
 
-    for index, proj in enumerate(projs, start=1):
+    def download_wrapper(args):
+        dst_dir, index, proj, nproject = args
         try:
             download_sdist(dst_dir, index, proj, nproject)
         except Exception:
             traceback.print_exc()
             cprint(f"Failed to download {proj}", "red")
+
+    max_workers = args.jobs
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        wrapper_args = [
+            (dst_dir, index, proj, nproject) for index, proj in enumerate(projs, start=1)]
+        for _ in executor.map(download_wrapper, wrapper_args):
+            pass
 
     dt = time.monotonic() - start_time
     cprint(f"Downloaded {nproject} projects in {dt:.1f} seconds", "green")
