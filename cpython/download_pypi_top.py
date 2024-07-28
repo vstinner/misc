@@ -86,6 +86,8 @@ def parse_args():
                         help='Destination directory')
     parser.add_argument('count', metavar='COUNT', type=int, nargs='?',
                         help='Only download the top COUNT projects')
+    parser.add_argument('-j', '--jobs', metavar='N', type=int, default=8,
+                        help='run N download jobs in parallel (default: %(default)s)')
 
     return parser.parse_args()
 
@@ -115,7 +117,7 @@ def main():
             traceback.print_exc()
             cprint(f"Failed to download {proj}", "red")
 
-    max_workers = 8
+    max_workers = args.jobs
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         wrapper_args = [
             (dst_dir, index, proj, nproject) for index, proj in enumerate(projs, start=1)]
