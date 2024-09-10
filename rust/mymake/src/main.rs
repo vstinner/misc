@@ -1,6 +1,11 @@
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 
+//fn strip(input: &mut String) {
+//    let len = input.trim_end_matches(&['\r', '\n'][..]).len();
+//    input.truncate(len);
+//}
+
 fn main() {
     let child = Command::new("make")  // FIXME: pass argv[1:] to make
         .stdout(Stdio::piped())
@@ -13,28 +18,30 @@ fn main() {
     let mut errors = Vec::new();
     for line in reader.lines() {
         let line = line.unwrap();
+        //strip(&mut line);
         println!("{}", line);
+
         if line.starts_with("warning: ") {
-            // FIXME: strip line
             warnings.push(line);
         }
         else if line.starts_with("error: ") {
-            // FIXME: strip line
             errors.push(line);
         }
     }
 
-    if warnings.len() > 0 {
+    if warnings.len() > 0 || errors.len() > 0 {
         println!();
-        for line in &warnings {
-            println!("WARNING: {}", line);
+        if warnings.len() > 0 {
+            for line in &warnings {
+                println!("WARNING: {}", line);
+            }
         }
-    }
-    if errors.len() > 0 {
-        println!();
-        for line in &errors {
-            println!("ERROR: {}", line);
+        if errors.len() > 0 {
+            for line in &errors {
+                println!("ERROR: {}", line);
+            }
         }
+        println!("=> Found warnings/errors");
     }
 
     println!();
