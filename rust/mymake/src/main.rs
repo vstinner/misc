@@ -1,20 +1,10 @@
-use std::process::{Command, Stdio};
-use std::io::{BufRead, BufReader};
+use std::process::{Command, Stdio, ChildStdout};
+use std::io::{BufRead, BufReader, Lines};
 use std::time::Instant;
 use std::env;
 
-fn main() {
-    let start_time = Instant::now();
-
-    let mut child = Command::new("make")
-        .args(env::args())
-        .stdout(Stdio::piped())
-        .spawn().unwrap();
-    let stdout = child.stdout.take().unwrap();
-    let reader = BufReader::new(stdout);
-
-    let mut matched = Vec::new();
-    for line in reader.lines() {
+fn parse_output(lines: Lines<BufReader<ChildStdout>>, matched: &mut Vec<(&str, String)>) {
+    for line in lines {
         let line = line.unwrap();
         println!("{}", line);
 
@@ -25,6 +15,27 @@ fn main() {
             matched.push(("error", line));
         }
     }
+}
+
+fn main() {
+    let start_time = Instant::now();
+
+    let mut child = Command::new("make")
+        .args(env::args())
+        .stdout(Stdio::piped())
+        //.stderr(Stdio::piped())
+        .spawn().unwrap();
+
+    let mut matched = Vec::new();
+
+    let stdout = child.stdout.take().unwrap();
+    let reader = BufReader::new(stdout);
+    parse_output(reader.lines(), &mut matched);
+
+    // let stderr = child.stderr.take().unwrap();
+    // let reader = BufReader::new(stderr);
+    // parse_output(reader.lines(), &mut matched);
+
     let exitcode = child.wait().expect("process complete");
     let exitcode = exitcode.code().unwrap();
     let duration = start_time.elapsed();
