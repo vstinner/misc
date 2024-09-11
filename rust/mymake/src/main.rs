@@ -1,11 +1,13 @@
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 use std::time::Instant;
+use std::env;
 
 fn main() {
     let start_time = Instant::now();
 
-    let mut child = Command::new("make")  // FIXME: pass argv[1:] to make
+    let mut child = Command::new("make")
+        .args(env::args())
         .stdout(Stdio::piped())
         .spawn().unwrap();
     let stdout = child.stdout.take().unwrap();
