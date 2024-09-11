@@ -1,14 +1,16 @@
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
+use std::time::Instant;
 
 fn main() {
+    let start_time = Instant::now();
+
     let mut child = Command::new("make")  // FIXME: pass argv[1:] to make
         .stdout(Stdio::piped())
         .spawn().unwrap();
     let stdout = child.stdout.take().unwrap();
     let reader = BufReader::new(stdout);
 
-    // FIXME: measure duration
     let mut matched = Vec::new();
     for line in reader.lines() {
         let line = line.unwrap();
@@ -23,6 +25,9 @@ fn main() {
     }
     let exitcode = child.wait().expect("process complete");
     let exitcode = exitcode.code().unwrap();
+    let duration = start_time.elapsed();
+    let duration = (duration.as_millis() as f64) / 1e3;
+    let duration = format!("{duration} sec");
 
     if matched.len() > 0 {
         println!();
@@ -43,12 +48,12 @@ fn main() {
 
     println!();
     if exitcode != 0 {
-        println!("Build FAILED with exit code {}", exitcode);
+        println!("Build FAILED with exit code {} ({})", exitcode, duration);
     }
     else if matched.len() > 0 {
-        println!("Build OK but with some warnings/errors");
+        println!("Build OK but with some warnings/errors ({})", duration);
     }
     else {
-        println!("Build OK: no compiler warnings or errors");
+        println!("Build OK: no compiler warnings or errors ({})", duration);
     }
 }
