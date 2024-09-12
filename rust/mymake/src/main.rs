@@ -25,8 +25,9 @@ fn parse_output(lines: Lines<BufReader<ChildStdout>>, matched: &mut Vec<(MatchTy
 fn main() {
     let start_time = Instant::now();
 
+    let args = Vec::from_iter(env::args());
     let mut child = Command::new("make")
-        .args(env::args())
+        .args(&args[1..])
         .stdout(Stdio::piped())
         //.stderr(Stdio::piped())
         .spawn().unwrap();
