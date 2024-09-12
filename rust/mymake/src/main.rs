@@ -3,16 +3,21 @@ use std::io::{BufRead, BufReader, Lines};
 use std::time::Instant;
 use std::env;
 
-fn parse_output(lines: Lines<BufReader<ChildStdout>>, matched: &mut Vec<(&str, String)>) {
+enum MatchType {
+    WARNING,
+    ERROR
+}
+
+fn parse_output(lines: Lines<BufReader<ChildStdout>>, matched: &mut Vec<(MatchType, String)>) {
     for line in lines {
         let line = line.unwrap();
         println!("{}", line);
 
         if line.starts_with("warning: ") {
-            matched.push(("warning", line));
+            matched.push((MatchType::WARNING, line));
         }
         else if line.starts_with("error: ") {
-            matched.push(("error", line));
+            matched.push((MatchType::ERROR, line));
         }
     }
 }
@@ -50,9 +55,8 @@ fn main() {
             for line in &matched {
                 println!("{}", line.1);
                 match line.0 {
-                    "warning" => warnings += 1,
-                    "error" => errors += 1,
-                    _ => (),
+                    MatchType::WARNING => warnings += 1,
+                    MatchType::ERROR => errors += 1,
                 }
             }
         }
