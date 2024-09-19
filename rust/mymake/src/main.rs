@@ -1,4 +1,4 @@
-use std::process::{Command, Stdio, ChildStdout};
+use std::process::{Command, Stdio, ChildStdout, ChildStderr};
 use std::io::{BufRead, BufReader, Lines};
 use std::time::Instant;
 use std::env;
@@ -13,10 +13,26 @@ fn parse_output(lines: Lines<BufReader<ChildStdout>>, matched: &mut Vec<(MatchTy
         let line = line.unwrap();
         println!("{}", line);
 
-        if line.starts_with("warning: ") {
+        if line.contains("warning: ") {
             matched.push((MatchType::WARNING, line));
         }
-        else if line.starts_with("error: ") {
+        else if line.contains("error: ") {
+            matched.push((MatchType::ERROR, line));
+        }
+    }
+}
+
+// FIXME: merge with parse_output
+// FIXME: how to accept ChildStdout and ChildStderr?
+fn parse_stderr(lines: Lines<BufReader<ChildStderr>>, matched: &mut Vec<(MatchType, String)>) {
+    for line in lines {
+        let line = line.unwrap();
+        println!("{}", line);
+
+        if line.contains("warning: ") {
+            matched.push((MatchType::WARNING, line));
+        }
+        else if line.contains("error: ") {
             matched.push((MatchType::ERROR, line));
         }
     }
@@ -29,18 +45,19 @@ fn main() {
     let mut child = Command::new("make")
         .args(&args[1..])
         .stdout(Stdio::piped())
-        //.stderr(Stdio::piped())
+        .stderr(Stdio::piped())
+        .env("LANG", "")
         .spawn().unwrap();
 
     let mut matched = Vec::new();
 
     let stdout = child.stdout.take().unwrap();
-    let reader = BufReader::new(stdout);
-    parse_output(reader.lines(), &mut matched);
+    let stdout_reader = BufReader::new(stdout);
+    parse_output(stdout_reader.lines(), &mut matched);
 
-    // let stderr = child.stderr.take().unwrap();
-    // let reader = BufReader::new(stderr);
-    // parse_output(reader.lines(), &mut matched);
+    let stderr = child.stderr.take().unwrap();
+    let stderr_reader = BufReader::new(stderr);
+    parse_stderr(stderr_reader.lines(), &mut matched);
 
     let exitcode = child.wait().expect("process complete");
     let exitcode = exitcode.code().unwrap();
