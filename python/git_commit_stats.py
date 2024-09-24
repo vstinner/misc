@@ -3,7 +3,7 @@ import collections
 import os
 import subprocess
 
-DATE = "2022-01-01"
+DATE = "2024-01-01"
 BRANCH = 'main'
 
 print("Statistics on the %s branch after %s" % (BRANCH, DATE))
