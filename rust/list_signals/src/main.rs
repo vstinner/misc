@@ -1,6 +1,5 @@
 use libc::{strsignal as _strsignal, c_char};
 use std::ffi::CStr;
-use std::str;
 
 fn strsignal(signum: i32) -> String {
     let c_buf: *const c_char = unsafe { _strsignal(signum) };
