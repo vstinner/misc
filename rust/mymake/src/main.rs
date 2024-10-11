@@ -91,4 +91,6 @@ fn main() {
     else {
         println!("Build OK: no compiler warnings or errors ({})", duration);
     }
+
+    std::process::exit(exitcode);
 }
