@@ -1,11 +1,13 @@
-PEP: 757
-Title: PyBytesWriter C API
-Author: Victor Stinner <vstinner@python.org>
-Discussions-To: xxx
-Status: Accepted
-Type: Standards Track
-Created: 06-Feb-2025
-Python-Version: 3.14
+::
+
+    PEP: xxx
+    Title: PyBytesWriter C API
+    Author: Victor Stinner <vstinner@python.org>
+    Discussions-To: xxx
+    Status: Draft
+    Type: Standards Track
+    Created: 06-Feb-2025
+    Python-Version: 3.14
 
 .. highlight:: c
 
@@ -15,8 +17,9 @@ Abstract
 
 Add a new ``PyBytesWriter`` C API to create ``bytes`` object.
 
-It replaces the ``_PyBytes_Resize()`` API which treats an immutable
-``bytes`` object as a mutable object.
+It replaces the ``PyBytes_FromStringAndSize(NULL, size)`` and
+``_PyBytes_Resize()`` APIs which treat an immutable ``bytes`` object as
+a mutable object.
 
 
 Rationale
@@ -25,12 +28,36 @@ Rationale
 Disallow creation of incomplete/inconsistent objects
 ----------------------------------------------------
 
+Creating a Python :class:`bytes` object using
+``PyBytes_FromStringAndSize(NULL, size)`` and ``_PyBytes_Resize()``
+treats an immutable :class:`bytes` object as mutable. It goes against
+the principle that :class:`bytes` objects are immutable. It also creates
+an incomplete or "invalid" object since bytes are not initialized. In
+Python, a :class:`bytes` object should always have its bytes fully
+initialized.
+
 * `Avoid creating incomplete/invalid objects api-evolution#36
   <https://github.com/capi-workgroup/api-evolution/issues/36>`_
 * `Disallow mutating immutable objects api-evolution#20
   <https://github.com/capi-workgroup/api-evolution/issues/20>`_
 * `Disallow creation of incomplete/inconsistent objects problems#56
   <https://github.com/capi-workgroup/problems/issues/56>`_
+
+Overallocation
+--------------
+
+When the output size is unknown, there are two strategy:
+
+* Overallocate by the worst case, and then shrink at the end.
+* Extend the buffer when a larger write is needed.
+
+Both strategies are inefficient. Overallocating by the worst case
+consumes too much memory. Extending the buffer multiple times is
+inefficient.
+
+A better strategy is to overallocate the buffer when extending the
+buffer to reduce the number of expensive ``realloc()`` operations which
+can imply a memory copy.
 
 
 Specification
@@ -39,33 +66,80 @@ Specification
 API
 ---
 
-API::
+.. c:type:: PyBytesWriter
 
-    typedef struct PyBytesWriter PyBytesWriter;
+   A Python :class:`bytes` writer instance created by
+   :c:func:`PyBytesWriter_Create`.
 
-    PyAPI_FUNC(void*) PyBytesWriter_Create(
-        PyBytesWriter **writer,
-        Py_ssize_t alloc);
-    PyAPI_FUNC(void) PyBytesWriter_Discard(
-        PyBytesWriter *writer);
-    PyAPI_FUNC(PyObject*) PyBytesWriter_Finish(
-        PyBytesWriter *writer,
-        void *buf);
+   The instance must be destroyed by :c:func:`PyBytesWriter_Finish` or
+   :c:func:`PyBytesWriter_Discard`.
 
-    PyAPI_FUNC(void*) PyBytesWriter_Extend(
-        PyBytesWriter *writer,
-        void *buf,
-        Py_ssize_t extend);
-    PyAPI_FUNC(void*) PyBytesWriter_WriteBytes(
-        PyBytesWriter *writer,
-        void *buf,
-        const char *bytes,
-        Py_ssize_t size);
+.. c:function:: void* PyBytesWriter_Create(PyBytesWriter **writer, Py_ssize_t alloc)
 
-* Not thread safe.
-* Overallocate memory.
-* Respect `strict aliasing
-  <https://en.wikipedia.org/wiki/Aliasing_(computing)>`_.
+   Create a :c:type:`PyBytesWriter` to write *alloc* bytes.
+
+   On success, return non-``NULL`` buffer where bytes can be written.
+   On error, set an exception and return ``NULL``.
+
+   *alloc* must be positive or zero.
+
+.. c:function:: void PyBytesWriter_Discard(PyBytesWriter *writer)
+
+   Discard a :c:type:`PyBytesWriter` created by :c:func:`PyBytesWriter_Create`.
+
+   The writer instance is invalid after the call.
+
+.. c:function:: PyObject* PyBytesWriter_Finish(PyBytesWriter *writer, void *buf)
+
+   Finish a :c:type:`PyBytesWriter` created by :c:func:`PyBytesWriter_Create`.
+
+   On success, return a Python :class:`bytes` object.
+   On error, set an exception and return ``NULL``.
+
+   The writer instance is invalid after the call.
+
+.. c:function:: void* PyBytesWriter_Extend(PyBytesWriter *writer, void *buf, Py_ssize_t extend)
+
+   Extend the buffer by *extend* bytes.
+
+   On success, return non-``NULL`` buffer where bytes can be written.
+   On error, set an exception and return ``NULL``.
+
+   *extend* must be positive or zero.
+
+.. c:function:: void* PyBytesWriter_WriteBytes(PyBytesWriter *writer, void *buf, const char *bytes, Py_ssize_t size)
+
+   Extend the buffer by *size* bytes and write *bytes* into the writer.
+
+   If *size* is equal to ``-1``, call ``strlen(bytes)`` to get the
+   string length.
+
+.. c:function:: Py_ssize_t PyBytesWriter_GetAllocated(PyBytesWriter *writer)
+
+   Get the number of allocated bytes.
+
+
+Overallocation
+--------------
+
+:c:func:`PyBytesWriter_Extend` overallocates the buffer to reduce the
+number of ``realloc()`` calls and to reduce memory copies.
+
+
+Strict aliasing
+---------------
+
+:c:func:`PyBytesWriter_Create`, :c:func:`PyBytesWriter_Extend` and
+:c:func:`PyBytesWriter_WriteBytes` functions return the new buffer as
+the result, rather than taking a ``void**`` or ``char**`` argument
+modified in-place to avoid issues with `strict aliasing
+<https://en.wikipedia.org/wiki/Aliasing_(computing)>`_.
+
+Thread safety
+-------------
+
+The API is not thread safe: a writer should only be used by a single
+thread at the same time.
 
 Examples
 --------
@@ -110,12 +184,6 @@ Backwards Compatibility
 
 There is no impact on the backward compatibility, only new APIs are
 added.
-
-
-Rejected Ideas
-==============
-
-xxx
 
 
 Projects using _PyBytes_Resize()
