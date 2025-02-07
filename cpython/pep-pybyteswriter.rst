@@ -114,6 +114,17 @@ API
    If *size* is equal to ``-1``, call ``strlen(bytes)`` to get the
    string length.
 
+   On success, return non-``NULL`` buffer.
+   On error, set an exception and return ``NULL``.
+
+.. c:function:: void* PyBytesWriter_Format(PyBytesWriter *writer, void *buf, const char *format, ...)
+
+   Similar to ``PyBytes_FromFormat()``, but write the output directly
+   into the writer.
+
+   On success, return non-``NULL`` buffer.
+   On error, set an exception and return ``NULL``.
+
 .. c:function:: Py_ssize_t PyBytesWriter_GetAllocated(PyBytesWriter *writer)
 
    Get the number of allocated bytes.
