@@ -9,6 +9,7 @@
     Created: 06-Feb-2025
     Python-Version: 3.14
 
+
 .. highlight:: c
 
 
@@ -78,6 +79,9 @@ API
 
    Create a :c:type:`PyBytesWriter` to write *alloc* bytes.
 
+   If *alloc* is greater than zero, allocate *alloc* bytes for the
+   returned buffer.
+
    On success, return non-``NULL`` buffer where bytes can be written.
    On error, set an exception and return ``NULL``.
 
@@ -100,7 +104,9 @@ API
 
 .. c:function:: void* PyBytesWriter_Extend(PyBytesWriter *writer, void *buf, Py_ssize_t extend)
 
-   Extend the buffer by *extend* bytes.
+   Add *extend* bytes to the buffer: allocate *extend* bytes in addition
+   to bytes already allocated by previous :c:func:`PyBytesWriter_Create`
+   and :c:func:`PyBytesWriter_Extend` calls.
 
    On success, return non-``NULL`` buffer where bytes can be written.
    On error, set an exception and return ``NULL``.
@@ -249,13 +255,24 @@ A code search on PyPI top 8,000 projects finds 41 projects using
 Discussions
 ===========
 
-* C API Working Group decision:
-  `Add PyBytes_Writer() API
-  <https://github.com/capi-workgroup/decisions/issues/39>`_
-  (August 2024)
-* `Pull request gh-121726
-  <https://github.com/python/cpython/pull/121726>`_:
-  first public API attempt (July 2024)
+* Second public API attempt:
+
+  * `Issue gh-129813 <https://github.com/python/cpython/issues/129813>`_
+    and
+    `pull request gh-129814
+    <https://github.com/python/cpython/pull/129814>`_
+    (February 2025)
+
+* First public API attempt:
+
+  * C API Working Group decision:
+    `Add PyBytes_Writer() API
+    <https://github.com/capi-workgroup/decisions/issues/39>`_
+    (August 2024)
+  * `Pull request gh-121726
+    <https://github.com/python/cpython/pull/121726>`_:
+    first public API attempt (July 2024)
+
 * `Fast _PyAccu, _PyUnicodeWriter and_PyBytesWriter APIs to produce
   strings in CPython <https://vstinner.github.io/pybyteswriter.html>`_
   (March 2016)
