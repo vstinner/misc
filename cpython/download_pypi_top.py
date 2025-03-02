@@ -15,7 +15,7 @@
 # https://hugovk.github.io/top-pypi-packages/
 #
 # Try:
-# https://hugovk.github.io/top-pypi-packages/top-pypi-packages-30-days.min.json
+# https://hugovk.github.io/top-pypi-packages/top-pypi-packages.min.json
 
 import argparse
 import requests
@@ -39,7 +39,7 @@ except ImportError:
 
 session = requests.Session()
 
-JSON_URL = 'https://hugovk.github.io/top-pypi-packages/top-pypi-packages-30-days.min.json'
+JSON_URL = 'https://hugovk.github.io/top-pypi-packages/top-pypi-packages.min.json'
 
 
 def projects():
