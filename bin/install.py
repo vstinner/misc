@@ -10,15 +10,9 @@ from errno import EEXIST
 
 FILES = (
     'apply_patch.py',
-    'btrfs_backup.sh',
     'couleur3.ch',
-    'dedup.py',
     'gh_pr.sh',
-    'pyreplace.py',
-    'releaser.py',
-    'rename_torrent.py',
     'scm.py',
-    'system_load.py',
     'upload_private.sh',
     'upload_tmp.sh',
     'radio-nova',
