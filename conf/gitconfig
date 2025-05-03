@@ -33,3 +33,7 @@ renameLimit = 0
 
 [init]
 defaultBranch = main
+
+[fetch]
+# Delete merged branches
+prune = true
