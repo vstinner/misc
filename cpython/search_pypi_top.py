@@ -38,6 +38,7 @@ except ImportError:
 
 
 IGNORE_CYTHON = True
+IGNORE_PYTHONCAPI_COMPAT = True
 # Ignore macOS directory metadata files from the initial directory listing
 DS_STORE = ".DS_Store"
 # Ignore file extensions known to be binary files to avoid the slow
@@ -163,6 +164,10 @@ def grep(args, archive_filename, regex):
     for filename, fp in decompress(args, archive_filename):
         if is_binary_file(args, fp):
             logger.info(f"ignore binary file: {archive_filename}: {filename}")
+            continue
+        if (IGNORE_PYTHONCAPI_COMPAT
+           and os.path.basename(filename) == 'pythoncapi_compat.h'):
+            logger.info(f"ignore: {filename}")
             continue
 
         matches = []
