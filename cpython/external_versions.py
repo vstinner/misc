@@ -61,9 +61,14 @@ def main():
     grep_version('zlib',
                  'Modules/zlib/zlib.h',
                  r'#define ZLIB_VERSION "(.*)"')
-    grep_version('zlib[Windows]',
-                 'PCbuild/get_externals.bat',
-                 r'zlib-([0-9][^"]*)')
+    try:
+        grep_version('zlib-ng[Windows]',
+                     'PCbuild/get_externals.bat',
+                     r'zlib-ng-([0-9][^"]*)')
+    except ValueError:
+        grep_version('zlib[Windows]',
+                     'PCbuild/get_externals.bat',
+                     r'zlib-([0-9][^"]*)')
     grep_version('libmpdec',
                  'Modules/_decimal/libmpdec/mpdecimal.h',
                  r'MPD_VERSION "(.*)"')
@@ -79,9 +84,14 @@ def main():
     grep_version('SQLite[macOS]',
                  'Mac/BuildScript/build-installer.py',
                  r'SQLite ([0-9][^"]*)')
-    grep_version('ncurses[macOS]',
-                 'Mac/BuildScript/build-installer.py',
-                 r'ftp.gnu.org/pub/gnu/ncurses/ncurses-([0-9]+\.[0-9]+).tar.gz')
+    try:
+        grep_version('ncurses[macOS]',
+                     'Mac/BuildScript/build-installer.py',
+                     r'ftp.gnu.org/gnu/ncurses/ncurses-([0-9]+\.[0-9]+).tar.gz')
+    except ValueError:
+        grep_version('ncurses[macOS]',
+                     'Mac/BuildScript/build-installer.py',
+                     r'ftp.gnu.org/pub/gnu/ncurses/ncurses-([0-9]+\.[0-9]+).tar.gz')
     versions = get_ensurepip_versions()
     for name in ('setuptools', 'pip'):
         if name in versions:
