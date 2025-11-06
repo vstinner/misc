@@ -219,6 +219,12 @@ References
 * https://discuss.python.org/t/pep-603-frozenmap-vs-my-frozendict/2473
 
 
+Acknowledgements
+================
+
+This PEP is based on prior work from Yury Selivanov (PEP 603).
+
+
 Copyright
 =========
 
