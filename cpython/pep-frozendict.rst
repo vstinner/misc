@@ -189,6 +189,27 @@ Reference Implementation
   has an additional ``ma_hash`` member.
 
 
+Rejected Ideas
+==============
+
+Inherit from dict
+-----------------
+
+If ``frozendict`` inherits from ``dict``, it would become possible to
+call ``dict`` methods to mutate an immutable ``frozendict``.  For
+example, it would be possible to call ``dict.__setitem__(frozendict,
+key, value)``.
+
+It may be possible to prevent modifying ``frozendict`` using ``dict``
+methods, but that would require to explicitly exclude ``frozendict``
+which can affect ``dict`` performance. Also, there is a higher risk of
+forgetting to exclude ``frozendict`` in some methods and so having
+"holes" in the API.
+
+If ``frozendict`` does not inherit from ``dict``, there is no such
+issue.
+
+
 References
 ==========
 
