@@ -95,8 +95,10 @@ Hashing
     hash(frozendict(foo='bar'))  # works
     hash(frozendict(foo=['a', 'b', 'c']))  # will throw an error
 
-The hash value depends on the items order and is computes on keys and
-values.
+The hash value does not depend on the items order. It is computed on
+keys and values. Pseudo-code of ``hash(frozendict)``::
+
+    hash(frozenset(frozendict.items()))
 
 
 Typing
@@ -110,17 +112,17 @@ It is possible to use the standard typing notation for frozendicts::
 C API
 -----
 
-Even if ``frozendict`` is not a ``dict`` subclass, it can be used with
-``PyDict_GetItemRef()`` and similiar "Get" functions.
-
-Passing a ``frozendict`` to ``PyDict_SetItem()`` or ``PyDict_DelItem()``
-do fail with ``TypeError``.
-
 Add the following APIs:
 
 * ``PyFrozenDict_Type``
 * ``PyFrozenDict_Check()`` macro
 * ``PyFrozenDict_CheckExact()`` macro
+
+Even if ``frozendict`` is not a ``dict`` subclass, it can be used with
+``PyDict_GetItemRef()`` and similiar "PyDict_Get" functions.
+
+Passing a ``frozendict`` to ``PyDict_SetItem()`` or ``PyDict_DelItem()``
+fails with ``TypeError``.
 
 
 Differences between dict and frozendict
@@ -128,12 +130,12 @@ Differences between dict and frozendict
 
 * ``dict`` has more methods than ``frozendict``:
 
-  * ``__delitem__()``
-  * ``__setitem__()``
+  * ``__delitem__(key)``
+  * ``__setitem__(key, value)``
   * ``clear()``
-  * ``pop()``
+  * ``pop(key)``
   * ``popitem()``
-  * ``setdefault()``
+  * ``setdefault(key, value)``
 
 * A ``frozendict`` can be hashed if keys and values can be hashed
   with ``hash(frozendict)``.
@@ -142,15 +144,26 @@ Differences between dict and frozendict
 Relationship to PEP 416 frozendict
 ==================================
 
-Since PEP 416, ``types.MappingProxyType`` was added to Python 3.3.
+Since 2012 (PEP 416), the Python ecosystem evolved:
 
-The rationale is different.
+* ``asyncio`` was added in 2014 (Python 3.4)
+* Free Threading was added in 2024 (Python 3.13)
+* ``concurrent.interpreters`` was added in 2025 (Python 3.14)
+
+There are now more use cases to share immutable mappings.
+
+``frozendict`` now preserves the insertion order, whereas PEP 416
+``frozendict`` was unordered (as PEP 603 ``frozenmap``). ``frozendict``
+relies on the ``dict`` implementation which preserves the insertion
+order since Python 3.6.
+
+Note: ``types.MappingProxyType`` was added in 2012 (Python 3.3).
 
 
 Relationship to PEP 603 frozenmap
 =================================
 
-frozenmap has different properties than frozendict:
+``frozenmap`` has different properties than frozendict:
 
 * ``frozenmap`` items are unordered, whereas ``frozendict`` preserves
   the insertion order.
@@ -163,8 +176,8 @@ frozenmap has different properties than frozendict:
 ==========  =============  ==============
 Complexity  ``frozenmap``  ``frozendict``
 ==========  =============  ==============
-Copy        O(1)           O(n)
 Lookup      O(n)           O(1)
+Copy        O(1)           O(n)
 ==========  =============  ==============
 
 
