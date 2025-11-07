@@ -177,7 +177,7 @@ Relationship to PEP 603 frozenmap
 ==========  =============  ==============
 Complexity  ``frozenmap``  ``frozendict``
 ==========  =============  ==============
-Lookup      O(n)           O(1)
+Lookup      O(log n)       O(1)
 Copy        O(1)           O(n)
 ==========  =============  ==============
 
