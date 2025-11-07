@@ -34,6 +34,9 @@ desirable:
   Unlike an immutable mapping, passing a plain dict to such a function
   results in error.
 
+* Using an immutable mapping as a function parameter default value
+  avoids the problem of mutable default value.
+
 * Immutable mappings can be used to safely share dictionaries across
   thread and asynchronous task boundaries. The immutability makes it
   easier to reason about threads and asynchronous tasks.
@@ -65,8 +68,6 @@ Construction
 
   - a ``dict``,
   - another ``frozendict``,
-  - an object with an ``items()`` method that is expected to return
-    a series of key/value tuples,
   - or an iterable of key/value tuples.
 
 The insertion order is preserved.
