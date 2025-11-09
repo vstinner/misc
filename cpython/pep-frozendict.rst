@@ -12,7 +12,9 @@ Abstract
 ========
 
 A new public immutable type ``frozendict`` is added to the ``builtins``
-module.
+module. We expect frozendict to be safe by design, as it prevents any unintended modifications.
+This addition benefits not only CPython’s internal implementation but also third-party authors who can take advantage of a reliable,
+immutable dictionary type.
 
 
 Rationale
@@ -162,6 +164,23 @@ Differences between dict and frozendict
 
 * A ``frozendict`` can be hashed if keys and values can be hashed
   with ``hash(frozendict)``.
+
+
+Possible Candidates for frozendict in Pure Python Modules in CPython
+====================================================================
+We identified the following internal CPython source files and frozendict will make them safer by design:
+We believe that more use cases are existed than we have identified.
+* Lib/_opcode_metadata.py
+   - _specializations
+   - _specialized_opmap
+   - opmap
+* Lib/opcode.py
+   - _cache_format
+   - _inline_cache_entries
+* Lib/json
+   - encoder.py
+   - decoder.py
+   - tool.py
 
 
 Relationship to PEP 416 frozendict
