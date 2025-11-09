@@ -171,8 +171,9 @@ The first motivation to add ``frozendict`` was to implement a sandbox
 in Python. It's no longer the case in this PEP.
 
 ``types.MappingProxyType`` was added in 2012 (Python 3.3). This type is
-not hashable. It's also easy to retrieve the original dictionary which
-can be mutated, for example using ``gc.get_referents()``.
+not hashable and it's not possible to inherit from it. It's also easy to
+retrieve the original dictionary which can be mutated, for example using
+``gc.get_referents()``.
 
 
 Relationship to PEP 603 frozenmap
