@@ -122,6 +122,10 @@ It is possible to use the standard typing notation for frozendicts::
 C API
 -----
 
+Exposing the C API will help authors of C extensions to support ``frozendict`` in 
+their extensions when they need to support immutable containers to make thread-safe very easily.
+It will be important since :pep:`779` was accepted, people need this for their migration.
+
 Add the following APIs:
 
 * ``PyFrozenDict_Type``
