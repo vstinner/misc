@@ -101,6 +101,15 @@ keys and values. Pseudo-code of ``hash(frozendict)``::
 
     hash(frozenset(frozendict.items()))
 
+Equality test does not depend on the items order neither. Example::
+
+    >>> a = frozendict(x=1, y=2)
+    >>> b = frozendict(y=2, x=1)
+    >>> hash(a) == hash(b)
+    True
+    >>> a == b
+    True
+
 
 Typing
 ------
@@ -158,7 +167,12 @@ There are now more use cases to share immutable mappings.
 relies on the ``dict`` implementation which preserves the insertion
 order since Python 3.6.
 
-Note: ``types.MappingProxyType`` was added in 2012 (Python 3.3).
+The first motivation to add ``frozendict`` was to implement a sandbox
+in Python. It's no longer the case in this PEP.
+
+``types.MappingProxyType`` was added in 2012 (Python 3.3). This type is
+not hashable. It's also easy to retrieve the original dictionary which
+can be mutated, for example using ``gc.get_referents()``.
 
 
 Relationship to PEP 603 frozenmap
@@ -209,6 +223,15 @@ forgetting to exclude ``frozendict`` in some methods and so having
 
 If ``frozendict`` does not inherit from ``dict``, there is no such
 issue.
+
+
+New syntax for frozendict literals
+----------------------------------
+
+No new syntax is proposed for ``frozendict`` literals. Various syntaxes
+have been discussed.
+
+A new syntax can be added later if needed.
 
 
 References
