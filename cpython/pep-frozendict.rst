@@ -125,6 +125,7 @@ It is possible to use the standard typing notation for frozendicts::
 
 Representation
 --------------
+
 ``frozendict`` will not use a special syntax for its representation.
 The ``repr()`` of a ``frozendict`` instance looks like this:
 
