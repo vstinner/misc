@@ -119,6 +119,15 @@ It is possible to use the standard typing notation for frozendicts::
     m: frozendict[str, int] = frozendict(x=1)
 
 
+Representation
+--------------
+``frozendict`` will not use a special syntax for its representation.
+The ``repr()`` of a ``frozendict`` instance looks like this:
+
+    >>> frozendict(x=1, y=2)
+    frozendict({'x': 1, 'y': 2})
+
+
 C API
 -----
 
