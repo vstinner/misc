@@ -166,10 +166,11 @@ Differences between dict and frozendict
   with ``hash(frozendict)``.
 
 
-Possible Candidates for frozendict in Pure Python Modules in CPython
-====================================================================
-We identified the following internal CPython source files and frozendict will make them safer by design:
-We believe that more use cases are existed than we have identified.
+Possible Candidates for frozendict in Pure Python Modules
+=======================================================================
+We have identified several internal CPython source files where adopting frozendict can enhance safety 
+and prevent unintended modifications by design.
+We also believe that there are additional potential use cases beyond the ones listed below.
 * Lib/_opcode_metadata.py
    - _specializations
    - _specialized_opmap
@@ -203,8 +204,9 @@ The first motivation to add ``frozendict`` was to implement a sandbox
 in Python. It's no longer the case in this PEP.
 
 ``types.MappingProxyType`` was added in 2012 (Python 3.3). This type is
-not hashable. It's also easy to retrieve the original dictionary which
-can be mutated, for example using ``gc.get_referents()``.
+not hashable and it's not possible to inherit from it. It's also easy to
+retrieve the original dictionary which can be mutated, for example using
+``gc.get_referents()``.
 
 
 Relationship to PEP 603 frozenmap
