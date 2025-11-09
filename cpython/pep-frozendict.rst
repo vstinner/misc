@@ -119,8 +119,22 @@ It is possible to use the standard typing notation for frozendicts::
     m: frozendict[str, int] = frozendict(x=1)
 
 
+Representation
+--------------
+
+``frozendict`` will not use a special syntax for its representation.
+The ``repr()`` of a ``frozendict`` instance looks like this:
+
+    >>> frozendict(x=1, y=2)
+    frozendict({'x': 1, 'y': 2})
+
+
 C API
 -----
+
+Exposing the C API will help authors of C extensions to support ``frozendict`` in 
+their extensions when they need to support immutable containers to make thread-safe very easily.
+It will be important since :pep:`779` was accepted, people need this for their migration.
 
 Add the following APIs:
 
