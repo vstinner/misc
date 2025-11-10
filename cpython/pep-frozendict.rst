@@ -160,6 +160,7 @@ Differences between dict and frozendict
   * ``pop(key)``
   * ``popitem()``
   * ``setdefault(key, value)``
+  * ``update(*args, **kwargs)``
 
 * A ``frozendict`` can be hashed if keys and values can be hashed
   with ``hash(frozendict)``.
