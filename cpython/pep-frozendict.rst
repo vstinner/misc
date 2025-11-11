@@ -14,9 +14,10 @@ Abstract
 A new public immutable type ``frozendict`` is added to the ``builtins``
 module.
 
-We expect frozendict to be safe by design, as it prevents any unintended modifications.
-This addition benefits not only CPython’s internal implementation but also third-party authors who can take advantage of a reliable,
-immutable dictionary type.
+We expect frozendict to be safe by design, as it prevents any unintended
+modifications. This addition benefits not only CPython’s standard
+library, but also third-party authors who can take advantage of a
+reliable, immutable dictionary type.
 
 
 Rationale
@@ -136,7 +137,7 @@ The ``repr()`` of a ``frozendict`` instance looks like this:
 C API
 -----
 
-Exposing the C API will help authors of C extensions to support ``frozendict`` in 
+Exposing the C API will help authors of C extensions to support ``frozendict`` in
 their extensions when they need to support immutable containers to make thread-safe very easily.
 It will be important since :pep:`779` was accepted, people need this for their migration.
 
@@ -171,43 +172,61 @@ Differences between dict and frozendict
   with ``hash(frozendict)``.
 
 
-Possible Candidates for frozendict in Pure Python Modules
-=======================================================================
+Possible candidates for frozendict in the stdlib
+================================================
 
-We have identified several internal CPython source files where adopting frozendict can enhance safety 
-and prevent unintended modifications by design.
-We also believe that there are additional potential use cases beyond the ones listed below.
-* Lib 
-   - _collections_abc.py
-   - opcode.py
-   - _opcode_metadata.py
-   - _pydatetime.py
-   - _pydecimal.py
-   - bdb.py
-   - dataclsses.py
-   - dis.py
-   - email/headerregistry.py
-   - enum.py
-   - functools.py
-   - gettext.py
-   - imaplib.py
-   - importlib/_bootstrap_external.py
-   - json/decoder.py
-   - json/encoder.py
-   - json/tool.py
-   - locale.py
-   - opcode.py
-   - optparse.py
-   - platform.py
-   - plistlib.py
-   - pydoc_data/topics.py
-   - ssl.py
-   - stringprep.py
-   - symtable.py
-   - tarfile.py
-   - token.py
-   - tomllib/_parser.py
-   - typing.py
+We have identified several stdlib modules where adopting ``frozendict``
+can enhance safety and prevent unintended modifications by design. We
+also believe that there are additional potential use cases beyond the
+ones listed below.
+
+Note: it remains possible to bind again a variable to a new modified
+``frozendict`` or a new mutable ``dict``.
+
+Python modules
+--------------
+
+Replace ``dict`` with ``frozendict`` in function results:
+
+* ``email.headerregistry``: ``ParameterizedMIMEHeader.params()``
+  (replace ``MappingProxyType``)
+* ``enum``: ``EnumType.__members__()`` (replace ``MappingProxyType``)
+
+Replace ``dict`` with ``frozendict`` for constants:
+
+* ``_opcode_metadata``: ``_specializations``, ``_specialized_opmap``,
+  ``opmap``
+* ``_pydatetime``: ``specs`` (in ``_format_time()``)
+* ``_pydecimal``: ``_condition_map``
+* ``bdb``: ``_MonitoringTracer.EVENT_CALLBACK_MAP``
+* ``dataclasses``: ``_hash_action``
+* ``dis``: ``deoptmap``, ``COMPILER_FLAG_NAMES``
+* ``functools``: ``_convert``
+* ``gettext``: ``_binary_ops``, ``_c2py_ops``
+* ``imaplib``: ``Commands``, ``Mon2num``
+* ``json.decoder``: ``_CONSTANTS``, ``BACKSLASH``
+* ``json.encoder``: ``ESCAPE_DCT``
+* ``json.tool``: ``_group_to_theme_color``
+* ``locale``: ``locale_encoding_alias``, ``locale_alias``,
+  ``windows_locale``
+* ``opcode``: ``_cache_format``, ``_inline_cache_entries``
+* ``optparse``: ``_builtin_cvt``
+* ``platform``: ``_ver_stages``, ``_default_architecture``
+* ``plistlib``: ``_BINARY_FORMAT``
+* ``ssl``: ``_PROTOCOL_NAMES``
+* ``stringprep``: ``b3_exceptions``
+* ``symtable``: ``_scopes_value_to_name``
+* ``tarfile``: ``PAX_NUMBER_FIELDS``, ``_NAMED_FILTERS``
+* ``token``: ``tok_name``, ``EXACT_TOKEN_TYPES``
+* ``tomllib._parser``: ``BASIC_STR_ESCAPE_REPLACEMENTS``
+* ``typing``: ``_PROTO_ALLOWLIST``
+
+Extension modules
+-----------------
+
+Replace ``dict`` with ``frozendict`` for constants:
+
+* ``errno``: ``errorcode``
 
 
 Relationship to PEP 416 frozendict
