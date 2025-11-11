@@ -14,6 +14,10 @@ Abstract
 A new public immutable type ``frozendict`` is added to the ``builtins``
 module.
 
+We expect frozendict to be safe by design, as it prevents any unintended modifications.
+This addition benefits not only CPython’s internal implementation but also third-party authors who can take advantage of a reliable,
+immutable dictionary type.
+
 
 Rationale
 =========
@@ -119,8 +123,22 @@ It is possible to use the standard typing notation for frozendicts::
     m: frozendict[str, int] = frozendict(x=1)
 
 
+Representation
+--------------
+
+``frozendict`` will not use a special syntax for its representation.
+The ``repr()`` of a ``frozendict`` instance looks like this:
+
+    >>> frozendict(x=1, y=2)
+    frozendict({'x': 1, 'y': 2})
+
+
 C API
 -----
+
+Exposing the C API will help authors of C extensions to support ``frozendict`` in 
+their extensions when they need to support immutable containers to make thread-safe very easily.
+It will be important since :pep:`779` was accepted, people need this for their migration.
 
 Add the following APIs:
 
@@ -146,9 +164,29 @@ Differences between dict and frozendict
   * ``pop(key)``
   * ``popitem()``
   * ``setdefault(key, value)``
+  * ``update(*args, **kwargs)``
 
 * A ``frozendict`` can be hashed if keys and values can be hashed
   with ``hash(frozendict)``.
+
+
+Possible Candidates for frozendict in Pure Python Modules
+=======================================================================
+
+We have identified several internal CPython source files where adopting frozendict can enhance safety 
+and prevent unintended modifications by design.
+We also believe that there are additional potential use cases beyond the ones listed below.
+* Lib/_opcode_metadata.py
+   - _specializations
+   - _specialized_opmap
+   - opmap
+* Lib/opcode.py
+   - _cache_format
+   - _inline_cache_entries
+* Lib/json
+   - encoder.py
+   - decoder.py
+   - tool.py
 
 
 Relationship to PEP 416 frozendict
@@ -171,8 +209,9 @@ The first motivation to add ``frozendict`` was to implement a sandbox
 in Python. It's no longer the case in this PEP.
 
 ``types.MappingProxyType`` was added in 2012 (Python 3.3). This type is
-not hashable. It's also easy to retrieve the original dictionary which
-can be mutated, for example using ``gc.get_referents()``.
+not hashable and it's not possible to inherit from it. It's also easy to
+retrieve the original dictionary which can be mutated, for example using
+``gc.get_referents()``.
 
 
 Relationship to PEP 603 frozenmap
