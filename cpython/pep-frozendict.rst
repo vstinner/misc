@@ -168,8 +168,8 @@ Differences between dict and frozendict
   * ``setdefault(key, value)``
   * ``update(*args, **kwargs)``
 
-* A ``frozendict`` can be hashed if keys and values can be hashed
-  with ``hash(frozendict)``.
+* A ``frozendict`` can be hashed with ``hash(frozendict)`` if all keys
+  and values can be hashed.
 
 
 Possible candidates for frozendict in the stdlib
