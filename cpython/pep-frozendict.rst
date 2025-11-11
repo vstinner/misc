@@ -326,10 +326,8 @@ A new syntax can be added later if needed.
 References
 ==========
 
-* PEP 416 frozendict
-* PEP 603 collections.frozenmap
-* https://discuss.python.org/t/pep-603-adding-a-frozenmap-type-to-collections/2318
-* https://discuss.python.org/t/pep-603-frozenmap-vs-my-frozendict/2473
+* :pep:`416` (``frozendict``)
+* :pep:`603` (``collections.frozenmap``)
 
 
 Acknowledgements
