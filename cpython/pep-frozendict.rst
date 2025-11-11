@@ -46,8 +46,9 @@ desirable:
   thread and asynchronous task boundaries. The immutability makes it
   easier to reason about threads and asynchronous tasks.
 
-There are already existing 3rd party ``frozendict`` and ``frozenmap``
-available on PyPI, showing that there is a need for immutable mappings.
+There are already multiple existing 3rd party ``frozendict`` and
+``frozenmap`` available on PyPI, proving that there is a need for
+immutable mappings.
 
 
 Specification
@@ -89,8 +90,7 @@ protocol, so all expected methods of iteration are supported::
     assert list(m.values()) == ['bar']
     assert list(m) == ['foo']
 
-Iteration in ``frozendict``, as in ``dict``, preserves the insertion
-order.
+Iterating on ``frozendict``, as on ``dict``, uses the insertion order.
 
 
 Hashing
@@ -144,7 +144,7 @@ It will be important since :pep:`779` was accepted, people need this for their m
 Add the following APIs:
 
 * ``PyFrozenDict_Type``
-* ``PyFrozenDict_New(iterable)`` function
+* ``PyFrozenDict_New(collection)`` function
 * ``PyFrozenDict_Check()`` macro
 * ``PyFrozenDict_CheckExact()`` macro
 
@@ -152,7 +152,8 @@ Even if ``frozendict`` is not a ``dict`` subclass, it can be used with
 ``PyDict_GetItemRef()`` and similiar "PyDict_Get" functions.
 
 Passing a ``frozendict`` to ``PyDict_SetItem()`` or ``PyDict_DelItem()``
-fails with ``TypeError``.
+fails with ``TypeError``. ``PyDict_Check()`` on a ``frozendict`` is
+false.
 
 
 Differences between dict and frozendict
@@ -301,14 +302,13 @@ Inherit from dict
 
 If ``frozendict`` inherits from ``dict``, it would become possible to
 call ``dict`` methods to mutate an immutable ``frozendict``.  For
-example, it would be possible to call ``dict.__setitem__(frozendict,
-key, value)``.
+example, it would be possible to call
+``dict.__setitem__(frozendict, key, value)``.
 
 It may be possible to prevent modifying ``frozendict`` using ``dict``
 methods, but that would require to explicitly exclude ``frozendict``
 which can affect ``dict`` performance. Also, there is a higher risk of
-forgetting to exclude ``frozendict`` in some methods and so having
-"holes" in the API.
+forgetting to exclude ``frozendict`` in some methods.
 
 If ``frozendict`` does not inherit from ``dict``, there is no such
 issue.
@@ -317,8 +317,7 @@ issue.
 New syntax for frozendict literals
 ----------------------------------
 
-No new syntax is proposed for ``frozendict`` literals. Various syntaxes
-have been discussed.
+Various syntaxes have been proposed to write ``frozendict`` literals.
 
 A new syntax can be added later if needed.
 
