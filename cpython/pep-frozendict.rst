@@ -143,6 +143,7 @@ It will be important since :pep:`779` was accepted, people need this for their m
 Add the following APIs:
 
 * ``PyFrozenDict_Type``
+* ``PyFrozenDict_New(iterable)`` function
 * ``PyFrozenDict_Check()`` macro
 * ``PyFrozenDict_CheckExact()`` macro
 
@@ -176,17 +177,37 @@ Possible Candidates for frozendict in Pure Python Modules
 We have identified several internal CPython source files where adopting frozendict can enhance safety 
 and prevent unintended modifications by design.
 We also believe that there are additional potential use cases beyond the ones listed below.
-* Lib/_opcode_metadata.py
-   - _specializations
-   - _specialized_opmap
-   - opmap
-* Lib/opcode.py
-   - _cache_format
-   - _inline_cache_entries
-* Lib/json
-   - encoder.py
-   - decoder.py
-   - tool.py
+* Lib 
+   - _collections_abc.py
+   - opcode.py
+   - _opcode_metadata.py
+   - _pydatetime.py
+   - _pydecimal.py
+   - bdb.py
+   - dataclsses.py
+   - dis.py
+   - email/headerregistry.py
+   - enum.py
+   - functools.py
+   - gettext.py
+   - imaplib.py
+   - importlib/_bootstrap_external.py
+   - json/decoder.py
+   - json/encoder.py
+   - json/tool.py
+   - locale.py
+   - opcode.py
+   - optparse.py
+   - platform.py
+   - plistlib.py
+   - pydoc_data/topics.py
+   - ssl.py
+   - stringprep.py
+   - symtable.py
+   - tarfile.py
+   - token.py
+   - tomllib/_parser.py
+   - typing.py
 
 
 Relationship to PEP 416 frozendict
@@ -250,11 +271,7 @@ Once the ``frozendict`` is created, it is immutable and can be shared safely bet
 
 Future Work
 ===========
-We are going to introduce new C APIs to be able to create ``frozendict`` in easy way,
-something like ``PyFrozenDict_FromItems`` or ``PyFrozenDict_FromDict`` or through something like
-``PyFrozenDictWriter_Create`` to create a ``frozendict`` in an efficient way, but we think that
-we need discuss with C API working group first before adding those new APIs and handle it in a future PEP.
-And we are also going to make ``frozendict`` to be more efficient in terms of memory usage and performance compare to ``dict`` in future.
+We are also going to make ``frozendict`` to be more efficient in terms of memory usage and performance compare to ``dict`` in future.
 
 
 Rejected Ideas
