@@ -2,7 +2,7 @@ Headers::
 
     PEP: xxx
     Title: Add frozendict built-in type
-    Author: Victor Stinner <vstinner@python.org>
+    Author: Victor Stinner <vstinner@python.org>, Donghee Na <donghee.na@python.org>
     Status: Draft
     Type: Standards Track
     Created: 06-Nov-2025
@@ -202,6 +202,20 @@ Reference Implementation
 * ``frozendict`` shares most of its code with the ``dict`` type.
 * Add ``PyFrozenDictObject`` which inherits from ``PyDictObject`` and
   has an additional ``ma_hash`` member.
+
+
+Thread Safety
+=============
+Once the ``frozendict`` is created, it is immutable and can be shared safely between threads without any synchronization.
+
+
+Future Work
+===========
+We are going to introduce new C APIs to be able to create ``frozendict`` in easy way,
+something like ``PyFrozenDict_FromItems`` or ``PyFrozenDict_FromDict`` or through something like
+``PyFrozenDictWriter_Create`` to create a ``frozendict`` in an efficient way, but we think that
+we need discuss with C API working group first before adding those new APIs and handle it in a future PEP.
+And we are also going to make ``frozendict`` to be more efficient in terms of memory usage and performance compare to ``dict`` in future.
 
 
 Rejected Ideas
