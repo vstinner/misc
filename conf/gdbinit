@@ -5,3 +5,6 @@ set disassembly-flavor intel
 set print pretty on
 # for macOS
 set startup-with-shell off
+
+# Don't log "New Thread" / "Thread exited"
+set print thread-events off
