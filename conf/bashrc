@@ -96,3 +96,6 @@ GVIM_ENABLE_WAYLAND=1
 if [ -e ~/.bashrc_private ]; then
     source ~/.bashrc_private
 fi
+
+# Run gvim with Wayland, rather than X11
+#export GVIM_ENABLE_WAYLAND=1
