@@ -16,6 +16,7 @@ FILES = (
     'upload_private.sh',
     'upload_tmp.sh',
     'radio-nova',
+    'remove_ansi_colors.py',
 )
 
 def main():
