@@ -54,7 +54,7 @@ alias nscp='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 # when it cannot fetch Red Hat repositories behind the VPN (when it's off).
 alias dnf='dnf --cacheonly'
 #alias make='python -I ~/myprojects/misc/bin/mymake.py'
-alias make=~/myprojects/misc/rust/mymake/target/debug/mymake
+#alias make=~/myprojects/misc/rust/mymake/target/debug/mymake
 
 # Protect myself against stupid commands like "echo user:password: >/etc/passwd"
 set -C
