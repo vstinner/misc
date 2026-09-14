@@ -1,5 +1,5 @@
 set -e -x
-for version in main 3.12 3.11 3.10; do
+for version in main 3.15 3.14 3.13; do
     (cd $version && make) || exit $?
 done
 # for version in 3.7 3.6 2.7; do
