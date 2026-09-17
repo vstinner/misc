@@ -193,7 +193,7 @@ def search_file(filename, index, len_filenames, args, pypi_dir, regex):
     results = []
     filename = os.path.join(pypi_dir, filename)
     percent = index * 100 / len_filenames
-    logger.warning(f"grep {filename} ({percent:.0f}%, {index}/{len_filenames})")
+    logger.info(f"grep {filename} ({percent:.0f}%, {index}/{len_filenames})")
 
     for name, line, span in grep(args, filename, regex):
         line = line.decode('utf8', 'replace')
