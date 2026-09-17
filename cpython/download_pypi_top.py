@@ -86,7 +86,8 @@ def parse_args():
                         help='Destination directory')
     parser.add_argument('count', metavar='COUNT', type=int, nargs='?',
                         help='Only download the top COUNT projects')
-    parser.add_argument('-j', '--jobs', metavar='N', type=int, default=8,
+    jobs = os.process_cpu_count()  # added to Python 3.13
+    parser.add_argument('-j', '--jobs', metavar='N', type=int, default=jobs,
                         help='run N download jobs in parallel (default: %(default)s)')
 
     return parser.parse_args()
