@@ -238,7 +238,7 @@ def search_file(filename, index, len_filenames, args, pypi_dir, regex):
     return lines, filename if lines >= 1 else None, results
 
 
-def search_dir(args, pypi_dir, pattern):
+def search_dir(args, pypi_dir, filenames, pattern):
     lines = 0
     projects = set()
     all_results = []
@@ -246,8 +246,6 @@ def search_dir(args, pypi_dir, pattern):
     if args.multiline:
         flags |= re.MULTILINE
     regex = re.compile(pattern, flags)
-    filenames = (filename for filename in os.listdir(pypi_dir) if filename != DS_STORE)
-    filenames = sorted(filenames, key=str.lower)
 
     with multiprocessing.Pool() as pool:
         ret = pool.starmap(
@@ -314,7 +312,13 @@ def _main():
     logger.setLevel(level)
 
     start_time = datetime.datetime.now()
-    lines, projects, results = search_dir(args, pypi_dir, pattern)
+
+    filenames = (filename for filename in os.listdir(pypi_dir)
+                 if filename != DS_STORE)
+    filenames = sorted(filenames, key=str.lower)
+    print(f"Search in {len(filenames)} projects")
+
+    lines, projects, results = search_dir(args, pypi_dir, filenames, pattern)
 
     if output_filename:
         with open(output_filename, "w", encoding="utf8") as output:
