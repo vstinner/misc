@@ -2,6 +2,12 @@
 diff = auto
 ui = auto
 
+[core]
+# Disable all hooks for security (avoid executing arbitrary commands on
+# untrusted Git repositories). Similar to "git commit --no-verify"
+# and "git push --no-verify".
+hooksPath = /dev/null
+
 [user]
 name = Victor Stinner
 email = vstinner@python.org
