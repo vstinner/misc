@@ -63,8 +63,9 @@ set -C
 export MAKEFLAGS=$(python3 -c "import os; print('-j%s' % (os.cpu_count() + 2))")
 
 # ~/.local/bin/ is used by pip, systemd and is an extendsion
-# of XDG user-dirs specs
-export PATH=~/.local/bin:$PATH
+# of XDG user-dirs specs.
+# ~/.npm-global/bin/ is mostly for Claude Code.
+export PATH=~/.local/bin:$HOME/.npm-global/bin:$PATH
 
 # Disable CTRL+s shortcut (freeze the terminal, use CTRL+q to unfreeze)
 # to get readline CTRL+s shortcut (search forward in the history)
@@ -92,11 +93,4 @@ fi
 unset PYTHONPATH
 
 # Run gvim with Wayland, rather than X11
-GVIM_ENABLE_WAYLAND=1
-
-if [ -e ~/.bashrc_private ]; then
-    source ~/.bashrc_private
-fi
-
-# Run gvim with Wayland, rather than X11
-#export GVIM_ENABLE_WAYLAND=1
+export GVIM_ENABLE_WAYLAND=1
