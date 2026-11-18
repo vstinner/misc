@@ -5,6 +5,10 @@ else
     force=
 fi
 local_branch=$(git name-rev --name-only HEAD)
+if [ "$local_branch" = "main" ]; then
+    echo "ERROR: the local branch must not be called main"
+    exit 1
+fi
 
 organization=python
 project="$(basename $PWD)"
